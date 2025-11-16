@@ -4,7 +4,12 @@ This guide explains how to create custom profiles for your duckyPad Pro device.
 
 ## Key Layout Reference
 
-Before creating profiles, familiarize yourself with the key numbering system. See the complete [Key Layout Reference](key-layout.md) for detailed diagrams of both portrait and landscape orientations.
+Before creating profiles, familiarize yourself with the key numbering system. The duckyPad Pro has:
+
+- **20 physical keys** in a 4×5 grid (keys 1-20)
+- **6 rotary encoder inputs** from 2 encoders (keys 21-26)
+
+See the complete [Key Layout Reference](key-layout.md) for detailed diagrams of both portrait and landscape orientations, plus rotary encoder positions and usage examples.
 
 ## Profile Structure
 
@@ -16,9 +21,17 @@ my-profile/
 ├── key1.txt         # Script for key 1
 ├── key2.txt         # Script for key 2
 ├── ...
-├── keyN.txt         # Script for key N
+├── key20.txt        # Script for key 20
+├── key21.txt        # First rotary encoder - clockwise
+├── key22.txt        # First rotary encoder - counter-clockwise
+├── key23.txt        # First rotary encoder - press
+├── key24.txt        # Second rotary encoder - clockwise
+├── key25.txt        # Second rotary encoder - counter-clockwise
+├── key26.txt        # Second rotary encoder - press
 └── README.md        # Profile documentation
 ```
+
+Note: All key files are optional - only create the ones you need.
 
 ## Configuration File (config.txt)
 
@@ -178,6 +191,90 @@ python profile_generator.py my-profile 8
 ```
 
 This creates a basic profile structure with 8 keys that you can customize.
+
+## Rotary Encoder Keys
+
+The duckyPad Pro includes two rotary encoders that can be programmed just like physical keys:
+
+### First Rotary Encoder (Keys 21-23)
+- **Key 21**: Triggered by clockwise rotation
+- **Key 22**: Triggered by counter-clockwise rotation  
+- **Key 23**: Triggered by pressing the encoder
+
+### Second Rotary Encoder (Keys 24-26)
+- **Key 24**: Triggered by clockwise rotation
+- **Key 25**: Triggered by counter-clockwise rotation
+- **Key 26**: Triggered by pressing the encoder
+
+### Position Reference
+
+**Portrait mode**: Encoders are on the **right side** (first encoder upper, second encoder lower)
+
+**Landscape mode**: Encoders are on the **top side** (first encoder left, second encoder right)
+
+### Example Use Cases
+
+**Volume Control (First Encoder):**
+
+```
+REM key21.txt
+MEDIA_VOLUME_UP
+
+REM key22.txt  
+MEDIA_VOLUME_DOWN
+
+REM key23.txt
+MEDIA_MUTE
+```
+
+**Browser Navigation (Second Encoder):**
+
+```
+REM key24.txt
+CONTROL TAB
+REM Next tab
+
+REM key25.txt
+CONTROL SHIFT TAB  
+REM Previous tab
+
+REM key26.txt
+CONTROL T
+REM New tab
+```
+
+**Scrolling (Second Encoder):**
+
+```
+REM key24.txt
+DOWN
+DOWN
+DOWN
+
+REM key25.txt
+UP
+UP  
+UP
+
+REM key26.txt
+ENTER
+```
+
+**Zoom Control (First Encoder):**
+
+```
+REM key21.txt
+CONTROL SHIFT EQUALS
+REM Zoom in (Ctrl+Shift+=)
+
+REM key22.txt
+CONTROL MINUS
+REM Zoom out (Ctrl+-)
+
+REM key23.txt  
+CONTROL 0
+REM Reset zoom (Ctrl+0)
+```
 
 ## Tips for Success
 

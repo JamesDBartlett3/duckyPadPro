@@ -4,8 +4,9 @@ This document provides a visual reference for the physical layout and numbering 
 
 ## Key Numbering Fundamentals
 
-- Keys are numbered **1-20** in a fixed sequence
-- Numbering is always **left-to-right, top-to-bottom** in portrait mode
+- Physical keys are numbered **1-20** in a fixed sequence (4×5 grid)
+- Rotary encoder inputs are numbered **21-26** (2 encoders × 3 inputs each)
+- Numbering is always **left-to-right, top-to-bottom** in portrait mode (for physical keys)
 - Key numbering **does not change** when rotating orientation
 - The physical device rotates 90° counterclockwise for landscape mode
 - Keys stay in their physical positions; orientation only changes how rows/columns are interpreted
@@ -100,6 +101,81 @@ When you rotate from portrait to landscape (90° CCW):
 - What was the **left column** in portrait becomes the **bottom row** in landscape
 - What was the **bottom row** in portrait becomes the **right column** in landscape
 - What was the **top row** in portrait becomes the **left column** in landscape
+
+## Rotary Encoders (Keys 21-26)
+
+In addition to the 20 physical keys in the 4×5 grid, the duckyPad Pro includes **two rotary encoders** with three inputs each:
+
+### First Rotary Encoder (Keys 21-23)
+- **Key 21**: Clockwise rotation
+- **Key 22**: Counter-clockwise rotation
+- **Key 23**: Press/click
+
+### Second Rotary Encoder (Keys 24-26)
+- **Key 24**: Clockwise rotation
+- **Key 25**: Counter-clockwise rotation
+- **Key 26**: Press/click
+
+### Physical Position
+
+**Portrait Mode (4×5 grid):**
+- Rotary encoders are on the **right side** of the device
+- First encoder: Upper position (keys 21-23)
+- Second encoder: Lower position (keys 24-26)
+
+**Landscape Mode (5×4 grid after 90° CCW rotation):**
+- Rotary encoders are on the **top side** of the device
+- First encoder: Left position (keys 21-23)
+- Second encoder: Right position (keys 24-26)
+
+### Naming Convention
+
+The encoders are referred to as "first" and "second" rather than "top/bottom" or "left/right" because:
+- Their relative position changes with device orientation
+- Using ordinal names (first/second) maintains consistency across orientations
+- Physical rotation of the device doesn't change which encoder is "first"
+
+### Common Use Cases
+
+**Volume Control:**
+```
+REM key21.txt - Volume Up
+MEDIA_VOLUME_UP
+
+REM key22.txt - Volume Down
+MEDIA_VOLUME_DOWN
+
+REM key23.txt - Mute
+MEDIA_MUTE
+```
+
+**Scrolling:**
+```
+REM key24.txt - Scroll Down
+DOWN
+DOWN
+DOWN
+
+REM key25.txt - Scroll Up
+UP
+UP
+UP
+
+REM key26.txt - Page Select
+ENTER
+```
+
+**Profile Switching:**
+```
+REM key21.txt - Next Profile
+FUNCTION_KEY NEXT_PROFILE
+
+REM key22.txt - Previous Profile
+FUNCTION_KEY PREV_PROFILE
+
+REM key23.txt - Return to Main
+FUNCTION_KEY PROFILE 1
+```
 
 ## Key Constraints
 

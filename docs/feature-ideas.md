@@ -10,9 +10,10 @@ For complete key layout diagrams and orientation mappings, see [Key Layout Refer
 
 **Quick reference:**
 
-- Keys are numbered 1-20, left-to-right, top-to-bottom (in portrait mode)
+- Physical keys are numbered 1-20, left-to-right, top-to-bottom (in portrait mode)
+- Rotary encoder inputs are numbered 21-26 (2 encoders × 3 inputs each)
 - Key numbering does not change when rotating orientation
-- Portrait mode: 4 columns × 5 rows
+- Portrait mode: 4 columns × 5 rows (physical keys)
 - Landscape mode: 5 columns × 4 rows (90° CCW rotation)
 
 ### Key Label Limitations
@@ -95,6 +96,7 @@ Mirrors a profile horizontally (left-right) for handedness conversion:
 - Swaps key positions horizontally while preserving functionality
 - Portrait mode: Mirrors across vertical center axis (keys 1↔4, 2↔3, 5↔8, etc.)
 - Landscape mode: Mirrors across vertical center axis (keys 4↔20, 8↔16, 12 stays center, etc.)
+- **Rotary encoder keys (21-26) are excluded** from mirroring (position is fixed on device)
 - Preserves key functions/scripts, only changes physical positions
 - Option to create mirrored copy or overwrite original
 - Useful for converting right-handed profiles to left-handed layouts
@@ -131,7 +133,7 @@ Generates a set of interconnected profiles that function like keyboard layers:
 - Option for "home" key to return to default profile
 - User specifies which keys are navigation vs. functional (doesn't impose a template)
 
-**Use case:** Power users can access 60-100+ functions on a 20-key device by treating profiles as layers, similar to QMK keyboard firmware. Creates the infrastructure for multi-profile setups without forcing a specific navigation layout.
+**Use case:** Power users can access 100+ functions on a 26-input device (20 physical keys + 6 rotary encoder inputs) by treating profiles as layers, similar to QMK keyboard firmware. Creates the infrastructure for multi-profile setups without forcing a specific navigation layout.
 
 ### 2. Navigation Layout Templates
 
