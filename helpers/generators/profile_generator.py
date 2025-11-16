@@ -44,7 +44,23 @@ DIM_UNUSED_KEYS 1
     
     # Create key files
     for i in range(1, num_keys + 1):
-        key_content = f"""REM Key {i}
+        # Add helpful comments for rotary encoder keys
+        if i == 21:
+            key_desc = "First rotary encoder - Clockwise rotation"
+        elif i == 22:
+            key_desc = "First rotary encoder - Counter-clockwise rotation"
+        elif i == 23:
+            key_desc = "First rotary encoder - Press"
+        elif i == 24:
+            key_desc = "Second rotary encoder - Clockwise rotation"
+        elif i == 25:
+            key_desc = "Second rotary encoder - Counter-clockwise rotation"
+        elif i == 26:
+            key_desc = "Second rotary encoder - Press"
+        else:
+            key_desc = f"Key {i}"
+        
+        key_content = f"""REM {key_desc}
 REM Description: Add your description here
 REM Author: Your Name
 
@@ -96,8 +112,10 @@ def main():
     
     try:
         num_keys = int(sys.argv[2])
-        if num_keys < 1 or num_keys > 32:
-            print("Error: Number of keys must be between 1 and 32")
+        if num_keys < 1 or num_keys > 26:
+            print("Error: Number of keys must be between 1 and 26")
+            print("  Keys 1-20: Physical keys in 4x5 grid")
+            print("  Keys 21-26: Rotary encoder inputs (optional)")
             sys.exit(1)
     except ValueError:
         print("Error: Number of keys must be a valid integer")
