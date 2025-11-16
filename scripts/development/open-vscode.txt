@@ -1,0 +1,9 @@
+REM Script: Open VS Code
+REM Description: Opens Visual Studio Code using Spotlight (macOS)
+REM Platform: macOS
+
+COMMAND SPACE
+DELAY 500
+STRING visual studio code
+DELAY 300
+ENTER
