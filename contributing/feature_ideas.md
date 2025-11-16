@@ -6,11 +6,14 @@ This document contains ideas for future features and enhancements to the duckyPa
 
 ### Key Numbering
 
-- Keys are numbered 1-20, left-to-right, top-to-bottom
-- Key numbering **does not change** when rotating orientation
-- The physical device rotates 90° CCW, but keys stay in their physical positions
-- Portrait mode: Key 1 at top-left, key 20 at bottom-right
-- Landscape mode: Key 1 at bottom-left, key 20 at top-right (same physical keys, device rotated)
+For complete key layout diagrams and orientation mappings, see [Key Layout Reference](../docs/key-layout.md).
+
+**Quick reference:**
+
+- Keys are numbered 1-20, left-to-right, top-to-bottom (in portrait mode)
+- Key numbering does not change when rotating orientation
+- Portrait mode: 4 columns × 5 rows
+- Landscape mode: 5 columns × 4 rows (90° CCW rotation)
 
 ### Key Label Limitations
 
@@ -84,6 +87,34 @@ For users switching orientations:
 - Creates "hybrid" profiles for learning period
 
 **Use case:** Users who want to switch orientations can do so gradually without losing productivity.
+
+### 7. Profile Mirror Tool
+
+Mirrors a profile horizontally (left-right) for handedness conversion:
+
+- Swaps key positions horizontally while preserving functionality
+- Portrait mode: Mirrors across vertical center axis (keys 1↔4, 2↔3, 5↔8, etc.)
+- Landscape mode: Mirrors across vertical center axis (keys 4↔20, 8↔16, 12 stays center, etc.)
+- Preserves key functions/scripts, only changes physical positions
+- Option to create mirrored copy or overwrite original
+- Useful for converting right-handed profiles to left-handed layouts
+
+**Example (portrait mode - 4 columns × 5 rows):**
+
+- Row 1: Key 1 ↔ Key 4, Key 2 ↔ Key 3
+- Row 2: Key 5 ↔ Key 8, Key 6 ↔ Key 7
+- Row 3: Key 9 ↔ Key 12, Key 10 ↔ Key 11
+- Row 4: Key 13 ↔ Key 16, Key 14 ↔ Key 15
+- Row 5: Key 17 ↔ Key 20, Key 18 ↔ Key 19
+
+**Example (landscape mode - 5 columns × 4 rows):**
+
+- Top row: Key 4 ↔ Key 20, Key 8 ↔ Key 16, Key 12 stays center
+- Row 2: Key 3 ↔ Key 19, Key 7 ↔ Key 15, Key 11 stays center
+- Row 3: Key 2 ↔ Key 18, Key 6 ↔ Key 14, Key 10 stays center
+- Bottom row: Key 1 ↔ Key 17, Key 5 ↔ Key 13, Key 9 stays center
+
+**Use case:** Users can share profiles regardless of hand dominance, or switch profiles when changing primary hand position. Useful for accessibility or ergonomic customization.
 
 ---
 

@@ -2,6 +2,10 @@
 
 This guide explains how to create custom profiles for your duckyPad Pro device.
 
+## Key Layout Reference
+
+Before creating profiles, familiarize yourself with the key numbering system. See the complete [Key Layout Reference](key-layout.md) for detailed diagrams of both portrait and landscape orientations.
+
 ## Profile Structure
 
 A complete profile consists of:
@@ -35,11 +39,13 @@ DIM_UNUSED_KEYS 1
 ### Key Label Constraints
 
 **Important:** Key labels displayed on the duckyPad Pro screen have strict size limits:
+
 - **Maximum 2 lines** of text per key
 - **Maximum 5 characters** per line (ASCII only)
 - Total: 10 characters maximum per key label
 
 Examples of valid key labels:
+
 ```
 COPY     (1 line, 4 chars)
 
@@ -103,6 +109,7 @@ ENTER
 ### Example Scripts
 
 **Open Application:**
+
 ```
 COMMAND SPACE
 DELAY 500
@@ -112,17 +119,20 @@ ENTER
 ```
 
 **Type Text:**
+
 ```
 STRING Hello, World!
 ENTER
 ```
 
 **Keyboard Shortcut:**
+
 ```
 CONTROL SHIFT T
 ```
 
 **Multi-line Text:**
+
 ```
 STRING First line
 ENTER
@@ -136,6 +146,7 @@ ENTER
 ### Single-Purpose Profiles
 
 Create profiles focused on specific tasks:
+
 - Development environment
 - Media controls
 - System administration
@@ -144,6 +155,7 @@ Create profiles focused on specific tasks:
 ### Multi-Purpose Profiles
 
 Organize keys by category:
+
 - Keys 1-4: Application launchers
 - Keys 5-8: Text snippets
 - Keys 9-12: System controls
@@ -184,12 +196,14 @@ This creates a basic profile structure with 8 keys that you can customize.
 ### Key Naming
 
 Use descriptive key file names when possible:
+
 - `key1.txt` (standard)
 - `launch-browser.txt` (descriptive, if supported)
 
 ## Examples
 
 Check the `profiles/` directory for complete examples:
+
 - `example-productivity`: Basic productivity profile
 - More examples coming soon!
 
