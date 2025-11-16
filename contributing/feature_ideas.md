@@ -148,8 +148,8 @@ Pre-built navigation key configurations optimized for different use cases:
 
 - **Bottom row navigation**: Keys 1, 5, 9, 13, 17 as switchers, remaining keys functional (was left column in portrait)
 - **Top row navigation**: Keys 4, 8, 12, 16, 20 as switchers, remaining keys functional (was right column in portrait)
-- **Left column navigation**: Keys 17-20 as switchers, remaining keys functional (was bottom row in portrait)
-- **Right column navigation**: Keys 1-4 as switchers, remaining keys functional (was top row in portrait)
+- **Left column navigation**: Keys 1-4 as switchers, remaining keys functional (was top row in portrait)
+- **Right column navigation**: Keys 17-20 as switchers, remaining keys functional (was bottom row in portrait)
 
 **Use case:** Users can choose a navigation layout that matches their hand size, usage patterns, and orientation preference. Works with the Multi-Layer Profile Generator to create complete layer systems.
 

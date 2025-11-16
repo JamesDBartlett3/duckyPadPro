@@ -6,8 +6,7 @@ This directory contains detailed documentation for the duckyPadPro repository.
 
 - **getting-started.md**: Quick start guide for new users
 - **profile-guide.md**: Complete guide to creating profiles
-- **duckyscript-reference.md**: duckyScript command reference
-- **best-practices.md**: Tips and best practices
+- **key-layout.md**: Key numbering and orientation reference
 
 ## External Resources
 
