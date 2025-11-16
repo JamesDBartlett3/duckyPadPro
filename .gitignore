@@ -55,5 +55,8 @@ yarn-error.log
 # Compiler dependencies (auto-downloaded)
 helpers/compilers/vendor/
 
+# Sample profiles (auto-downloaded)
+profiles/sample_profiles/
+
 # Compiled duckyScript bytecode
 *.dsb
