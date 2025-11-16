@@ -1,0 +1,3 @@
+PROFILE_NAME Example Productivity
+BG_COLOR 0 100 200
+DIM_UNUSED_KEYS 1
