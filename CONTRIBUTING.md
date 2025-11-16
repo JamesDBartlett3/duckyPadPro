@@ -26,7 +26,11 @@ Thank you for your interest in contributing to the duckyPadPro repository! This 
 
 When submitting a profile:
 
-1. **Create a directory** in `profiles/` with a descriptive name (e.g., `developer-tools`)
+1. **Create a directory** in `profiles/` with a descriptive name:
+   - Example: `discord-bots`, `photo-editing`, `productivity-tools`
+   - Use lowercase with hyphens for consistency
+   - **Do NOT use** the `profileN_Name` format in this repository
+   - Users will rename profiles to `profileN_Name` when deploying to their device based on their preferences
 2. **Include all necessary files**:
    - `config.txt` - Profile configuration
    - `keyN.txt` - Key scripts (one per key)
@@ -39,6 +43,7 @@ When submitting a profile:
 4. **Test thoroughly** on actual duckyPad Pro hardware if possible
 
 Example structure:
+
 ```
 profiles/
 └── developer-tools/
@@ -49,6 +54,8 @@ profiles/
     ├── key4.txt
     └── README.md
 ```
+
+**Note**: Each profile's README should explain the deployment naming convention (users rename to `profileN_Name` when copying to SD card).
 
 ### For Scripts
 
@@ -67,6 +74,7 @@ When submitting standalone scripts:
 4. **Test the script** before submitting
 
 Example script:
+
 ```
 REM Script: Open VS Code
 REM Description: Opens Visual Studio Code using Spotlight
