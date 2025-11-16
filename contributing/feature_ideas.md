@@ -175,6 +175,30 @@ Creates momentary layer switchers that simultaneously hold down modifier keys:
 
 ---
 
+## Script Generation & Automation
+
+### 1. Macro Recorder
+
+Records keyboard and mouse actions and generates duckyScript code for playback:
+
+- User specifies which key the macro should be assigned to
+- Recording captures keyboard presses, modifier combinations, and timing
+- Optional mouse movement and click recording
+- Generates optimized duckyScript with appropriate DELAY commands
+- Allows post-recording editing and adjustment of delays
+- Option to simplify/optimize recorded script (remove redundant actions, adjust timing)
+- Preview function to test generated script before saving
+
+**Recording modes:**
+
+- **Real-time recording**: Captures exact timing between actions
+- **Manual timing**: User adds delays explicitly after recording
+- **Smart timing**: Analyzes patterns and suggests optimal delays
+
+**Use case:** Users unfamiliar with duckyScript syntax can create complex macros by demonstration. Also useful for quickly capturing repetitive workflows without manually writing duckyScript code.
+
+---
+
 ## How to Contribute
 
 If you'd like to implement any of these features:
