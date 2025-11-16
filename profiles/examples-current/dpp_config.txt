@@ -1,7 +1,0 @@
-sleep_index 1
-brightness_index 3
-last_profile 7
-fw_ver 2.3.2
-serial_number DP24_7623E8
-kb_layout dpkm_English (US).txt
-bt_mode 2

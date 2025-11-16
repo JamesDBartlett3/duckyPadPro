@@ -1,6 +1,0 @@
-z17 Stop
-z18 33%
-z19 66%
-z20 Full
-BG_COLOR 84 22 180
-IS_LANDSCAPE 1
