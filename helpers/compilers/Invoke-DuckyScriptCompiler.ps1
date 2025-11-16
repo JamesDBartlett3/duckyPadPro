@@ -110,12 +110,12 @@ function Invoke-Compilation {
 function Invoke-ProfileCompilation {
   param([string]$Path)
   
-  # Find all .txt files (duckyScript files), excluding config.txt
+  # Find all .txt files matching duckyScript naming patterns (key*.txt or key*-release.txt)
   $scriptFiles = Get-ChildItem -Path $Path -Recurse -Filter "*.txt" -File | 
-    Where-Object { $_.Name -ne "config.txt" }
+    Where-Object { $_.Name -match '^key\d+(-release)?\.txt$' }
   
   if ($scriptFiles.Count -eq 0) {
-    Write-Host "No .txt files found in $Path" -ForegroundColor Yellow
+    Write-Host "No duckyScript .txt files found in $Path" -ForegroundColor Yellow
     return @{ Total = 0; Success = 0; Failed = 0 }
   }
   

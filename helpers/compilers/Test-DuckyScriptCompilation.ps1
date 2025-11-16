@@ -69,10 +69,10 @@ function Test-ProfileCompilation {
   Write-Host "`nValidating compilations in: $Path" -ForegroundColor Cyan
   
   $txtFiles = Get-ChildItem -Path $Path -Recurse -Filter "*.txt" -File | 
-    Where-Object { $_.Name -ne "config.txt" }
+    Where-Object { $_.Name -match '^key\d+(-release)?\.txt$' }
   
   if ($txtFiles.Count -eq 0) {
-    Write-Host "No .txt files found" -ForegroundColor Yellow
+    Write-Host "No duckyScript .txt files found" -ForegroundColor Yellow
     return @{ Total = 0; Valid = 0; Invalid = 0; Missing = 0 }
   }
   
