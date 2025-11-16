@@ -2,6 +2,23 @@
 
 This document contains ideas for future features and enhancements to the duckyPadPro repository.
 
+## Important Technical Constraints
+
+### Key Numbering
+
+- Keys are numbered 1-20, left-to-right, top-to-bottom
+- Key numbering **does not change** when rotating orientation
+- Top-left is always key 1, bottom-right is always key 20
+- Orientation setting only changes the physical grouping into rows/columns
+
+### Key Label Limitations
+
+- **Maximum 2 lines** of text per key label
+- **Maximum 5 characters** per line (ASCII only)
+- Total: 10 characters maximum per key label
+
+All helper tools and generators must respect this constraint when creating key labels or suggesting naming conventions.
+
 ## Orientation/Layout Management
 
 ### 1. Profile Orientation Converter
@@ -10,9 +27,10 @@ Converts existing profiles between portrait (4×5) and landscape (5×4) orientat
 
 **Key mapping logic:**
 
-- Portrait: keys 1-20 arranged in 4 columns × 5 rows
-- Landscape: keys 1-20 arranged in 5 columns × 4 rows
-- 90° CCW rotation transforms the grid positions
+- Key numbers (1-20) remain constant regardless of orientation
+- Portrait: keys arranged in 4 columns × 5 rows (key 1 at top-left)
+- Landscape: keys arranged in 5 columns × 4 rows (key 1 at bottom-left after 90° CCW rotation)
+- Orientation setting changes physical layout interpretation, not key numbering
 
 **Use case:** Users who switch between portrait and landscape modes can convert their existing profiles rather than recreating them manually.
 
@@ -65,6 +83,76 @@ For users switching orientations:
 - Creates "hybrid" profiles for learning period
 
 **Use case:** Users who want to switch orientations can do so gradually without losing productivity.
+
+---
+
+## Profile/Layer Management
+
+### 1. Multi-Layer Profile Generator
+
+Generates a set of interconnected profiles that function like keyboard layers:
+
+- Creates multiple profile directories with consistent structure
+- Automatically generates the profile-switching duckyScript commands
+- Supports both toggle (press to switch) and hold (momentary) modes
+- Visual indicators in key labels show current layer (within 2-line, 5-char limit)
+- Option for "home" key to return to default profile
+- User specifies which keys are navigation vs. functional (doesn't impose a template)
+
+**Use case:** Power users can access 60-100+ functions on a 20-key device by treating profiles as layers, similar to QMK keyboard firmware. Creates the infrastructure for multi-profile setups without forcing a specific navigation layout.
+
+### 2. Navigation Layout Templates
+
+Pre-built navigation key configurations optimized for different use cases:
+
+**Portrait Mode (4 columns × 5 rows):**
+
+- **Bottom row navigation**: Keys 17-20 as switchers, remaining keys functional
+- **Top row navigation**: Keys 1-4 as switchers, remaining keys functional
+- **Left column navigation**: Keys 1, 5, 9, 13, 17 as switchers, remaining keys functional
+- **Right column navigation**: Keys 4, 8, 12, 16, 20 as switchers, remaining keys functional
+
+**Landscape Mode (5 columns × 4 rows, 90° CCW rotation):**
+
+- **Bottom row navigation**: Keys 1, 5, 9, 13, 17 as switchers, remaining keys functional (was left column in portrait)
+- **Top row navigation**: Keys 4, 8, 12, 16, 20 as switchers, remaining keys functional (was right column in portrait)
+- **Left column navigation**: Keys 17-20 as switchers, remaining keys functional (was bottom row in portrait)
+- **Right column navigation**: Keys 1-4 as switchers, remaining keys functional (was top row in portrait)
+
+**Use case:** Users can choose a navigation layout that matches their hand size, usage patterns, and orientation preference. Works with the Multi-Layer Profile Generator to create complete layer systems.
+
+### 3. Hold-Toggle Hybrid Generator
+
+Creates profiles with sophisticated layer switching behavior:
+
+- Hold a key for momentary layer access (returns on release)
+- Double-tap to toggle and stay on that layer
+- Generates the necessary duckyScript logic for this behavior
+- Visual feedback in key labels within 2-line, 5-char limit (e.g., "MEDIA" on line 1, "hold" on line 2)
+
+**Use case:** Advanced users can have both quick-access layers and persistent layers without sacrificing keys.
+
+### 4. Layer Inheritance Tool
+
+Manages shared functionality across multiple layers:
+
+- Define "base" keys that appear in all layers
+- Specify per-layer overrides
+- Automatically propagates base key changes to all layer profiles
+- Reduces duplication and maintenance burden
+
+**Use case:** Users with navigation keys or common shortcuts don't need to manually update them across 5+ profiles.
+
+### 5. Visual Layer Map Generator
+
+Creates documentation showing the complete layer structure:
+
+- ASCII/text diagram of all layers and navigation paths
+- Shows which keys switch to which profiles
+- Indicates toggle vs. hold behavior
+- Exports as markdown or HTML for reference
+
+**Use case:** Users with complex multi-layer setups can visualize and share their configuration structure.
 
 ---
 

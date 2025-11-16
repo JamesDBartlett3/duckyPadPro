@@ -32,6 +32,24 @@ DIM_UNUSED_KEYS 1
 - `BG_COLOR`: RGB color values (0-255)
 - `DIM_UNUSED_KEYS`: Whether to dim unused keys (0 or 1)
 
+### Key Label Constraints
+
+**Important:** Key labels displayed on the duckyPad Pro screen have strict size limits:
+- **Maximum 2 lines** of text per key
+- **Maximum 5 characters** per line (ASCII only)
+- Total: 10 characters maximum per key label
+
+Examples of valid key labels:
+```
+COPY     (1 line, 4 chars)
+
+CTRL      (2 lines, 4 chars + 1 char)
+C
+
+MENUS     (2 lines, 5 chars each - maximum)
+OPEN
+```
+
 ## Key Scripts
 
 Each key file contains duckyScript commands:
