@@ -4,31 +4,40 @@
 
 param(
   [Parameter(Mandatory=$false)]
-  [string]$ProfilePath,
-  
-  [switch]$Verbose
+  [string]$ProfilePath
 )
 
 # Configuration
-$repo = "dekuNukem/duckyPad-Pro-Configurator"
+$repo = "duckyPad/duckyPad-Configurator"
 $compilerFileName = "make_bytecode.py"
-$compilerPath = Join-Path $PSScriptRoot $compilerFileName
+$vendorDir = Join-Path $PSScriptRoot "vendor"
+$compilerPath = Join-Path $vendorDir $compilerFileName
 
 function Get-LatestCompiler {
+  # Ensure vendor directory exists
+  if (-not (Test-Path $vendorDir)) {
+    New-Item -Path $vendorDir -ItemType Directory -Force | Out-Null
+  }
+  
+  # Check if compiler already exists
+  if (Test-Path $compilerPath) {
+    Write-Host "✓ Using existing $compilerFileName" -ForegroundColor Green
+    return $true
+  }
+  
   Write-Host "Fetching latest make_bytecode.py from GitHub..." -ForegroundColor Cyan
   
   try {
-    # Get latest release info
+    # Get latest release from GitHub API
     $releaseUrl = "https://api.github.com/repos/$repo/releases/latest"
     $release = Invoke-RestMethod -Uri $releaseUrl -Headers @{ "User-Agent" = "PowerShell" }
     
-    # Get the zipball URL
     $zipUrl = $release.zipball_url
     $tempZip = Join-Path $env:TEMP "duckypad-configurator.zip"
     $tempExtract = Join-Path $env:TEMP "duckypad-configurator-extract"
     
     # Download and extract
-    Write-Host "Downloading release archive..." -ForegroundColor Cyan
+    Write-Host "Downloading release $($release.tag_name)..." -ForegroundColor Cyan
     Invoke-WebRequest -Uri $zipUrl -OutFile $tempZip
     
     # Clean up old extraction
@@ -39,14 +48,29 @@ function Get-LatestCompiler {
     # Extract archive
     Expand-Archive -Path $tempZip -DestinationPath $tempExtract -Force
     
-    # Find make_bytecode.py in extracted files
-    $extractedCompiler = Get-ChildItem -Path $tempExtract -Recurse -Filter $compilerFileName | Select-Object -First 1
+    # Find the source directory containing Python files
+    $sourceDir = Get-ChildItem -Path $tempExtract -Recurse -Directory | 
+      Where-Object { (Get-ChildItem -Path $_.FullName -Filter "make_bytecode.py" -File).Count -gt 0 } |
+      Select-Object -First 1
     
-    if ($extractedCompiler) {
-      Copy-Item -Path $extractedCompiler.FullName -Destination $compilerPath -Force
-      Write-Host "✓ Successfully downloaded $compilerFileName (version $($release.tag_name))" -ForegroundColor Green
+    if (-not $sourceDir) {
+      throw "Could not find source directory with make_bytecode.py"
+    }
+    
+    # Copy all Python files from source directory to vendor folder
+    $pythonFiles = Get-ChildItem -Path $sourceDir.FullName -Filter "*.py" -File
+    $copiedFiles = 0
+    
+    foreach ($file in $pythonFiles) {
+      $destPath = Join-Path $vendorDir $file.Name
+      Copy-Item -Path $file.FullName -Destination $destPath -Force
+      $copiedFiles++
+    }
+    
+    if ($copiedFiles -gt 0) {
+      Write-Host "✓ Successfully downloaded $copiedFiles Python files (version $($release.tag_name))" -ForegroundColor Green
     } else {
-      throw "Could not find $compilerFileName in release archive"
+      throw "No Python files found in release archive"
     }
     
     # Cleanup
@@ -88,12 +112,6 @@ function Invoke-Compilation {
     if ($LASTEXITCODE -eq 0) {
       $fileSize = (Get-Item $OutputFile).Length
       Write-Host "  ✓ Compiled: $(Split-Path $InputFile -Leaf) → $(Split-Path $OutputFile -Leaf) ($fileSize bytes)" -ForegroundColor Green
-      
-      if ($Verbose) {
-        Write-Host "    Compiler output:" -ForegroundColor Gray
-        $result | ForEach-Object { Write-Host "    $_" -ForegroundColor Gray }
-      }
-      
       return $true
     } else {
       Write-Host "  ✗ Compilation failed: $(Split-Path $InputFile -Leaf)" -ForegroundColor Red
