@@ -8,8 +8,12 @@ from a template.
 Usage:
     python profile_generator.py <profile-name> <number-of-keys>
     
-Example:
-    python profile_generator.py my-profile 8
+Examples:
+    python profile_generator.py discord-tools 20
+    python profile_generator.py photo-editing 15
+    
+Note: Use descriptive names. When deploying to duckyPad Pro, users rename
+      to profileN_Name format based on their preferred order.
 """
 
 import sys
@@ -21,9 +25,12 @@ def generate_profile(profile_name, num_keys, output_dir=None):
     Generate a duckyPad Pro profile structure.
     
     Args:
-        profile_name: Name of the profile
+        profile_name: Name of the profile (use descriptive name like 'discord-tools')
         num_keys: Number of keys to configure
         output_dir: Directory to create profile in (default: current directory)
+    
+    Note: Profile will be created with the provided name. Users should rename
+          to profileN_Name format when deploying to duckyPad Pro SD card.
     """
     if output_dir is None:
         output_dir = os.getcwd()
@@ -34,10 +41,27 @@ def generate_profile(profile_name, num_keys, output_dir=None):
     os.makedirs(profile_path, exist_ok=True)
     
     # Create config file
-    config_content = f"""PROFILE_NAME {profile_name.replace('-', ' ').title()}
-BG_COLOR 100 100 200
+    config_content = f"""BG_COLOR 100 100 200
 DIM_UNUSED_KEYS 1
 """
+    
+    # Add key labels for generated keys
+    for i in range(1, min(num_keys + 1, 27)):
+        if i <= 20:
+            config_content += f"z{i} Key{i}\n"
+        elif i == 21:
+            config_content += f"z{i} Vol+\n"
+        elif i == 22:
+            config_content += f"z{i} Vol-\n"
+        elif i == 23:
+            config_content += f"z{i} Mute\n"
+        elif i == 24:
+            config_content += f"z{i} Zoom+\n"
+        elif i == 25:
+            config_content += f"z{i} Zoom-\n"
+        elif i == 26:
+            config_content += f"z{i} Reset\n"
+    config_content += "\n"
     
     with open(os.path.join(profile_path, 'config.txt'), 'w') as f:
         f.write(config_content)
@@ -103,9 +127,11 @@ Add any additional notes or requirements here.
 
 
 def main():
-    if len(sys.argv) < 3:
+    if len(sys.argv) != 3:
         print("Usage: python profile_generator.py <profile-name> <number-of-keys>")
-        print("Example: python profile_generator.py my-profile 8")
+        print("Example: python profile_generator.py discord-tools 20")
+        print("")
+        print("Note: Use descriptive names. Rename to profileN_Name when deploying to device.")
         sys.exit(1)
     
     profile_name = sys.argv[1]
@@ -122,6 +148,8 @@ def main():
         sys.exit(1)
     
     generate_profile(profile_name, num_keys)
+    print(f"Profile '{profile_name}' created successfully!")
+    print(f"Rename to 'profileN_{profile_name}' when deploying to duckyPad Pro.")
 
 
 if __name__ == '__main__':
