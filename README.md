@@ -2,6 +2,10 @@
 
 A community repository for [duckyPad Pro](https://dekunukem.github.io/duckyPad-Pro/) profiles, settings, scripts, and helper utilities.
 
+## Warning
+
+This code is provided "as is" without warranty of any kind. Use at your own risk. The authors are not responsible for any damage to your device or data.
+
 ## About duckyPad Pro
 
 The duckyPad Pro is a powerful macro keyboard that uses [duckyScript](https://dekunukem.github.io/duckyPad-Pro/doc/duckyscript_info.html) to automate tasks, execute keyboard shortcuts, and streamline workflows.
@@ -20,6 +24,7 @@ duckyPadPro/
 ### 📁 Profiles
 
 Complete profile packages for the duckyPad Pro, organized by use case. Each profile contains:
+
 - Configuration file (`config.txt`)
 - Key scripts (`key1.txt`, `key2.txt`, etc.)
 - Documentation (`README.md`)
@@ -35,6 +40,7 @@ See the [settings directory](settings/README.md) for available configurations.
 ### 📜 Scripts
 
 Standalone duckyScript files organized by category:
+
 - **productivity**: Workflow automation and productivity enhancers
 - **development**: Developer tools and shortcuts
 - **system**: System administration tasks
@@ -45,6 +51,7 @@ See the [scripts directory](scripts/README.md) for available scripts.
 ### 🛠️ Helpers
 
 Helper applications and utilities written in Python, JavaScript, Bash, and other languages:
+
 - **converters**: Convert between different formats
 - **generators**: Generate profiles and scripts from templates
 - **validators**: Validate duckyScript syntax
@@ -71,6 +78,7 @@ To use the example productivity profile:
 ## Contributing
 
 Contributions are welcome! Whether you have:
+
 - A new profile to share
 - Useful scripts
 - Helper utilities
