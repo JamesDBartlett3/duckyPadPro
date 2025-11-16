@@ -1,0 +1,12 @@
+1 Welcome
+2 Firefox
+3 Chrome
+4 OBS
+5 WASD
+6 Numpad
+7 Autohotkey
+8 MS Teams
+9 duckyScript
+10 Foxhole
+11 Foxhole-Ctrl
+12 EliteDangerous

@@ -1,0 +1,27 @@
+z1 Raise
+x1 Hand
+z4 Sett
+x4 ings
+z6 Togle
+x6 Cam
+z9 Push
+x9 Talk
+z14 Togle
+x14 Mute
+z20 Hang
+x20 Up
+z21 vol+
+z22 vol-
+z23 mute
+z24 zoom+
+z25 zoom-
+z26 reset
+BG_COLOR 128 128 192
+KEYDOWN_COLOR 128 128 192
+IS_LANDSCAPE 1
+SWCOLOR_1 0 0 255
+SWCOLOR_4 255 255 0
+SWCOLOR_6 128 0 128
+SWCOLOR_9 0 0 255
+SWCOLOR_14 128 0 128
+SWCOLOR_20 255 0 0

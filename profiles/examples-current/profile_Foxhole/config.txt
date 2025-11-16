@@ -1,0 +1,77 @@
+z1 Ctrl
+dr 1
+z2 Run
+x2 Shift
+z3 Inv
+x3 (Tab)
+dr 3
+z4 Menu
+x4 (Esc)
+dr 4
+z5 Mode
+x5 (F)
+dr 5
+z6 A
+z7 Use
+x7 (E)
+dr 7
+z8 1st
+x8 (1)
+dr 8
+z9 Duck
+x9 (C)
+dr 9
+z10 S
+z11 W
+z12 2nd
+x12 (2)
+dr 12
+z13 Prone
+x13 (X)
+dr 13
+z14 D
+z15 (R)e-
+x15 load
+dr 15
+z16 3rd
+x16 (3)
+dr 16
+z17 Climb
+x17 Space
+z18 Voice
+x18 (U)
+dr 18
+z19 Local
+x19 (T)
+dr 19
+z20 InOut
+x20 (Q)
+dr 20
+z21 Up
+z22 Down
+z23 (M)ap
+z24 Right
+z25 Left
+z26 Enter
+BG_COLOR 84 22 180
+IS_LANDSCAPE 1
+SWCOLOR_1 64 0 128
+SWCOLOR_2 85 85 43
+SWCOLOR_3 63 63 63
+SWCOLOR_4 128 0 64
+SWCOLOR_5 0 86 128
+SWCOLOR_6 213 0 0
+SWCOLOR_7 64 128 0
+SWCOLOR_8 0 128 128
+SWCOLOR_9 85 43 43
+SWCOLOR_10 213 0 0
+SWCOLOR_11 213 0 0
+SWCOLOR_12 0 128 64
+SWCOLOR_13 128 0 128
+SWCOLOR_14 213 0 0
+SWCOLOR_15 43 43 85
+SWCOLOR_16 0 85 0
+SWCOLOR_17 255 255 255
+SWCOLOR_18 128 0 128
+SWCOLOR_19 128 41 0
+SWCOLOR_20 128 128 0
