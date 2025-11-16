@@ -154,6 +154,25 @@ Creates documentation showing the complete layer structure:
 
 **Use case:** Users with complex multi-layer setups can visualize and share their configuration structure.
 
+### 6. Modifier Layer Generator
+
+Creates momentary layer switchers that simultaneously hold down modifier keys:
+
+- Switcher key holds modifier combo (e.g., Win+Ctrl+Alt) while switching to a layer
+- Layer contains simple keys (A-Z, F1-F12, numbers, symbols, etc.)
+- Pressing a key on the modifier layer sends the modifier combo + that key
+- Releasing the switcher releases modifiers and returns to main layer
+- Supports any modifier combination (Ctrl, Alt, Shift, Win/Cmd, or combinations)
+- Automatically generates the duckyScript logic for press/release behavior
+
+**Example workflow:**
+
+- Hold switcher key → Win+Ctrl+Alt is pressed, switch to modifier layer
+- Press key containing "F5" → System receives Win+Ctrl+Alt+F5
+- Release switcher → Win+Ctrl+Alt released, return to main layer
+
+**Use case:** Power users working with applications that have complex modifier-heavy shortcut schemes (DAWs, video editors, IDEs) can access dozens of shortcuts efficiently. Main layer stays reserved for most common shortcuts, while modifier layers provide access to additional shortcuts without memorizing complex multi-key combinations.
+
 ---
 
 ## How to Contribute
