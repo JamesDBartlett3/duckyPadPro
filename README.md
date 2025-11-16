@@ -24,7 +24,7 @@ Complete profile packages for the duckyPad Pro, organized by use case. Each prof
 - Key scripts (`key1.txt`, `key2.txt`, etc.)
 - Documentation (`README.md`)
 
-See the [profiles directory](profiles/README.md) for available profiles.
+See the [profiles directory](profiles/readme-profiles.md) for available profiles.
 
 ### ⚙️ Settings
 

@@ -121,7 +121,7 @@ python profile_generator.py profile-name 8
 
 ## Next Steps
 
-- Explore the [profiles](../profiles/README.md) directory for ready-to-use profiles
+- Explore the [profiles](../profiles/readme-profiles.md) directory for ready-to-use profiles
 - Browse [scripts](../scripts/README.md) for standalone automations
 - Check out [helpers](../helpers/README.md) for useful utilities
 - Read the [duckyScript documentation](https://dekunukem.github.io/duckyPad-Pro/doc/duckyscript_info.html)
