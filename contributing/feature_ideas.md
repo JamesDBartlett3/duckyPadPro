@@ -8,8 +8,9 @@ This document contains ideas for future features and enhancements to the duckyPa
 
 - Keys are numbered 1-20, left-to-right, top-to-bottom
 - Key numbering **does not change** when rotating orientation
-- Top-left is always key 1, bottom-right is always key 20
-- Orientation setting only changes the physical grouping into rows/columns
+- The physical device rotates 90° CCW, but keys stay in their physical positions
+- Portrait mode: Key 1 at top-left, key 20 at bottom-right
+- Landscape mode: Key 1 at bottom-left, key 20 at top-right (same physical keys, device rotated)
 
 ### Key Label Limitations
 
