@@ -51,3 +51,9 @@ yarn-error.log
 *.tmp
 *.temp
 *.log
+
+# Compiler dependencies (auto-downloaded)
+helpers/compilers/vendor/
+
+# Compiled duckyScript bytecode
+*.dsb
