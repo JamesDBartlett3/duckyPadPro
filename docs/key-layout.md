@@ -98,8 +98,8 @@ Column              Column
 When you rotate from portrait to landscape (90° CCW):
 - What was the **right column** in portrait becomes the **top row** in landscape
 - What was the **left column** in portrait becomes the **bottom row** in landscape
-- What was the **bottom row** in portrait becomes the **left column** in landscape
-- What was the **top row** in portrait becomes the **right column** in landscape
+- What was the **bottom row** in portrait becomes the **right column** in landscape
+- What was the **top row** in portrait becomes the **left column** in landscape
 
 ## Key Constraints
 
