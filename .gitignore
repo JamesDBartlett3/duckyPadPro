@@ -58,5 +58,8 @@ helpers/compilers/vendor/
 # Sample profiles (auto-downloaded)
 profiles/sample_profiles/
 
+# Workbench folder (for profiles in development)
+workbench/
+
 # Compiled duckyScript bytecode
 *.dsb
