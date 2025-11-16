@@ -1,8 +1,0 @@
-z1 Term
-x1 inal
-z2 Browsr
-z3 Screen
-x3 shot
-z4 Finder
-BG_COLOR 0 100 200
-DIM_UNUSED_KEYS 1

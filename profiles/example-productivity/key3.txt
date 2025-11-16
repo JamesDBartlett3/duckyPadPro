@@ -1,4 +1,0 @@
-REM Take Screenshot on macOS
-REM Captures entire screen to clipboard
-
-COMMAND CONTROL SHIFT 3

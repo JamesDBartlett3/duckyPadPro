@@ -1,8 +1,0 @@
-REM Open Default Browser on macOS
-REM This script uses Spotlight to open the default browser
-
-COMMAND SPACE
-DELAY 500
-STRING safari
-DELAY 200
-ENTER

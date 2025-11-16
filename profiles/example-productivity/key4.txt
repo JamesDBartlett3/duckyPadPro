@@ -1,4 +1,0 @@
-REM Lock Screen on macOS
-REM Uses keyboard shortcut to lock the screen
-
-COMMAND CONTROL Q
