@@ -11,12 +11,35 @@ Before creating profiles, familiarize yourself with the key numbering system. Th
 
 See the complete [Key Layout Reference](key-layout.md) for detailed diagrams of both portrait and landscape orientations, plus rotary encoder positions and usage examples.
 
+## Profile Naming Convention
+
+**For Deployment**: When copying profiles to your duckyPad Pro's SD card, you must rename folders to follow the pattern `profileN_Name`:
+
+- `profile` - Required prefix that identifies this folder as a profile
+- `N` - Number that determines the display order (1, 2, 3, etc.)
+- `_` - Separator between number and name
+- `Name` - Descriptive profile name
+
+**Examples**:
+
+- `profile1_Welcome` - First profile shown
+- `profile2_Discord` - Second profile shown
+- `profile10_MS Teams` - Tenth profile shown
+
+**Why this matters**: When you press the +/- buttons on the duckyPad Pro, it switches between profiles using this number order. Folders without the `profileN_` prefix will not be recognized as profiles.
+
+**Development vs Deployment**:
+
+- **In this repository**: Use descriptive names like `discord-bots`, `photo-editing`, `productivity-tools`
+- **On your device**: Rename to `profile1_DiscordBots`, `profile2_PhotoEditing`, etc. based on your preferred order
+- Each user configures their duckyPad Pro according to their preferences
+
 ## Profile Structure
 
 A complete profile consists of:
 
 ```
-my-profile/
+profile-name/
 ├── config.txt       # Profile configuration
 ├── key1.txt         # Script for key 1
 ├── key2.txt         # Script for key 2
@@ -35,19 +58,39 @@ Note: All key files are optional - only create the ones you need.
 
 ## Configuration File (config.txt)
 
-The `config.txt` file defines profile settings:
+The `config.txt` file defines profile settings using key-value pairs:
 
 ```
-PROFILE_NAME My Profile Name
+z1 First
+x1 Line
+z2 Key 2
 BG_COLOR 100 150 200
 DIM_UNUSED_KEYS 1
+SWCOLOR_1 255 0 0
+ab 5
 ```
 
-### Configuration Options
+### Configuration Directives
 
-- `PROFILE_NAME`: Display name for the profile
-- `BG_COLOR`: RGB color values (0-255)
-- `DIM_UNUSED_KEYS`: Whether to dim unused keys (0 or 1)
+**Key Labels:**
+
+- `zN <text>`: First line of label for key N (max 5 characters, ASCII only)
+- `xN <text>`: Second line of label for key N (max 5 characters, ASCII only)
+- Example: `z1 Hello` and `x1 World` displays "Hello" on line 1 and "World" on line 2 for key 1
+- Both lines are optional; keys without labels appear blank on screen
+
+**Display Settings:**
+
+- `BG_COLOR <r> <g> <b>`: Background color using RGB values (0-255)
+- `DIM_UNUSED_KEYS <0|1>`: Whether to dim keys without scripts (0=disabled, 1=enabled)
+
+**Key Colors:**
+
+- `SWCOLOR_N <r> <g> <b>`: Set RGB color for key N's switch LED (e.g., `SWCOLOR_1 255 0 0` for red key 1)
+
+**Auto-Brightness:**
+
+- `ab <N>`: Enable auto-brightness for key N
 
 ### Key Label Constraints
 
@@ -197,11 +240,13 @@ This creates a basic profile structure with 8 keys that you can customize.
 The duckyPad Pro includes two rotary encoders that can be programmed just like physical keys:
 
 ### First Rotary Encoder (Keys 21-23)
+
 - **Key 21**: Triggered by clockwise rotation
-- **Key 22**: Triggered by counter-clockwise rotation  
+- **Key 22**: Triggered by counter-clockwise rotation
 - **Key 23**: Triggered by pressing the encoder
 
 ### Second Rotary Encoder (Keys 24-26)
+
 - **Key 24**: Triggered by clockwise rotation
 - **Key 25**: Triggered by counter-clockwise rotation
 - **Key 26**: Triggered by pressing the encoder
@@ -220,7 +265,7 @@ The duckyPad Pro includes two rotary encoders that can be programmed just like p
 REM key21.txt
 MEDIA_VOLUME_UP
 
-REM key22.txt  
+REM key22.txt
 MEDIA_VOLUME_DOWN
 
 REM key23.txt
@@ -235,7 +280,7 @@ CONTROL TAB
 REM Next tab
 
 REM key25.txt
-CONTROL SHIFT TAB  
+CONTROL SHIFT TAB
 REM Previous tab
 
 REM key26.txt
@@ -253,7 +298,7 @@ DOWN
 
 REM key25.txt
 UP
-UP  
+UP
 UP
 
 REM key26.txt
@@ -271,7 +316,7 @@ REM key22.txt
 CONTROL MINUS
 REM Zoom out (Ctrl+-)
 
-REM key23.txt  
+REM key23.txt
 CONTROL 0
 REM Reset zoom (Ctrl+0)
 ```
