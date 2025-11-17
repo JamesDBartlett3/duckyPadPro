@@ -5,7 +5,7 @@ Profile Loader for YAML-based duckyPad Pro Profile Definitions
 Loads profile definitions from YAML files and converts them to
 duckyScript files and config.txt for deployment.
 
-Author: duckyPad Pro Community
+Author: JamesDBartlett3
 Date: 2025-11-16
 """
 

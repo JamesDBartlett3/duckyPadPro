@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
 DuckyScript Profile Generator
+Author: JamesDBartlett3
 
 This helper script generates a basic duckyPad Pro profile structure
 from a template.
@@ -13,7 +14,7 @@ Examples:
     python profile_generator.py photo-editing 15
     
 Note: Use descriptive names. When deploying to duckyPad Pro, users rename
-      to profileN_Name format based on their preferred order.
+    to profileN_Name format based on their preferred order.
 """
 
 import sys

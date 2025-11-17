@@ -5,7 +5,7 @@ YAML to duckyPad Profile Converter
 Converts YAML profile definitions to duckyPad Pro profile directories
 with keyN.txt, keyN-release.txt, and config.txt files.
 
-Author: duckyPad Pro Community
+Author: JamesDBartlett3
 Date: 2025-11-16
 """
 
