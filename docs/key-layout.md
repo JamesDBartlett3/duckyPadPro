@@ -2,6 +2,8 @@
 
 This document provides a visual reference for the physical layout and numbering of keys on the duckyPad Pro in both portrait and landscape orientations.
 
+> **For Developers**: Python scripts can use the centralized [`helpers/shared/key_layout.py`](../helpers/shared/key_layout.py) module which provides these diagrams, key descriptions, and utility functions for working with key layouts programmatically.
+
 ## Key Numbering Fundamentals
 
 - Physical keys are numbered **1-20** in a fixed sequence (4×5 grid)

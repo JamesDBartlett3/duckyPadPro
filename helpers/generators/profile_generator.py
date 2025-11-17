@@ -18,6 +18,15 @@ Note: Use descriptive names. When deploying to duckyPad Pro, users rename
 
 import sys
 import os
+from pathlib import Path
+
+# Add parent directory to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from shared.key_layout import TOTAL_KEYS, get_key_description
+
+# Maximum number of keys (including rotary encoders)
+MAX_KEYS = TOTAL_KEYS
 
 
 def generate_profile(profile_name, num_keys, output_dir=None):
@@ -68,21 +77,8 @@ DIM_UNUSED_KEYS 1
     
     # Create key files
     for i in range(1, num_keys + 1):
-        # Add helpful comments for rotary encoder keys
-        if i == 21:
-            key_desc = "First rotary encoder - Clockwise rotation"
-        elif i == 22:
-            key_desc = "First rotary encoder - Counter-clockwise rotation"
-        elif i == 23:
-            key_desc = "First rotary encoder - Press"
-        elif i == 24:
-            key_desc = "Second rotary encoder - Clockwise rotation"
-        elif i == 25:
-            key_desc = "Second rotary encoder - Counter-clockwise rotation"
-        elif i == 26:
-            key_desc = "Second rotary encoder - Press"
-        else:
-            key_desc = f"Key {i}"
+        # Use centralized key descriptions
+        key_desc = get_key_description(i)
         
         key_content = f"""REM {key_desc}
 REM Description: Add your description here
