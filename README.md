@@ -35,7 +35,7 @@ See the [profiles directory](profiles/readme-profiles.md) for available profiles
 
 Device settings, color schemes, and configuration templates for customizing your duckyPad Pro.
 
-See the [settings directory](settings/README.md) for available configurations.
+See the [settings directory](settings/readme-settings.md) for available configurations.
 
 ### 📜 Scripts
 
@@ -46,7 +46,7 @@ Standalone duckyScript files organized by category:
 - **system**: System administration tasks
 - **media**: Media control scripts
 
-See the [scripts directory](scripts/README.md) for available scripts.
+See the [scripts directory](scripts/readme-scripts.md) for available scripts.
 
 ### 🛠️ Helpers
 
@@ -57,7 +57,7 @@ Helper applications and utilities written in Python, JavaScript, Bash, and other
 - **validators**: Validate duckyScript syntax
 - **utilities**: General-purpose tools
 
-See the [helpers directory](helpers/README.md) for available tools.
+See the [helpers directory](helpers/readme-helpers.md) for available tools.
 
 ## Getting Started
 
