@@ -5,17 +5,17 @@ duckyPad Pro Key Layout Definitions
 Centralized key layout information for duckyPad Pro device.
 Provides constants, diagrams, and utilities for both portrait and landscape orientations.
 
-Author: duckyPad Pro Community
+Author: JamesDBartlett3
 Date: 2025-11-16
 """
 
 # Key layout constants
 PHYSICAL_KEYS = 20  # Physical keys in grid
 TOTAL_KEYS = 26     # Including rotary encoders
-PORTRAIT_ROWS = 4
-PORTRAIT_COLS = 5
-LANDSCAPE_ROWS = 5
-LANDSCAPE_COLS = 4
+PORTRAIT_ROWS = 5   # 4 wide × 5 tall = 5 rows
+PORTRAIT_COLS = 4   # 4 wide × 5 tall = 4 cols
+LANDSCAPE_ROWS = 4  # 5 wide × 4 tall = 4 rows
+LANDSCAPE_COLS = 5  # 5 wide × 4 tall = 5 cols
 
 
 def get_portrait_diagram():
@@ -51,14 +51,15 @@ def get_landscape_diagram():
     """
     return """
 LANDSCAPE ORIENTATION (5 wide × 4 tall, rotated 90° CCW):
-┌────────────────────────────────────┐
-│ [22↶][23⊙][21↷]  [25↶][26⊙][24↷]   │  21: First encoder CW ↷
-│                                    │  22: First encoder CCW ↶
-│  4   8  12  16  20                 │  23: First encoder press ⊙
-│  3   7  11  15  19                 │
-│  2   6  10  14  18                 │  24: Second encoder CW ↷
-│  1   5   9  13  17                 │  25: Second encoder CCW ↶
-└────────────────────────────────────┘  26: Second encoder press ⊙
+┌────────────────────────┐
+│ [22↶][21↷]  [25↶][24↷] │  21: First encoder CW ↷
+│   [23⊙]       [26⊙]    │  22: First encoder CCW ↶
+│                        │  23: First encoder press ⊙
+│   4   8  12  16  20    │
+│   3   7  11  15  19    │  24: Second encoder CW ↷
+│   2   6  10  14  18    │  25: Second encoder CCW ↶
+│   1   5   9  13  17    │  26: Second encoder press ⊙
+└────────────────────────┘
 Rotary encoders on TOP
 Key numbers unchanged, but physical layout rotated
 """
@@ -229,7 +230,7 @@ def get_portrait_position(key_num):
         key_num: Physical key number (1-20)
     
     Returns:
-        tuple: (row, col) where row is 0-3 and col is 0-4
+        tuple: (row, col) where row is 0-4 and col is 0-3
     
     Raises:
         ValueError: If key is not a physical key (>20)
@@ -254,7 +255,7 @@ def get_landscape_position(key_num):
         key_num: Physical key number (1-20)
     
     Returns:
-        tuple: (row, col) where row is 0-4 and col is 0-3
+        tuple: (row, col) where row is 0-3 and col is 0-4
     
     Raises:
         ValueError: If key is not a physical key (>20)
@@ -265,7 +266,9 @@ def get_landscape_position(key_num):
     # Get portrait position first
     portrait_row, portrait_col = get_portrait_position(key_num)
     
-    # Rotate 90° CCW: (row, col) -> (4-col, row)
+    # After 90° CCW rotation:
+    # - Portrait rows become landscape columns (same value)
+    # - Portrait columns become landscape rows (reversed: col 0 -> row 3, col 3 -> row 0)
     landscape_row = (PORTRAIT_COLS - 1) - portrait_col
     landscape_col = portrait_row
     
@@ -274,6 +277,13 @@ def get_landscape_position(key_num):
 
 if __name__ == '__main__':
     # Demo when run directly
+    import sys
+    import io
+    
+    # Set UTF-8 encoding for output
+    if sys.platform == 'win32':
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+    
     print("duckyPad Pro Key Layout Information")
     print("=" * 50)
     print_both_layouts()
@@ -290,8 +300,9 @@ if __name__ == '__main__':
     
     print("\nExample: Key positions")
     print("-" * 50)
-    for key in [1, 5, 6, 10, 16, 20]:
+    for key in [1, 4, 5, 6, 10, 16, 20]:
         p_pos = get_portrait_position(key)
         l_pos = get_landscape_position(key)
-        print(f"Key {key:2d}: Portrait row={p_pos[0]} col={p_pos[1]}, "
-              f"Landscape row={l_pos[0]} col={l_pos[1]}")
+        # Display as 1-indexed for user readability
+        print(f"Key {key:2d}: Portrait row={p_pos[0]+1} col={p_pos[1]+1}, "
+              f"Landscape row={l_pos[0]+1} col={l_pos[1]+1}")
