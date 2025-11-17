@@ -87,10 +87,12 @@ ab 5
 **Key Colors:**
 
 - `SWCOLOR_N <r> <g> <b>`: Set RGB color for key N's switch LED (e.g., `SWCOLOR_1 255 0 0` for red key 1)
+- `KEYDOWN_COLOR <r> <g> <b>`: Color when any key is pressed (default: inverse of BG_COLOR)
 
-**Auto-Brightness:**
+**Key Behavior:**
 
-- `ab <N>`: Enable auto-brightness for key N
+- `dr N`: Don't repeat - disable auto-repeat when key N is held down (macro won't repeat)
+- `ab N`: Allow abort - allow exiting early from key N's macro by pressing any key
 
 ### Key Label Constraints
 

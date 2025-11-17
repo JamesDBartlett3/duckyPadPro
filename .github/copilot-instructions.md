@@ -182,14 +182,17 @@ ab 5
 
 - `BG_COLOR <r> <g> <b>`: Background color (RGB 0-255)
 - `DIM_UNUSED_KEYS <0|1>`: Dim keys without scripts (0=off, 1=on)
+- `IS_LANDSCAPE <0|1>`: Set landscape orientation (1=on, 0=off/portrait)
 
 **Key Colors:**
 
 - `SWCOLOR_N <r> <g> <b>`: RGB color for specific key N's switch LED
+- `KEYDOWN_COLOR <r> <g> <b>`: Color when any key is pressed (default: inverse of BG_COLOR)
 
-**Auto-Brightness:**
+**Key Behavior:**
 
-- `ab <N>`: Set auto-brightness for key N
+- `dr N`: Don't repeat - disable auto-repeat when key N is held down (macro won't repeat)
+- `ab N`: Allow abort - allow exiting early from key N's macro by pressing any key
 
 ### Key Label Constraints
 
