@@ -65,6 +65,13 @@ duckyPadPro/
 └── README.md
 ```
 
+## Terminal Commands
+
+- **Never** use Bash syntax when running commands in PowerShell
+- **Never** use "2>&1" or similar Bash redirection syntax
+- **Always** use official PowerShell syntax when running commands in PowerShell
+
+
 ## File Naming Conventions
 
 ### duckyScript Files

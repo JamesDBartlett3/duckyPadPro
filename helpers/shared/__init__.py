@@ -26,6 +26,11 @@ from .key_layout import (
     get_landscape_position,
 )
 
+from .profile_loader import (
+    ProfileLoader,
+    load_profile,
+)
+
 __all__ = [
     'PHYSICAL_KEYS',
     'TOTAL_KEYS',
@@ -46,4 +51,6 @@ __all__ = [
     'parse_key_list',
     'get_portrait_position',
     'get_landscape_position',
+    'ProfileLoader',
+    'load_profile',
 ]

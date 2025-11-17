@@ -249,12 +249,56 @@ Examples:
     print(f"  {layer_path}")
     print()
     
-    # TODO: Generate switcher keys
-    # TODO: Generate layer keys
+    # Generate switcher keys in main profile
+    print("Generating switcher keys in main profile...")
+    for key_num in switcher_keys:
+        # Press: Hold modifier and switch to layer
+        press_file = main_path / f"key{key_num}.txt"
+        with open(press_file, 'w') as f:
+            f.write(generate_switcher_press(args.modifier, layer_name))
+        
+        # Release: Release modifier (returns to main automatically)
+        release_file = main_path / f"key{key_num}-release.txt"
+        with open(release_file, 'w') as f:
+            f.write(generate_switcher_release(args.modifier, args.main_profile))
+        
+        print(f"  ✓ Key {key_num} (switcher)")
+    
+    # Generate return switchers in layer profile
+    print("\nGenerating return switchers in layer profile...")
+    for key_num in switcher_keys:
+        # Press: Keep modifier held
+        press_file = layer_path / f"key{key_num}.txt"
+        with open(press_file, 'w') as f:
+            f.write(f"DEFAULTDELAY 0\nKEYDOWN {args.modifier}\n")
+        
+        # Release: Release modifier and return to main
+        release_file = layer_path / f"key{key_num}-release.txt"
+        with open(release_file, 'w') as f:
+            f.write(f"DEFAULTDELAY 0\nKEYUP {args.modifier}\nGOTO_PROFILE {args.main_profile}\n")
+        
+        print(f"  ✓ Key {key_num} (return switcher)")
+    
+    # Generate simple keys in layer profile
+    print("\nGenerating layer keys...")
+    for key_num in layer_keys:
+        # Skip if this is also a switcher
+        if key_num in switcher_keys:
+            continue
+        
+        # Simple key press (will combine with held modifier)
+        press_file = layer_path / f"key{key_num}.txt"
+        # TODO: Get actual key mapping from args.key_mapping or use default
+        key_name = f"KEY{key_num}"  # Placeholder
+        with open(press_file, 'w') as f:
+            f.write(generate_simple_key(key_name))
+        
+        print(f"  ✓ Key {key_num} (layer key)")
+    
     # TODO: Generate config files
     # TODO: Generate README files
     
-    print("✓ Profile generation complete!")
+    print("\n✓ Profile generation complete!")
     return 0
 
 
