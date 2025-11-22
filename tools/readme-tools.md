@@ -1,109 +1,168 @@
-# helpers
+# tools
 
-This directory contains helper scripts, tools, and utilities to support duckyPad Pro usage.
+Development tools for duckyPad Pro profile creation, compilation, and deployment.
 
-## Supported Languages
+## Core Tools
 
-- **Python**: Data processing, automation, converters, compilation tools
-- **JavaScript/Node.js**: Web-based tools, generators (if needed)
-- **Bash/Shell**: System utilities (if needed)
+### compile.py
 
-## Organization
+Compiles duckyScript source files (`.txt`) to bytecode (`.dsb`) for duckyPad Pro.
 
-Helper scripts should be organized by purpose:
+**Features:**
 
-```
-helpers/
-├── compilers/        # duckyScript compilation tools
-├── converters/       # Format conversion utilities
-├── generators/       # Script/profile generators
-├── validators/       # Validation tools
-└── utilities/        # General utility scripts
-```
+- Auto-downloads compiler dependencies from GitHub
+- Compiles all profiles or specific profile
+- Automatic GOTO_PROFILE name-to-index resolution
+- Verbose output for debugging
 
-## duckyScript Compilation
-
-### Overview
-
-duckyScript 3 files (`.txt`) must be compiled to bytecode (`.dsb`) before they can be executed on duckyPad Pro. The compilation process converts human-readable scripts into optimized 3-byte instruction sequences for the duckyPad Pro virtual machine.
-
-### Quick Start
+**Usage:**
 
 ```bash
 # Compile all profiles
-python helpers/compilers/compile_duckyscript.py
+python tools/compile.py
 
-# Compile a specific profile
-python helpers/compilers/compile_duckyscript.py -p profiles/example-productivity
+# Compile specific profile
+python tools/compile.py -p profiles/example-productivity
 
 # Verbose output
-python helpers/compilers/compile_duckyscript.py -v
+python tools/compile.py -v
+
+# Disable profile name resolution
+python tools/compile.py --no-resolve-profiles
 ```
+
+### deploy.py
+
+Deploys profiles to duckyPad Pro SD card with automatic backup and profile_info.txt management.
+
+**Features:**
+
+- Automatic SD card detection (Windows/macOS/Linux)
+- Backs up SD card before deployment (excludes .dsb files)
+- Renames profiles to profileN_Name format
+- Updates profile_info.txt preserving existing order
+
+**Usage:**
+
+```bash
+# Deploy single profile
+python tools/deploy.py profiles/my-profile
+
+# Deploy multiple profiles
+python tools/deploy.py profiles/profile1 profiles/profile2
+
+# Verbose output
+python tools/deploy.py profiles/my-profile -v
+
+# Skip confirmation
+python tools/deploy.py profiles/my-profile -f
+```
+
+### generate_profile.py
+
+Creates new profile structure from template.
+
+**Features:**
+
+- Generates config.txt with default settings
+- Creates keyN.txt files with comments
+- Includes helpful rotary encoder key descriptions
+- Supports 1-26 keys
+
+**Usage:**
+
+```bash
+# Create profile with 20 keys
+python tools/generate_profile.py discord-tools 20
+
+# Create profile with all 26 keys (includes rotary encoders)
+python tools/generate_profile.py photo-editing 26
+```
+
+### convert_text.py
+
+Converts plain text to duckyScript STRING commands.
+
+**Usage:**
+
+```bash
+python tools/convert_text.py input.txt output.txt
+```
+
+## Directory Structure
+
+```
+tools/
+├── compile.py              # duckyScript compiler
+├── deploy.py               # Profile deployment manager
+├── generate_profile.py     # Profile template generator
+├── convert_text.py         # Text to duckyScript converter
+├── vendor/                 # Auto-downloaded compiler dependencies (gitignored)
+└── shared/                 # Shared library code
+    ├── __init__.py
+    ├── profile_info_manager.py  # SD card and profile_info.txt handling
+    ├── profile_loader.py        # Profile loading utilities
+    └── key_layout.py            # Key layout constants and helpers
+```
+
+## Compilation Details
+
+### Overview
+
+duckyScript 3 files (`.txt`) must be compiled to bytecode (`.dsb`) before execution on duckyPad Pro. The compilation converts human-readable scripts into optimized 3-byte instruction sequences for the duckyPad Pro virtual machine.
 
 ### How It Works
 
-1. **Auto-fetch Compiler**: `compile_duckyscript.py` automatically downloads the latest `make_bytecode.py` from [duckyPad-Pro-Configurator releases](https://github.com/dekuNukem/duckyPad-Pro-Configurator/releases)
-
-2. **Compile Scripts**: Finds all `.txt` files in the specified path (or all profiles) and compiles them to `.dsb` bytecode
-
-3. **Validate Results**: Use verbose mode (`-v`) to see detailed compilation status for each file
+1. **Auto-fetch Compiler**: Downloads latest compiler from [duckyPad-Configurator releases](https://github.com/duckyPad/duckyPad-Configurator/releases)
+2. **Compile Scripts**: Processes all `.txt` files matching `key\d+(-release)?\.txt` pattern
+3. **Name Resolution**: Automatically converts `GOTO_PROFILE ProfileName` to numeric indices
+4. **Generate Bytecode**: Creates `.dsb` files in same directory as source files
 
 ### Requirements
 
-- **Python 3**: Required to run `make_bytecode.py`
-- **Internet Connection**: Needed for initial compiler download
-
-### Common Compilation Errors
-
-| Error                      | Cause                                 | Solution                                        |
-| -------------------------- | ------------------------------------- | ----------------------------------------------- |
-| `Python not found`         | Python 3 not installed or not in PATH | Install Python 3 and add to system PATH         |
-| `Syntax error in line X`   | Invalid duckyScript syntax            | Check script syntax at the specified line       |
-| `Undefined variable $name` | Variable used before declaration      | Declare variable with `VAR $name = value` first |
-| `Unknown command`          | Unsupported duckyScript command       | Verify command is supported in duckyScript 3    |
-| `Missing ENDIF/ENDWHILE`   | Unclosed control structure            | Add matching `ENDIF` or `ENDWHILE`              |
-
-### Troubleshooting
-
-**Compilation fails for all files:**
-
-- Ensure Python 3 is installed: `python --version`
-- Check internet connection for compiler download
-- Verify `make_bytecode.py` downloaded correctly
-
-**Some files fail to compile:**
-
-- Run with `-v` flag to see detailed error messages
-- Check duckyScript syntax in failing `.txt` files
-- Verify all variables are declared before use
-
-**`.dsb` files are outdated:**
-
-- Run `compile_duckyscript.py` to recompile
-- `.dsb` files are automatically overwritten with latest compilation
+- **Python 3**: Required to run compiler
+- **Internet**: Needed for initial compiler download (cached in `tools/vendor/`)
 
 ### Bytecode Format
 
 Compiled `.dsb` files contain:
 
-- **3-byte instructions**: Fixed-length opcodes for the duckyPad Pro VM
-- **String table**: Zero-terminated strings stored at end of binary
-- **Variables**: Up to 64 variables stored in VM memory
+- **3-byte instructions**: Fixed-length opcodes for duckyPad Pro VM
+- **String table**: Zero-terminated strings at end of binary
+- **Variables**: Up to 64 variables in VM memory
 
-For more details, see the [duckyScript Bytecode VM Documentation](https://dekunukem.github.io/duckyPad-Pro/doc/bytecode_vm.html).
+See [duckyScript Bytecode VM Documentation](https://dekunukem.github.io/duckyPad-Pro/doc/bytecode_vm.html) for details.
 
-## Requirements
+## Common Issues
 
-Each helper script should include:
+### Compilation Errors
 
-- A README explaining its purpose and usage
-- Required dependencies (requirements.txt, package.json, etc.)
-- Example usage
-- Installation instructions if needed
+| Error                      | Cause                                 | Solution                                        |
+| -------------------------- | ------------------------------------- | ----------------------------------------------- |
+| `Python not found`         | Python 3 not installed or not in PATH | Install Python 3 and add to system PATH         |
+| `Syntax error in line X`   | Invalid duckyScript syntax            | Check script syntax at specified line           |
+| `Undefined variable $name` | Variable used before declaration      | Declare variable with `VAR $name = value` first |
+| `Unknown command`          | Unsupported duckyScript command       | Verify command is supported in duckyScript 3    |
+| `Missing ENDIF/ENDWHILE`   | Unclosed control structure            | Add matching `ENDIF` or `ENDWHILE`              |
 
-## Examples
+### Deployment Issues
 
-- Profile generators to create profiles from templates
-- Converters to transform data into duckyScript format
-- Validators to check duckyScript syntax
-- Backup/restore utilities for duckyPad Pro configurations
+| Issue                        | Cause                    | Solution                                   |
+| ---------------------------- | ------------------------ | ------------------------------------------ |
+| `SD card not detected`       | Card not inserted        | Insert duckyPad SD card and retry          |
+| `Profile already exists`     | Duplicate profile number | Choose different number or use -f to force |
+| `Permission denied`          | SD card write-protected  | Remove write protection                    |
+| `profile_info.txt corrupted` | Manual edit error        | Restore from backup or recreate manually   |
+
+## Git Ignore
+
+The following are automatically gitignored:
+
+- `tools/vendor/` - Auto-downloaded compiler dependencies
+- `*.dsb` - Compiled bytecode files (regenerated from .txt sources)
+
+## Related Documentation
+
+- [duckyScript Language Reference](https://dekunukem.github.io/duckyPad-Pro/doc/duckyscript_info.html)
+- [duckyPad Pro User Guide](https://dekunukem.github.io/duckyPad-Pro/doc/getting_started.html)
+- [Bytecode VM Documentation](https://dekunukem.github.io/duckyPad-Pro/doc/bytecode_vm.html)
