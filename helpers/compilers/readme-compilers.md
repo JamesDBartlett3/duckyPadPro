@@ -1,37 +1,41 @@
-# duckyScript Compilers
+# compilers
 
 Tools for compiling duckyScript 3 text files (`.txt`) to bytecode executables (`.dsb`).
 
 ## Scripts
 
-### Invoke-DuckyScriptCompiler.ps1
+### compile_duckyscript.py
 
-Main compilation script that compiles duckyScript files to bytecode.
+Compiler for duckyScript `.txt` source files to `.dsb` bytecode.
 
 **Features:**
 
-- Automatically fetches latest `make_bytecode.py` from GitHub
-- Compiles all `.txt` files in profile directories
-- Always overwrites existing `.dsb` files
-- Detailed compilation statistics and error reporting
+- Auto-downloads compiler dependencies from GitHub
+- Compiles single profiles or entire directories
+- Colored output for easy error identification
+- Verbose mode for detailed compilation info
+- Cross-platform compatible (Windows/macOS/Linux)
 
 **Usage:**
 
-```powershell
-# Compile all profiles in the repository
-.\Invoke-DuckyScriptCompiler.ps1
+```bash
+# Compile all profiles in profiles/
+python helpers/compilers/compile_duckyscript.py
 
-# Compile a specific profile directory
-.\Invoke-DuckyScriptCompiler.ps1 -ProfilePath ..\..\profiles\example-productivity
+# Compile specific profile
+python helpers/compilers/compile_duckyscript.py -p profiles/games/astroneer
 
-# Enable verbose output to see compilation details
-.\Invoke-DuckyScriptCompiler.ps1 -Verbose
+# Compile multiple profiles
+python helpers/compilers/compile_duckyscript.py -p workbench/my_profiles
+
+# Verbose output
+python helpers/compilers/compile_duckyscript.py -p test_profile -v
 ```
 
 **Parameters:**
 
-- `-ProfilePath` (optional): Path to specific profile directory. If omitted, compiles all profiles.
-- `-Verbose` (optional): Show detailed compilation output for each file.
+- `-p, --profile-path` (optional): Path to specific profile directory or profiles directory (default: profiles/)
+- `-v, --verbose` (optional): Enable verbose output
 
 **Output:**
 
@@ -41,37 +45,11 @@ Main compilation script that compiles duckyScript files to bytecode.
 
 ---
 
-### Test-DuckyScriptCompilation.ps1
+## Validation
 
-Validation script that checks compiled bytecode files.
+To validate compiled bytecode files, use the compilation script with verbose mode to see detailed output for each file.
 
-**Features:**
-
-- Verifies all `.txt` files have corresponding `.dsb` files
-- Checks bytecode file validity (size, format)
-- Detects outdated compilations (`.txt` newer than `.dsb`)
-- Detailed issue reporting
-
-**Usage:**
-
-```powershell
-# Validate all profiles
-.\Test-DuckyScriptCompilation.ps1
-
-# Validate a specific profile
-.\Test-DuckyScriptCompilation.ps1 -ProfilePath ..\..\profiles\example-productivity
-```
-
-**Parameters:**
-
-- `-ProfilePath` (optional): Path to specific profile directory. If omitted, validates all profiles.
-
-**Validation Checks:**
-
-- ✓ `.dsb` file exists for each `.txt` file
-- ✓ `.dsb` file is not empty
-- ✓ `.dsb` file size is valid (≥ 3 bytes)
-- ✓ `.dsb` is newer than or same age as `.txt`
+---
 
 ---
 
@@ -79,14 +57,15 @@ Validation script that checks compiled bytecode files.
 
 ### Initial Setup
 
-1. Ensure Python 3 is installed
-2. Run `Invoke-DuckyScriptCompiler.ps1` to download compiler and compile all scripts
+1. Ensure Python 3.7+ is installed
+2. Run `compile_duckyscript.py` to download compiler and compile all scripts
 
 ### During Development
 
 1. Edit `.txt` duckyScript files
-2. Run `Invoke-DuckyScriptCompiler.ps1` to recompile
-3. Run `Test-DuckyScriptCompilation.ps1` to validate
+2. Run `compile_duckyscript.py` to recompile
+3. Use verbose mode (`-v`) to see detailed compilation results
+4. Use verbose mode (`-v`) to see detailed compilation results
 
 ### Pre-Deployment
 

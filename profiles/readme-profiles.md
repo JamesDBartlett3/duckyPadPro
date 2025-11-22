@@ -446,7 +446,7 @@ keys:
 
 2. **Generate duckyScript files:**
 
-   ```powershell
+   ```bash
    python helpers/generators/yaml_to_profile.py profiles/my-game.yaml --output output/
    ```
 
@@ -458,7 +458,7 @@ keys:
 
 For simple profiles without layers:
 
-```powershell
+```bash
 python helpers/generators/profile_generator.py my-profile 20
 ```
 
@@ -505,7 +505,7 @@ profile10_PhotoEditing
 
 1. **Generate profile from YAML:**
 
-   ```powershell
+   ```bash
    python helpers/generators/yaml_to_profile.py profiles/foxhole.yaml --output deploy/
    ```
 

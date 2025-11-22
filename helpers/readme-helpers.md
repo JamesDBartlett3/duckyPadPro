@@ -1,14 +1,12 @@
-# Helpers
+# helpers
 
-This directory contains helper scripts, tools, and utilities written in various programming languages to support duckyPad Pro usage.
+This directory contains helper scripts, tools, and utilities to support duckyPad Pro usage.
 
 ## Supported Languages
 
-- **Python**: Data processing, automation, converters
-- **JavaScript/Node.js**: Web-based tools, generators
-- **PowerShell**: Windows automation, compilation tools
-- **Bash/Shell**: System utilities, batch operations
-- **Other**: Any language that helps with duckyPad Pro workflows
+- **Python**: Data processing, automation, converters, compilation tools
+- **JavaScript/Node.js**: Web-based tools, generators (if needed)
+- **Bash/Shell**: System utilities (if needed)
 
 ## Organization
 
@@ -31,30 +29,24 @@ duckyScript 3 files (`.txt`) must be compiled to bytecode (`.dsb`) before they c
 
 ### Quick Start
 
-```powershell
+```bash
 # Compile all profiles
-.\helpers\compilers\Invoke-DuckyScriptCompiler.ps1
+python helpers/compilers/compile_duckyscript.py
 
 # Compile a specific profile
-.\helpers\compilers\Invoke-DuckyScriptCompiler.ps1 -ProfilePath .\profiles\example-productivity
+python helpers/compilers/compile_duckyscript.py -p profiles/example-productivity
 
-# Validate all compilations
-.\helpers\compilers\Test-DuckyScriptCompilation.ps1
-
-# Enable verbose output
-.\helpers\compilers\Invoke-DuckyScriptCompiler.ps1 -Verbose
+# Verbose output
+python helpers/compilers/compile_duckyscript.py -v
 ```
 
 ### How It Works
 
-1. **Auto-fetch Compiler**: `Invoke-DuckyScriptCompiler.ps1` automatically downloads the latest `make_bytecode.py` from [duckyPad-Pro-Configurator releases](https://github.com/dekuNukem/duckyPad-Pro-Configurator/releases)
+1. **Auto-fetch Compiler**: `compile_duckyscript.py` automatically downloads the latest `make_bytecode.py` from [duckyPad-Pro-Configurator releases](https://github.com/dekuNukem/duckyPad-Pro-Configurator/releases)
 
 2. **Compile Scripts**: Finds all `.txt` files in the specified path (or all profiles) and compiles them to `.dsb` bytecode
 
-3. **Validate Results**: `Test-DuckyScriptCompilation.ps1` checks that:
-   - All `.txt` files have corresponding `.dsb` files
-   - Bytecode files are valid (correct size, not empty)
-   - `.dsb` files are up-to-date with their `.txt` sources
+3. **Validate Results**: Use verbose mode (`-v`) to see detailed compilation status for each file
 
 ### Requirements
 
@@ -81,13 +73,13 @@ duckyScript 3 files (`.txt`) must be compiled to bytecode (`.dsb`) before they c
 
 **Some files fail to compile:**
 
-- Run with `-Verbose` flag to see detailed error messages
+- Run with `-v` flag to see detailed error messages
 - Check duckyScript syntax in failing `.txt` files
 - Verify all variables are declared before use
 
 **`.dsb` files are outdated:**
 
-- Run `Invoke-DuckyScriptCompiler.ps1` to recompile
+- Run `compile_duckyscript.py` to recompile
 - `.dsb` files are automatically overwritten with latest compilation
 
 ### Bytecode Format
