@@ -70,6 +70,20 @@ duckyPadPro/
 
 ## Terminal Commands
 
+### PowerShell Syntax (Windows)
+
+- **CRITICAL**: Use PowerShell syntax, NOT bash/shell redirection
+- **File operations**: Use cmdlets like `Copy-Item`, `Remove-Item`, `Get-Content`, `Set-Content`
+- **NEVER use bash redirects**: `>`, `>>`, `<` are NOT valid in PowerShell commands
+- **Piping**: Use PowerShell pipeline `|` with cmdlets, not bash-style redirection
+- **Examples**:
+  - ✓ Correct: `Get-Content file.txt | Select-Object -First 10`
+  - ✓ Correct: `Set-Content -Path file.txt -Value "content"`
+  - ✗ Wrong: `cat file.txt | head -10` (bash syntax)
+  - ✗ Wrong: `echo "content" > file.txt` (bash redirection)
+
+### General Guidelines
+
 - **Always** use proper terminal syntax for the active shell
 - When running Python scripts, use `python` command
 - Use forward slashes or backslashes appropriately for the OS
