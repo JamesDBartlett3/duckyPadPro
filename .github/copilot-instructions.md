@@ -52,14 +52,17 @@ duckyPadPro/
 ├── profiles/                       # Complete profile packages
 │   ├── example-productivity/
 │   ├── sample_profiles/            # Auto-downloaded samples (gitignored)
-│   ├── generate_readme_files.py    # Auto-generate readme files
-│   └── get_sample_profiles.py      # Download official samples
+│   └── generate_readme_files.py    # Auto-generate readme files
 ├── scripts/                        # Standalone duckyScript files
 │   ├── development/
 │   ├── media/
 │   ├── productivity/
 │   └── system/
 ├── settings/                       # Device configuration files
+├── tests/                          # Test and validation scripts
+│   ├── get_sample_profiles.py      # Download official samples
+│   ├── test_profile_manager.py     # Test profile name mapping
+│   └── validate_compilation.py     # Validate .txt → .dsb conversions
 ├── CONTRIBUTING.md
 ├── LICENSE
 └── README.md
@@ -334,10 +337,10 @@ python helpers/compilers/compile_duckyscript.py -p profiles/discord-tools
 
 ```bash
 # Get official sample profiles
-python profiles/get_sample_profiles.py
+python tests/get_sample_profiles.py
 
 # Re-download (overwrite existing)
-python profiles/get_sample_profiles.py -f
+python tests/get_sample_profiles.py -f
 ```
 
 ### Auto-generating READMEs
@@ -390,7 +393,7 @@ REM Platform: Windows/macOS/Linux
 ### Before Committing
 
 1. **Compile**: Ensure all .txt files compile without errors
-2. **Validate**: Run `Test-DuckyScriptCompilation.ps1`
+2. **Validate**: Run `python tests/validate_compilation.py`
 3. **Verify**: Check git status doesn't include .dsb files or vendor/
 4. **Document**: Ensure README files are up to date
 5. **Test**: Try scripts on actual hardware if possible
@@ -401,8 +404,11 @@ REM Platform: Windows/macOS/Linux
 # Compile all profiles
 python helpers/compilers/compile_duckyscript.py
 
-# Compile and validate specific profile
-python helpers/compilers/compile_duckyscript.py -p profiles/my-profile -v
+# Validate all compilations
+python tests/validate_compilation.py
+
+# Validate specific profile
+python tests/validate_compilation.py -p profiles/my-profile -v
 ```
 
 ## Helper Script Downloads
@@ -411,7 +417,7 @@ python helpers/compilers/compile_duckyscript.py -p profiles/my-profile -v
 
 - **Source**: `https://github.com/dekuNukem/duckyPad-Pro/raw/master/resources/sample_profiles/sample_profiles.zip`
 - **Destination**: `profiles/sample_profiles/`
-- **Script**: `get_sample_profiles.py`
+- **Script**: `tests/get_sample_profiles.py`
 - **Gitignored**: Yes
 
 ### Compiler Dependencies
