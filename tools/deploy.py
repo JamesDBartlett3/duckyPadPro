@@ -163,6 +163,10 @@ class ProfileDeployer:
     def update_profile_info(self, sd_card_path: Path) -> bool:
         """Update profile_info.txt with all profiles on SD card
         
+        Automatically reads existing profile_info.txt from SD card, scans for all
+        profile directories, and updates the file with all profiles (preserving
+        existing profile numbers and adding new profiles at the end).
+        
         Args:
             sd_card_path: Path to SD card
             
@@ -384,6 +388,10 @@ def deploy(source_profiles: List[Path], backup_path: Optional[Path] = None, verb
         
     Returns:
         Exit code (0 = success, 1 = failure)
+    
+    Note:
+        The function automatically reads profile_info.txt from the SD card, scans for
+        all profiles, and updates the file with all profiles on the card.
     """
     deployer = ProfileDeployer(verbose=verbose, force=force)
     return deployer.run(source_profiles=source_profiles, backup_path=backup_path)

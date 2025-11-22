@@ -4,17 +4,17 @@ duckyPad Pro Orchestrator
 Complete workflow: generate → compile → deploy profiles
 
 Usage examples:
-    # Full workflow: generate, compile, and deploy
-    python duckypad.py new discord-tools 20
+    # Full YAML workflow: generate, compile, and deploy
+    python duckypad.py yaml workbench/my-profile.yaml -f
     
-    # Generate only
-    python duckypad.py new discord-tools 20 --generate-only
+    # Generate from YAML only
+    python duckypad.py yaml workbench/my-profile.yaml --generate-only
     
     # Compile existing profiles
-    python duckypad.py compile profiles/my-profile
+    python duckypad.py compile workbench/profiles/my-profile
     
     # Deploy existing profiles
-    python duckypad.py deploy profiles/my-profile
+    python duckypad.py deploy workbench/profiles/my-profile
 """
 
 import argparse
@@ -26,7 +26,7 @@ from typing import List, Optional
 sys.path.insert(0, str(Path(__file__).parent))
 
 # Import tool functions
-from generate_profile import generate_profile
+from generate_profile_from_yaml import YAMLToProfileConverter
 from compile import compile as compile_profiles
 from deploy import deploy as deploy_profiles
 
@@ -54,46 +54,59 @@ def print_header(message: str):
     print("=" * 60)
 
 
-def cmd_new(args):
-    """Create new profile, compile, and optionally deploy"""
-    profile_name = args.profile_name
-    num_keys = args.num_keys
-    output_dir = args.output or Path("profiles")
+def cmd_yaml(args):
+    """Generate profiles from YAML, compile, and optionally deploy"""
+    yaml_path = args.yaml_file
     
-    # Step 1: Generate profile
-    print_header(f"Step 1: Generating profile '{profile_name}'")
+    if not yaml_path.exists():
+        print_color(f"✗ YAML file not found: {yaml_path}", Colors.RED)
+        return 1
+    
+    # Step 1: Generate profiles from YAML
+    print_header(f"Step 1: Generating profiles from '{yaml_path.name}'")
     try:
-        profile_path = generate_profile(profile_name, num_keys, output_dir)
-        print_color(f"✓ Profile generated: {profile_path}", Colors.GREEN)
+        converter = YAMLToProfileConverter(yaml_path, verbose=args.verbose)
+        profile_paths = converter.convert()
+        
+        print_color(f"✓ Generated {len(profile_paths)} profile(s):", Colors.GREEN)
+        for path in profile_paths:
+            print_color(f"  • {path}", Colors.CYAN)
     except Exception as e:
         print_color(f"✗ Generation failed: {e}", Colors.RED)
+        if args.verbose:
+            import traceback
+            traceback.print_exc()
         return 1
     
     if args.generate_only:
         print_color("\n✓ Generation complete (--generate-only flag set)", Colors.GREEN)
         return 0
     
-    # Step 2: Compile profile
-    print_header(f"Step 2: Compiling profile '{profile_name}'")
-    exit_code = compile_profiles(
-        profile_path=profile_path,
-        verbose=args.verbose,
-        resolve_profiles=not args.no_resolve_profiles
-    )
+    # Step 2: Compile all generated profiles
+    print_header(f"Step 2: Compiling {len(profile_paths)} profile(s)")
     
-    if exit_code != 0:
-        print_color("\n✗ Compilation failed", Colors.RED)
-        return exit_code
+    for profile_path in profile_paths:
+        print_color(f"\nCompiling: {profile_path.name}", Colors.CYAN)
+        exit_code = compile_profiles(
+            profile_path=profile_path,
+            verbose=args.verbose,
+            resolve_profiles=not args.no_resolve_profiles
+        )
+        
+        if exit_code != 0:
+            print_color(f"\n✗ Compilation failed for {profile_path.name}", Colors.RED)
+            return exit_code
     
     if args.compile_only:
         print_color("\n✓ Compilation complete (--compile-only flag set)", Colors.GREEN)
         return 0
     
-    # Step 3: Deploy profile
+    # Step 3: Deploy all profiles and update profile_info.txt
     if not args.skip_deploy:
-        print_header(f"Step 3: Deploying profile '{profile_name}'")
+        print_header(f"Step 3: Deploying {len(profile_paths)} profile(s)")
+        
         exit_code = deploy_profiles(
-            source_profiles=[profile_path],
+            source_profiles=profile_paths,
             backup_path=args.backup_path,
             verbose=args.verbose,
             force=args.force
@@ -104,7 +117,7 @@ def cmd_new(args):
             return exit_code
     
     print_header("✓ All steps complete!")
-    print_color(f"Profile '{profile_name}' is ready on your duckyPad Pro", Colors.GREEN)
+    print_color(f"YAML workflow complete: {len(profile_paths)} profile(s) ready", Colors.GREEN)
     return 0
 
 
@@ -136,38 +149,33 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Create, compile, and deploy new profile
-  python duckypad.py new discord-tools 20
+  # Generate, compile, and deploy from YAML
+  python duckypad.py yaml workbench/layer_type_test.yaml -f
   
-  # Create and compile only (skip deployment)
-  python duckypad.py new discord-tools 20 --skip-deploy
-  
-  # Create only (no compilation or deployment)
-  python duckypad.py new discord-tools 20 --generate-only
+  # Generate from YAML only (no compile/deploy)
+  python duckypad.py yaml workbench/layer_type_test.yaml --generate-only
   
   # Compile existing profiles
-  python duckypad.py compile profiles/my-profile
+  python duckypad.py compile workbench/profiles/my-profile
   
   # Deploy existing profiles
-  python duckypad.py deploy profiles/profile1 profiles/profile2
+  python duckypad.py deploy workbench/profiles/profile1 workbench/profiles/profile2
         """
     )
     
     subparsers = parser.add_subparsers(dest="command", help="Command to run")
     
-    # 'new' command - create new profile
-    new_parser = subparsers.add_parser("new", help="Create new profile")
-    new_parser.add_argument("profile_name", help="Profile name")
-    new_parser.add_argument("num_keys", type=int, help="Number of keys (1-26)")
-    new_parser.add_argument("-o", "--output", type=Path, help="Output directory (default: profiles/)")
-    new_parser.add_argument("--generate-only", action="store_true", help="Only generate, skip compile and deploy")
-    new_parser.add_argument("--compile-only", action="store_true", help="Generate and compile, skip deploy")
-    new_parser.add_argument("--skip-deploy", action="store_true", help="Skip deployment step")
-    new_parser.add_argument("--no-resolve-profiles", action="store_true", help="Disable GOTO_PROFILE name resolution")
-    new_parser.add_argument("-b", "--backup-path", type=Path, help="Custom backup location")
-    new_parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
-    new_parser.add_argument("-f", "--force", action="store_true", help="Skip confirmation prompts")
-    new_parser.set_defaults(func=cmd_new)
+    # 'yaml' command - generate from YAML template
+    yaml_parser = subparsers.add_parser("yaml", help="Generate profiles from YAML template")
+    yaml_parser.add_argument("yaml_file", type=Path, help="YAML template file")
+    yaml_parser.add_argument("--generate-only", action="store_true", help="Only generate, skip compile and deploy")
+    yaml_parser.add_argument("--compile-only", action="store_true", help="Generate and compile, skip deploy")
+    yaml_parser.add_argument("--skip-deploy", action="store_true", help="Skip deployment step")
+    yaml_parser.add_argument("--no-resolve-profiles", action="store_true", help="Disable GOTO_PROFILE name resolution")
+    yaml_parser.add_argument("-b", "--backup-path", type=Path, help="Custom backup location")
+    yaml_parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
+    yaml_parser.add_argument("-f", "--force", action="store_true", help="Skip confirmation prompts")
+    yaml_parser.set_defaults(func=cmd_yaml)
     
     # 'compile' command - compile existing profiles
     compile_parser = subparsers.add_parser("compile", help="Compile existing profiles")

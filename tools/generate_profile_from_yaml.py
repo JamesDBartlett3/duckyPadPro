@@ -61,9 +61,9 @@ class YAMLToProfileConverter:
         
         # Determine output directory
         if self.output_dir is None:
-            # Default: workbench/profiles/<profile-name> (sanitized)
-            sanitized_name = self._sanitize_folder_name(profile_name)
-            self.output_dir = Path(__file__).parent.parent / "workbench" / "profiles" / sanitized_name
+            # Default: workbench/profiles/<profile-name> (validated)
+            validated_name = self._validate_folder_name(profile_name)
+            self.output_dir = Path(__file__).parent.parent / "workbench" / "profiles" / validated_name
         
         created_profiles = []
         
@@ -92,9 +92,9 @@ class YAMLToProfileConverter:
             
             layer_keys = self.loader.get_layer_keys(layer_id)
             
-            # Sanitize layer name for folder
-            sanitized_layer_name = self._sanitize_folder_name(layer_name)
-            layer_output_dir = Path(__file__).parent.parent / "workbench" / "profiles" / sanitized_layer_name
+            # Validate layer name for folder
+            validated_layer_name = self._validate_folder_name(layer_name)
+            layer_output_dir = Path(__file__).parent.parent / "workbench" / "profiles" / validated_layer_name
             
             layer_profile_dir = self._generate_profile(
                 layer_name,
@@ -568,23 +568,31 @@ class YAMLToProfileConverter:
         else:
             return f'`{key}`'
     
-    def _sanitize_folder_name(self, name: str) -> str:
+    def _validate_folder_name(self, name: str) -> str:
         """
-        Sanitize profile name for use as folder name.
+        Validate profile name for use as folder name.
+        Profile names must not contain invalid filesystem characters.
         
         Args:
             name: Profile name
             
         Returns:
-            Sanitized folder name
+            Profile name unchanged if valid
+            
+        Raises:
+            ValueError: If profile name contains invalid filesystem characters
         """
-        # Replace spaces with hyphens, convert to lowercase
-        sanitized = name.lower().replace(' ', '-')
+        # Windows/Linux/macOS invalid chars: < > : " / \ | ? *
+        invalid_chars = '<>:"/\\|?*'
+        found_invalid = [c for c in name if c in invalid_chars]
         
-        # Remove invalid characters
-        sanitized = ''.join(c for c in sanitized if c.isalnum() or c in '-_')
+        if found_invalid:
+            raise ValueError(
+                f"Profile name '{name}' contains invalid filesystem characters: {', '.join(repr(c) for c in found_invalid)}\n"
+                f"Please rename the profile in your YAML file to remove these characters."
+            )
         
-        return sanitized
+        return name
 
 
 def main():

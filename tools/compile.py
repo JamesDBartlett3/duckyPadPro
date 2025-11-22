@@ -433,6 +433,10 @@ def compile(profile_path: Optional[Path] = None, verbose: bool = False, resolve_
         
     Returns:
         Exit code (0 = success, 1 = failure)
+    
+    Note:
+        If resolve_profiles is True, the compiler will automatically read profile_info.txt
+        from the SD card to resolve GOTO_PROFILE name references.
     """
     compiler = DuckyScriptCompiler(verbose=verbose, resolve_profiles=resolve_profiles)
     return compiler.run(profile_path=profile_path)

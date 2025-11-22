@@ -306,9 +306,18 @@ class ProfileLoader:
             
             # Process each extends source
             for extend_source in extends_list:
-                # Determine source keys
+                # Determine source keys and config
                 if extend_source == 'parent':
                     source_keys = self.profile.get('keys', {})
+                    # Inherit parent config if not explicitly set in layer
+                    if 'config' not in layer:
+                        layer['config'] = {}
+                    parent_config = self.profile.get('config', {})
+                    # Merge parent config with layer config (layer config takes precedence)
+                    import copy
+                    merged_config = copy.deepcopy(parent_config)
+                    merged_config.update(layer.get('config', {}))
+                    layer['config'] = merged_config
                 elif extend_source in self.templates:
                     # Extending a template
                     source_keys = self.templates[extend_source]
