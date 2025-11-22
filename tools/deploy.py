@@ -11,9 +11,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
-# Add shared directory to path
-sys.path.insert(0, str(Path(__file__).parent.parent / "shared"))
-from profile_info_manager import ProfileInfoManager
+# Add shared directory to path for imports
+sys.path.insert(0, str(Path(__file__).parent))
+from shared.profile_info_manager import ProfileInfoManager
 
 
 class DeploymentStats:

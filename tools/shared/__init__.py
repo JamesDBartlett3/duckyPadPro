@@ -31,6 +31,10 @@ from .profile_loader import (
     load_profile,
 )
 
+from .profile_info_manager import (
+    ProfileInfoManager,
+)
+
 __all__ = [
     'PHYSICAL_KEYS',
     'TOTAL_KEYS',
@@ -53,4 +57,5 @@ __all__ = [
     'get_landscape_position',
     'ProfileLoader',
     'load_profile',
+    'ProfileInfoManager',
 ]

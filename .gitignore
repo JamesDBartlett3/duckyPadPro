@@ -53,7 +53,7 @@ yarn-error.log
 *.log
 
 # Compiler dependencies (auto-downloaded)
-helpers/compilers/vendor/
+tools/vendor/
 
 # Sample profiles (auto-downloaded)
 profiles/sample_profiles/
