@@ -44,7 +44,7 @@ duckyPadPro/
 ├── tools/                          # Development tools
 │   ├── compile.py                  # Compile duckyScript to bytecode
 │   ├── deploy.py                   # Deploy profiles to SD card
-│   ├── generate_profile.py         # Generate new profile templates
+│   ├── generate_profile_from_yaml.py  # Generate profiles from YAML (ONLY YAML reader)
 │   ├── convert_text.py             # Convert text to duckyScript
 │   ├── vendor/                     # Auto-downloaded compiler dependencies (gitignored)
 │   └── shared/                     # Shared library code
@@ -55,6 +55,10 @@ duckyPadPro/
 │   ├── example-productivity/
 │   ├── sample_profiles/            # Auto-downloaded samples (gitignored)
 │   └── generate_readme_files.py    # Auto-generate readme files
+├── workbench/                      # YAML profile templates (input files)
+│   ├── foxhole.yaml
+│   ├── test_profile.yaml
+│   └── layer_type_test.yaml
 ├── scripts/                        # Standalone duckyScript files
 │   ├── development/
 │   ├── media/
@@ -334,18 +338,56 @@ python profile_generator.py photo-editing 15
 
 ## Common Patterns
 
-### Creating New Profiles
+### YAML Workflow (Recommended)
+
+The recommended workflow uses YAML templates for profile creation. YAML files support advanced features like template inheritance, layers, and reusable components.
 
 ```bash
-# Generate structure with descriptive name
-python tools/generate_profile.py discord-tools 20
+# Create YAML profile template in workbench/
+# Example: workbench/my-game.yaml
 
-# Edit key files and config.txt
-# Compile if needed
-python tools/compile.py -p profiles/discord-tools
+# Generate duckyScript profile from YAML
+python tools/generate_profile_from_yaml.py workbench/my-game.yaml
+
+# This creates profiles in workbench/profiles/ directory automatically
+# For profiles with layers, multiple profile folders are created
+
+# Compile generated profiles
+python tools/compile.py -p workbench/profiles/my-game
+
+# Deploy to SD card
+python tools/deploy.py
+```
+
+**YAML Template Features:**
+
+- **Templates**: Reusable key definitions (e.g., media_encoder for volume controls)
+- **Inheritance**: `extends: parent` or `extends: [template1, template2]`
+- **Layers**: Modifier hold, toggle, oneshot, and momentary layer types
+- **Ranges**: Define multiple keys at once: `6-10: [A, E, "1", "2", "3"]`
+- **Configuration**: Orientation, colors, labels all in one file
+
+**IMPORTANT**: `generate_profile_from_yaml.py` is the ONLY script that reads YAML files. YAML templates (`.yaml` files) are input, and generated duckyScript profiles (folders with `config.txt` and `keyN.txt`) are output to `workbench/profiles/` as working drafts.
+
+### Creating New Profiles
+
+**Option 1: YAML Workflow (Recommended)**
+
+See "YAML Workflow" section above for creating profiles from YAML templates.
+
+**Option 2: Manual Creation**
+
+```bash
+# For simple profiles without layers, create files manually:
+# 1. Create profile directory: profiles/my-profile/
+# 2. Create config.txt
+# 3. Create keyN.txt files as needed
+
+# Compile the profile
+python tools/compile.py -p profiles/my-profile
 
 # When deploying to device, user renames to profileN_Name:
-# discord-tools -> profile2_DiscordTools (or whatever number/name they prefer)
+# my-profile -> profile2_MyProfile (or whatever number/name they prefer)
 ```
 
 ### Downloading Resources
