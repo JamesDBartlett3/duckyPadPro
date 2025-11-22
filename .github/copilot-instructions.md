@@ -71,7 +71,6 @@ duckyPadPro/
 - **Never** use "2>&1" or similar Bash redirection syntax
 - **Always** use official PowerShell syntax when running commands in PowerShell
 
-
 ## File Naming Conventions
 
 ### duckyScript Files
@@ -84,7 +83,17 @@ duckyPadPro/
 ### Documentation Files
 
 - **Profile readmes**: `readme-{folder-name}.md` (e.g., `readme-profiles.md`)
-- **Not** `README.md` except for the repository root
+- **Repository root ONLY**: `README.md`
+- **All other directories**: `readme-{folder-name}.md` where `{folder-name}` is the name of the directory containing the file
+
+**Examples:**
+
+- `profiles/` → `profiles/readme-profiles.md`
+- `helpers/compilers/` → `helpers/compilers/readme-compilers.md`
+- `scripts/development/` → `scripts/development/readme-development.md`
+- Repository root → `README.md` (only exception)
+
+**IMPORTANT**: When creating documentation files, ALWAYS use `readme-{folder-name}.md` format except for the repository root. Never create `README.md` in subdirectories.
 
 ### Pattern Matching
 
