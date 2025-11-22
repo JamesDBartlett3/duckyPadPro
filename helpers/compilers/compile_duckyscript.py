@@ -10,11 +10,20 @@ import os
 import shutil
 import subprocess
 import sys
+import tempfile
 import zipfile
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 from urllib.request import Request, urlopen
 from urllib.error import URLError, HTTPError
+
+# Add shared directory to path for ProfileInfoManager
+sys.path.insert(0, str(Path(__file__).parent.parent / "shared"))
+try:
+    from profile_info_manager import ProfileInfoManager
+    PROFILE_MANAGER_AVAILABLE = True
+except ImportError:
+    PROFILE_MANAGER_AVAILABLE = False
 
 
 class CompilerStats:
@@ -45,16 +54,31 @@ class DuckyScriptCompiler:
         "duckypad_config.py"
     ]
     
-    def __init__(self, verbose: bool = False):
+    def __init__(self, verbose: bool = False, resolve_profiles: bool = True):
         """Initialize compiler
         
         Args:
             verbose: Enable verbose output
+            resolve_profiles: Enable profile name to index resolution
         """
         self.verbose = verbose
+        self.resolve_profiles = resolve_profiles
         self.script_dir = Path(__file__).parent
         self.vendor_dir = self.script_dir / "vendor"
         self.compiler_path = self.vendor_dir / "make_bytecode.py"
+        self.profile_manager = None
+        
+        # Initialize ProfileInfoManager if available and enabled
+        if self.resolve_profiles and PROFILE_MANAGER_AVAILABLE:
+            try:
+                self.profile_manager = ProfileInfoManager()
+                if self.profile_manager.load_profile_mapping():
+                    if self.verbose:
+                        profile_count = len(self.profile_manager.profile_mapping)
+                        self._print_color(f"✓ Loaded {profile_count} profile mappings from SD card", "green")
+            except Exception as e:
+                if self.verbose:
+                    self._print_color(f"Warning: Could not initialize profile manager: {e}", "yellow")
     
     def _print_color(self, message: str, color: str = "white"):
         """Print colored message
@@ -204,26 +228,48 @@ class DuckyScriptCompiler:
         try:
             self._print_verbose(f"Compiling: {txt_path.name}")
             
-            result = subprocess.run(
-                [
-                    sys.executable,
-                    str(self.compiler_path),
-                    str(txt_path),
-                    str(dsb_path)
-                ],
-                capture_output=True,
-                text=True,
-                check=False
-            )
+            # Read and potentially transform the content
+            content = txt_path.read_text(encoding="utf-8")
             
-            if result.returncode == 0:
-                self._print_color(f"  ✓ {txt_path.name} → {dsb_path.name}", "green")
-                return True
-            else:
-                self._print_color(f"  ✗ {txt_path.name}", "red")
-                if result.stderr:
-                    self._print_color(f"    Error: {result.stderr.strip()}", "red")
-                return False
+            # Apply profile name resolution if enabled
+            if self.profile_manager and self.profile_manager.profile_mapping:
+                transformed_content, warnings = self.profile_manager.transform_goto_commands(content)
+                if transformed_content != content:
+                    self._print_verbose(f"  → Resolved GOTO_PROFILE name(s) to index")
+                    content = transformed_content
+                # Display any warnings
+                for warning in warnings:
+                    self._print_color(f"  Warning: {warning}", "yellow")
+            
+            # Create a temporary file with the (potentially transformed) content
+            with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False, encoding="utf-8") as tmp:
+                tmp.write(content)
+                tmp_path = Path(tmp.name)
+            
+            try:
+                result = subprocess.run(
+                    [
+                        sys.executable,
+                        str(self.compiler_path),
+                        str(tmp_path),
+                        str(dsb_path)
+                    ],
+                    capture_output=True,
+                    text=True,
+                    check=False
+                )
+                
+                if result.returncode == 0:
+                    self._print_color(f"  ✓ {txt_path.name} → {dsb_path.name}", "green")
+                    return True
+                else:
+                    self._print_color(f"  ✗ {txt_path.name}", "red")
+                    if result.stderr:
+                        self._print_color(f"    Error: {result.stderr.strip()}", "red")
+                    return False
+            finally:
+                # Clean up temporary file
+                tmp_path.unlink(missing_ok=True)
                 
         except Exception as e:
             self._print_color(f"  ✗ {txt_path.name}: {e}", "red")
@@ -392,10 +438,17 @@ def main():
         action="store_true",
         help="Enable verbose output"
     )
+    parser.add_argument(
+        "--no-resolve-profiles",
+        dest="resolve_profiles",
+        action="store_false",
+        default=True,
+        help="Disable automatic profile name to index resolution in GOTO_PROFILE commands"
+    )
     
     args = parser.parse_args()
     
-    compiler = DuckyScriptCompiler(verbose=args.verbose)
+    compiler = DuckyScriptCompiler(verbose=args.verbose, resolve_profiles=args.resolve_profiles)
     exit_code = compiler.run(profile_path=args.profile_path)
     sys.exit(exit_code)
 
