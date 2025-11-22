@@ -41,14 +41,16 @@ duckyPadPro/
 │   ├── profile-guide.md
 │   ├── key-layout.md
 │   └── feature-ideas.md
-├── helpers/                        # Helper utilities
-│   ├── compilers/                  # duckyScript compilation tools
-│   │   ├── vendor/                 # Auto-downloaded Python dependencies (gitignored)
-│   │   ├── compile_duckyscript.py
-│   │   └── Test-DuckyScriptCompilation.ps1
-│   ├── converters/                 # Format conversion utilities
-│   └── generators/                 # Profile/script generators
-│       └── profile_generator.py
+├── tools/                          # Development tools
+│   ├── compile.py                  # Compile duckyScript to bytecode
+│   ├── deploy.py                   # Deploy profiles to SD card
+│   ├── generate_profile.py         # Generate new profile templates
+│   ├── convert_text.py             # Convert text to duckyScript
+│   ├── vendor/                     # Auto-downloaded compiler dependencies (gitignored)
+│   └── shared/                     # Shared library code
+│       ├── profile_info_manager.py
+│       ├── profile_loader.py
+│       └── key_layout.py
 ├── profiles/                       # Complete profile packages
 │   ├── example-productivity/
 │   ├── sample_profiles/            # Auto-downloaded samples (gitignored)
@@ -106,7 +108,7 @@ duckyPadPro/
 **Examples:**
 
 - `profiles/` → `profiles/readme-profiles.md`
-- `helpers/compilers/` → `helpers/compilers/readme-compilers.md`
+- `tools/` → `tools/readme-tools.md`
 - `scripts/development/` → `scripts/development/readme-development.md`
 - Repository root → `README.md` (only exception)
 
@@ -122,7 +124,7 @@ duckyPadPro/
 ### Critical Rules
 
 1. **All .dsb files are gitignored** - they are auto-generated binaries
-2. **Compiler dependencies in `helpers/compilers/vendor/` are gitignored** - auto-downloaded from GitHub
+2. **Compiler dependencies in `tools/vendor/` are gitignored** - auto-downloaded from GitHub
 3. **Only compile files matching pattern**: `^key\d+(-release)?\.txt$`
 4. **DO NOT compile**: `config.txt`, README files, or other text files
 
@@ -130,19 +132,19 @@ duckyPadPro/
 
 ```bash
 # Compile all profiles
-python helpers/compilers/compile_duckyscript.py
+python tools/compile.py
 
 # Compile specific profile
-python helpers/compilers/compile_duckyscript.py -p profiles/example-productivity
+python tools/compile.py -p profiles/example-productivity
 
 # Verbose mode for detailed output
-python helpers/compilers/compile_duckyscript.py -p profiles/example-productivity -v
+python tools/compile.py -p profiles/example-productivity -v
 ```
 
 ### Compiler Behavior
 
 - Auto-downloads Python compiler files from GitHub Releases API: `duckyPad/duckyPad-Configurator`
-- Stores dependencies in `helpers/compilers/vendor/` (gitignored)
+- Stores dependencies in `tools/vendor/` (gitignored)
 - Requires Python 3 installed on system
 - Uses GitHub API to fetch latest release
 - Downloads all .py files from release zipball
@@ -268,7 +270,7 @@ ab 5
 
 ### Profile Generator
 
-- Located at: `helpers/generators/profile_generator.py`
+- Located at: `tools/generate_profile.py`
 - Supports keys 1-26 (not just 1-20)
 - Includes helpful comments for rotary encoder keys (21-26)
 - Creates: `config.txt`, `keyN.txt` files, `README.md`
@@ -298,7 +300,7 @@ python profile_generator.py photo-editing 15
 ### Always Gitignored
 
 - `*.dsb` - Compiled bytecode files
-- `helpers/compilers/vendor/` - Auto-downloaded compiler dependencies
+- `tools/vendor/` - Auto-downloaded compiler dependencies
 - `profiles/sample_profiles/` - Auto-downloaded official samples
 
 ### Never Gitignored
@@ -336,12 +338,11 @@ python profile_generator.py photo-editing 15
 
 ```bash
 # Generate structure with descriptive name
-cd helpers/generators
-python profile_generator.py discord-tools 20
+python tools/generate_profile.py discord-tools 20
 
 # Edit key files and config.txt
 # Compile if needed
-python helpers/compilers/compile_duckyscript.py -p profiles/discord-tools
+python tools/compile.py -p profiles/discord-tools
 
 # When deploying to device, user renames to profileN_Name:
 # discord-tools -> profile2_DiscordTools (or whatever number/name they prefer)
@@ -416,7 +417,7 @@ REM Platform: Windows/macOS/Linux
 
 ```bash
 # Compile all profiles
-python helpers/compilers/compile_duckyscript.py
+python tools/compile.py
 
 # Validate all compilations
 python tests/validate_compilation.py
@@ -437,8 +438,8 @@ python tests/validate_compilation.py -p profiles/my-profile -v
 ### Compiler Dependencies
 
 - **Source**: GitHub Releases API for `duckyPad/duckyPad-Configurator`
-- **Destination**: `helpers/compilers/vendor/`
-- **Script**: Auto-downloaded by `compile_duckyscript.py`
+- **Destination**: `tools/vendor/`
+- **Script**: Auto-downloaded by `compile.py`
 - **Gitignored**: Yes
 - **Files**: All .py files from release (make_bytecode.py, ds3_preprocessor.py, etc.)
 
