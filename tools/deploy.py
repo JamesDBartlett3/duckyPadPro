@@ -14,6 +14,7 @@ from typing import Dict, List, Optional, Tuple
 # Add shared directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent))
 from shared.profile_info_manager import ProfileInfoManager
+from backup_and_restore import backup_sd_card
 
 
 class DeploymentStats:
@@ -87,60 +88,6 @@ class ProfileDeployer:
         
         return response in ("y", "yes")
     
-    def backup_sd_card(self, sd_card_path: Path, backup_path: Optional[Path] = None) -> Optional[Path]:
-        """Backup SD card contents
-        
-        Args:
-            sd_card_path: Path to SD card
-            backup_path: Optional custom backup location
-            
-        Returns:
-            Path to backup directory if successful, None otherwise
-        """
-        self._print_color("\n→ Creating SD card backup...", "cyan")
-        
-        # Generate backup path if not provided
-        if backup_path is None:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            backup_path = Path.home() / ".duckypad" / "backups" / f"backup_{timestamp}"
-        
-        backup_path.mkdir(parents=True, exist_ok=True)
-        
-        self._print_verbose(f"Backup location: {backup_path}")
-        
-        stats = DeploymentStats()
-        
-        try:
-            # Copy all files and directories except .dsb (can be regenerated)
-            for item in sd_card_path.rglob("*"):
-                if item.is_file():
-                    # Skip .dsb bytecode files
-                    if item.suffix == ".dsb":
-                        self._print_verbose(f"Skipping: {item.name} (bytecode)")
-                        stats.skipped += 1
-                        continue
-                    
-                    # Calculate relative path
-                    rel_path = item.relative_to(sd_card_path)
-                    dest_path = backup_path / rel_path
-                    
-                    # Create parent directory
-                    dest_path.parent.mkdir(parents=True, exist_ok=True)
-                    
-                    # Copy file
-                    shutil.copy2(item, dest_path)
-                    stats.backed_up += 1
-                    self._print_verbose(f"Backed up: {rel_path}")
-            
-            self._print_color(f"✓ Backup complete: {stats.backed_up} files backed up, {stats.skipped} skipped", "green")
-            self._print_color(f"  Location: {backup_path}", "gray")
-            
-            return backup_path
-            
-        except Exception as e:
-            self._print_color(f"✗ Backup failed: {e}", "red")
-            return None
-    
     def find_next_profile_number(self, sd_card_path: Path) -> int:
         """Find next available profile number on SD card
         
@@ -182,14 +129,14 @@ class ProfileDeployer:
         Args:
             source_path: Path to source profile directory
             sd_card_path: Path to SD card
-            profile_number: Profile number to assign
+            profile_number: Profile number to assign (unused, kept for compatibility)
             
         Returns:
             True if successful, False otherwise
         """
-        # Generate profile directory name
+        # Generate profile directory name (just profile_<name>, no number)
         profile_name = source_path.name
-        dest_name = f"profile{profile_number}_{profile_name}"
+        dest_name = f"profile_{profile_name}"
         dest_path = sd_card_path / dest_name
         
         self._print_verbose(f"Deploying: {profile_name} → {dest_name}")
@@ -387,7 +334,7 @@ class ProfileDeployer:
             return 1
         
         # Backup SD card
-        backup_result = self.backup_sd_card(sd_card_path, backup_path)
+        backup_result = backup_sd_card(sd_card_path=sd_card_path, backup_path=backup_path, verbose=self.verbose)
         if not backup_result:
             self._print_color("\n✗ Backup failed", "red")
             if not self._prompt_yes_no("Continue without backup?", default=False):
@@ -420,7 +367,6 @@ class ProfileDeployer:
         
         if stats.deployed > 0:
             self._print_color("\n✓ Deployment complete!", "green")
-            self._print_color("  You can now eject the SD card and insert it into your duckyPad", "gray")
             return 0
         else:
             self._print_color("\n✗ No profiles were deployed", "red")

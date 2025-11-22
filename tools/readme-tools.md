@@ -31,6 +31,37 @@ python tools/compile.py -v
 python tools/compile.py --no-resolve-profiles
 ```
 
+### backup_and_restore.py
+
+Manages SD card backups and restoration. Backups are automatically created by deploy.py and stored in `~/.duckypad/backups/`.
+
+**Features:**
+
+- Create manual backups of SD card
+- List available backups with timestamps
+- Restore from specific or latest backup
+- Auto-detects SD card location
+- Excludes .dsb bytecode files from backups
+
+**Usage:**
+
+```bash
+# Create backup
+python tools/backup_and_restore.py --backup
+
+# List available backups
+python tools/backup_and_restore.py --list
+
+# Restore from latest backup
+python tools/backup_and_restore.py --restore --latest
+
+# Restore from specific backup
+python tools/backup_and_restore.py --restore backup_20251122_153000
+
+# Skip confirmation prompts
+python tools/backup_and_restore.py --restore --latest -f
+```
+
 ### deploy.py
 
 Deploys profiles to duckyPad Pro SD card with automatic backup and profile_info.txt management.
@@ -38,8 +69,8 @@ Deploys profiles to duckyPad Pro SD card with automatic backup and profile_info.
 **Features:**
 
 - Automatic SD card detection (Windows/macOS/Linux)
-- Backs up SD card before deployment (excludes .dsb files)
-- Renames profiles to profileN_Name format
+- Backs up SD card before deployment (uses backup_and_restore.py)
+- Creates profile\_<name> folders (no ordinal numbers)
 - Updates profile_info.txt preserving existing order
 
 **Usage:**

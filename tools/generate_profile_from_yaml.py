@@ -39,6 +39,8 @@ class YAMLToProfileConverter:
         self.output_dir = output_dir
         self.verbose = verbose
         self.loader = ProfileLoader(yaml_path)
+        self.current_profile_type = 'main'  # Track if generating 'main' or 'layer'
+        self.current_layer_id = None  # Track which layer we're generating
         
     def convert(self) -> List[Path]:
         """
@@ -66,6 +68,8 @@ class YAMLToProfileConverter:
         created_profiles = []
         
         # Generate main profile
+        self.current_profile_type = 'main'
+        self.current_layer_id = None
         main_profile_dir = self._generate_profile(
             profile_name,
             self.loader.get_config(),
@@ -77,6 +81,9 @@ class YAMLToProfileConverter:
         # Generate layer profiles
         layers = self.loader.get_layers()
         for layer_id, layer_def in layers.items():
+            self.current_profile_type = 'layer'
+            self.current_layer_id = layer_id
+            
             layer_name = layer_def.get('name', f"{profile_name}-{layer_id}")
             layer_config = layer_def.get('config', {})
             
@@ -137,9 +144,32 @@ class YAMLToProfileConverter:
         for key_num in range(1, TOTAL_KEYS + 1):
             if key_num in keys:
                 key_def = keys[key_num]
+                
+                # If we're on a layer and this key has no action but the parent had a layer_type,
+                # we need to preserve the layer switching behavior
+                if self.current_profile_type == 'layer':
+                    parent_keys = self.loader.get_keys()
+                    if key_num in parent_keys:
+                        parent_key = parent_keys[key_num]
+                        parent_layer_type = parent_key.get('layer_type')
+                        
+                        # If parent was a layer switcher and current key has no action
+                        if parent_layer_type and not any(k in key_def for k in ['key', 'action', 'layer_type']):
+                            # Merge parent's layer switching properties
+                            key_def = {**parent_key, **key_def}
+                
                 key_path = output_dir / f"key{key_num}.txt"
-                self._write_key_script(key_path, key_num, key_def)
+                self._write_key_script(key_path, key_num, key_def, is_release=False)
                 key_count += 1
+                
+                # Check if we need a release script
+                layer_type = key_def.get('layer_type')
+                if layer_type in ['modifier_hold', 'momentary']:
+                    release_path = output_dir / f"key{key_num}-release.txt"
+                    self._write_key_script(release_path, key_num, key_def, is_release=True)
+                    
+                    if self.verbose:
+                        print(f"  Created: {release_path.name}")
                 
                 if self.verbose:
                     print(f"  Created: {key_path.name}")
@@ -223,14 +253,15 @@ class YAMLToProfileConverter:
             if lines:
                 f.write('\n')
     
-    def _write_key_script(self, path: Path, key_num: int, key_def: Dict[str, Any]):
+    def _write_key_script(self, path: Path, key_num: int, key_def: Dict[str, Any], is_release: bool = False):
         """
-        Write keyN.txt duckyScript file.
+        Write keyN.txt or keyN-release.txt duckyScript file.
         
         Args:
             path: Output file path
             key_num: Key number
             key_def: Key definition dict
+            is_release: True if writing release script
         """
         lines = []
         
@@ -248,7 +279,7 @@ class YAMLToProfileConverter:
         
         if layer_type:
             # Layer switcher key
-            self._generate_layer_switcher(lines, key_def)
+            self._generate_layer_switcher(lines, key_def, is_release)
         elif action == 'media':
             # Media command
             command = key_def.get('command', 'MUTE')
@@ -267,47 +298,119 @@ class YAMLToProfileConverter:
             if lines:
                 f.write('\n')
     
-    def _generate_layer_switcher(self, lines: List[str], key_def: Dict[str, Any]):
+    def _generate_layer_switcher(self, lines: List[str], key_def: Dict[str, Any], is_release: bool = False):
         """
         Generate duckyScript for layer switching key.
         
         Args:
             lines: List to append script lines to
             key_def: Key definition dict
+            is_release: True if generating release script
         """
         layer_type = key_def.get('layer_type')
-        layer = key_def.get('layer', 'unknown')
+        layer_id = key_def.get('layer', 'unknown')
         modifier = key_def.get('modifier')
         
-        lines.append(f'REM Layer type: {layer_type}')
-        lines.append(f'REM Target layer: {layer}')
+        # Get the actual layer profile name
+        layer_name = self._get_layer_profile_name(layer_id)
+        parent_name = self._get_parent_profile_name()
+        
+        # Determine if we're on the main profile or the layer profile
+        on_layer = (self.current_profile_type == 'layer')
         
         if layer_type == 'modifier_hold':
             # Modifier hold: press modifier, switch layer, release modifier on return
-            if modifier:
-                lines.append(f'REM Hold {modifier} while on layer')
-            lines.append(f'REM TODO: Implement modifier_hold layer switching')
-            lines.append(f'REM   1. Press {modifier if modifier else "modifier"}')
-            lines.append(f'REM   2. GOTO_PROFILE {layer}')
-            lines.append(f'REM   3. On return, release {modifier if modifier else "modifier"}')
+            lines.append('DEFAULTDELAY 0')
+            
+            if on_layer:
+                # On layer profile
+                if is_release:
+                    # Release: release modifier and return to main
+                    if modifier:
+                        lines.append(f'KEYUP {modifier.upper()}')
+                    lines.append(f'GOTO_PROFILE {parent_name}')
+                else:
+                    # Press: just hold the modifier (already switched)
+                    if modifier:
+                        lines.append(f'KEYDOWN {modifier.upper()}')
+            else:
+                # On main profile
+                if not is_release:
+                    # Press: press modifier and switch to layer
+                    if modifier:
+                        lines.append(f'KEYDOWN {modifier.upper()}')
+                    lines.append(f'GOTO_PROFILE {layer_name}')
         
         elif layer_type == 'toggle':
             # Toggle: press to switch, press again to return
-            lines.append(f'REM TODO: Implement toggle layer switching')
-            lines.append(f'REM   Press to switch to {layer}, press again to return')
+            lines.append('DEFAULTDELAY 0')
+            
+            if not is_release:
+                if on_layer:
+                    # On layer: return to main
+                    lines.append(f'GOTO_PROFILE {parent_name}')
+                else:
+                    # On main: go to layer
+                    lines.append(f'GOTO_PROFILE {layer_name}')
         
         elif layer_type == 'oneshot':
             # Oneshot: switch for one key press, auto-return
-            lines.append(f'REM TODO: Implement oneshot layer switching')
-            lines.append(f'REM   Switch to {layer}, return after next key press')
+            # Note: True oneshot requires state tracking - this is a simplified version
+            lines.append('DEFAULTDELAY 0')
+            
+            if not is_release:
+                if on_layer:
+                    # On layer: return to main after any key press
+                    lines.append(f'GOTO_PROFILE {parent_name}')
+                else:
+                    # On main: go to layer
+                    lines.append(f'REM Oneshot layer')
+                    lines.append(f'GOTO_PROFILE {layer_name}')
         
         elif layer_type == 'momentary':
             # Momentary: hold to activate, release to return
-            lines.append(f'REM TODO: Implement momentary layer switching')
-            lines.append(f'REM   Hold to switch to {layer}, release to return')
+            lines.append('DEFAULTDELAY 0')
+            
+            if on_layer:
+                # On layer profile
+                if is_release:
+                    # Release: return to main
+                    lines.append(f'GOTO_PROFILE {parent_name}')
+                # Press: do nothing (stay on layer)
+            else:
+                # On main profile
+                if not is_release:
+                    # Press: switch to layer
+                    lines.append(f'GOTO_PROFILE {layer_name}')
         
         else:
             lines.append(f'REM Unknown layer type: {layer_type}')
+    
+    def _get_layer_profile_name(self, layer_id: str) -> str:
+        """
+        Get the full profile name for a layer ID.
+        
+        Args:
+            layer_id: Layer identifier from YAML
+            
+        Returns:
+            Full profile name
+        """
+        # Check if this layer exists in the loaded profile
+        layers = self.loader.get_layers()
+        if layer_id in layers:
+            layer = layers[layer_id]
+            return layer.get('name', f"{self.loader.get_profile_name()}-{layer_id}")
+        return layer_id
+    
+    def _get_parent_profile_name(self) -> str:
+        """
+        Get the parent (main) profile name.
+        
+        Returns:
+            Parent profile name
+        """
+        return self.loader.get_profile_name()
     
     def _generate_key_press(self, lines: List[str], key_def: Dict[str, Any]):
         """
