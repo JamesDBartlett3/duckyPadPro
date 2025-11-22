@@ -44,7 +44,7 @@ duckyPadPro/
 ├── helpers/                        # Helper utilities
 │   ├── compilers/                  # duckyScript compilation tools
 │   │   ├── vendor/                 # Auto-downloaded Python dependencies (gitignored)
-│   │   ├── Invoke-DuckyScriptCompiler.ps1
+│   │   ├── compile_duckyscript.py
 │   │   └── Test-DuckyScriptCompilation.ps1
 │   ├── converters/                 # Format conversion utilities
 │   └── generators/                 # Profile/script generators
@@ -52,8 +52,8 @@ duckyPadPro/
 ├── profiles/                       # Complete profile packages
 │   ├── example-productivity/
 │   ├── sample_profiles/            # Auto-downloaded samples (gitignored)
-│   ├── Generate-ReadmeFiles.ps1    # Auto-generate readme files
-│   └── Get-SampleProfiles.ps1      # Download official samples
+│   ├── generate_readme_files.py    # Auto-generate readme files
+│   └── get_sample_profiles.py      # Download official samples
 ├── scripts/                        # Standalone duckyScript files
 │   ├── development/
 │   ├── media/
@@ -67,9 +67,9 @@ duckyPadPro/
 
 ## Terminal Commands
 
-- **Never** use Bash syntax when running commands in PowerShell
-- **Never** use "2>&1" or similar Bash redirection syntax
-- **Always** use official PowerShell syntax when running commands in PowerShell
+- **Always** use proper terminal syntax for the active shell
+- When running Python scripts, use `python` command
+- Use forward slashes or backslashes appropriately for the OS
 
 ## File Naming Conventions
 
@@ -111,15 +111,15 @@ duckyPadPro/
 
 ### Compilation Process
 
-```powershell
+```bash
 # Compile all profiles
-.\helpers\compilers\Invoke-DuckyScriptCompiler.ps1
+python helpers/compilers/compile_duckyscript.py
 
 # Compile specific profile
-.\helpers\compilers\Invoke-DuckyScriptCompiler.ps1 -ProfilePath .\profiles\example-productivity
+python helpers/compilers/compile_duckyscript.py -p profiles/example-productivity
 
-# Validate compilations
-.\helpers\compilers\Test-DuckyScriptCompilation.ps1 -ProfilePath .\profiles\example-productivity
+# Verbose mode for detailed output
+python helpers/compilers/compile_duckyscript.py -p profiles/example-productivity -v
 ```
 
 ### Compiler Behavior
@@ -216,35 +216,36 @@ ab 5
 - **Maximum 5 characters** per line (ASCII only)
 - Total: 10 characters maximum per key label
 
-## PowerShell Scripting Guidelines
+## Python Scripting Guidelines
 
 ### Path Handling
 
-- **Always use** `Join-Path` for cross-platform compatibility
-- **Never** use string concatenation for paths (e.g., `"$path\file"`)
-- Example: `Join-Path $PSScriptRoot "vendor"`
+- **Always use** `Path` from `pathlib` for cross-platform compatibility
+- **Never** use string concatenation for paths
+- Example: `Path(__file__).parent / "vendor"`
 
 ### DRY Principle
 
 - Extract repeated logic into functions
-- Example: `Get-ReadmePath` function in `Generate-ReadmeFiles.ps1`
+- Example: `ReadmeInfo` class in `generate_readme_files.py`
 
 ### User Confirmations
 
-- Use `-Force` switch to bypass confirmations
+- Use `--force` or `-f` flag to bypass confirmations
 - Default to "Y" (continue) when prompting user
 - Show what will be affected before making changes
 
-### Loop Syntax
+### Code Style
 
-- Prefer `foreach ($item in $collection)` over `$collection | ForEach-Object`
-- Use `ForEach-Object` in pipelines when appropriate
+- Follow PEP 8 conventions
+- Use type hints where appropriate
+- Prefer list/dict comprehensions over loops when readable
 
 ### Error Handling
 
-- Use `-ErrorAction SilentlyContinue` for cleanup operations
-- Use try/catch for critical operations
+- Use try/except for critical operations
 - Provide clear, colored output (Green=success, Red=error, Yellow=warning, Cyan=info)
+- Use ANSI color codes for cross-platform terminal colors
 
 ## Python Scripting Guidelines
 
@@ -288,7 +289,6 @@ python profile_generator.py photo-editing 15
 - `.txt` files (duckyScript source files)
 - `config.txt` files
 - `.py` files in repository
-- `.ps1` files in repository
 
 ## Documentation Standards
 
@@ -303,7 +303,6 @@ python profile_generator.py photo-editing 15
 ### Code Comments
 
 - **duckyScript**: Use `REM` for comments
-- **PowerShell**: Use `#` for comments
 - **Python**: Use `"""docstrings"""` and `#` comments
 - Always document what a script/key does, not just how
 
@@ -318,14 +317,14 @@ python profile_generator.py photo-editing 15
 
 ### Creating New Profiles
 
-```powershell
+```bash
 # Generate structure with descriptive name
 cd helpers/generators
 python profile_generator.py discord-tools 20
 
 # Edit key files and config.txt
 # Compile if needed
-.\helpers\compilers\Invoke-DuckyScriptCompiler.ps1 -ProfilePath .\profiles\discord-tools
+python helpers/compilers/compile_duckyscript.py -p profiles/discord-tools
 
 # When deploying to device, user renames to profileN_Name:
 # discord-tools -> profile2_DiscordTools (or whatever number/name they prefer)
@@ -333,25 +332,25 @@ python profile_generator.py discord-tools 20
 
 ### Downloading Resources
 
-```powershell
+```bash
 # Get official sample profiles
-.\profiles\Get-SampleProfiles.ps1
+python profiles/get_sample_profiles.py
 
 # Re-download (overwrite existing)
-.\profiles\Get-SampleProfiles.ps1 -Force
+python profiles/get_sample_profiles.py -f
 ```
 
 ### Auto-generating READMEs
 
-```powershell
+```bash
 # Generate in all directories
-.\profiles\Generate-ReadmeFiles.ps1
+python profiles/generate_readme_files.py
 
 # Overwrite existing files
-.\profiles\Generate-ReadmeFiles.ps1 -Overwrite
+python profiles/generate_readme_files.py -o
 
 # Force without confirmation
-.\profiles\Generate-ReadmeFiles.ps1 -Overwrite -Force
+python profiles/generate_readme_files.py -o -f
 ```
 
 ## duckyScript Best Practices
@@ -398,10 +397,12 @@ REM Platform: Windows/macOS/Linux
 
 ### Compilation Validation
 
-```powershell
-# Compile and validate
-.\helpers\compilers\Invoke-DuckyScriptCompiler.ps1 -ProfilePath .\profiles\my-profile
-.\helpers\compilers\Test-DuckyScriptCompilation.ps1 -ProfilePath .\profiles\my-profile
+```bash
+# Compile all profiles
+python helpers/compilers/compile_duckyscript.py
+
+# Compile and validate specific profile
+python helpers/compilers/compile_duckyscript.py -p profiles/my-profile -v
 ```
 
 ## Helper Script Downloads
@@ -410,14 +411,14 @@ REM Platform: Windows/macOS/Linux
 
 - **Source**: `https://github.com/dekuNukem/duckyPad-Pro/raw/master/resources/sample_profiles/sample_profiles.zip`
 - **Destination**: `profiles/sample_profiles/`
-- **Script**: `Get-SampleProfiles.ps1`
+- **Script**: `get_sample_profiles.py`
 - **Gitignored**: Yes
 
 ### Compiler Dependencies
 
 - **Source**: GitHub Releases API for `duckyPad/duckyPad-Configurator`
 - **Destination**: `helpers/compilers/vendor/`
-- **Script**: Auto-downloaded by `Invoke-DuckyScriptCompiler.ps1`
+- **Script**: Auto-downloaded by `compile_duckyscript.py`
 - **Gitignored**: Yes
 - **Files**: All .py files from release (make_bytecode.py, ds3_preprocessor.py, etc.)
 
@@ -435,7 +436,6 @@ REM Platform: Windows/macOS/Linux
 
 ### Code Style
 
-- **PowerShell**: Follow existing patterns in `Invoke-DuckyScriptCompiler.ps1`
 - **Python**: Follow PEP 8
 - **duckyScript**: Include REM comments
 - **Markdown**: Use relative links, code fences
@@ -469,7 +469,7 @@ REM Platform: Windows/macOS/Linux
 
 - Auto-download dependencies when possible
 - Store downloads in gitignored folders
-- Use proper PowerShell path handling
+- Use proper Python path handling with pathlib
 - Provide clear user feedback with colors
 - Support -Force flags for automation
 
