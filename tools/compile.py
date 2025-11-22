@@ -423,6 +423,21 @@ class DuckyScriptCompiler:
         return 0
 
 
+def compile(profile_path: Optional[Path] = None, verbose: bool = False, resolve_profiles: bool = True) -> int:
+    """Compile duckyScript files to bytecode (programmatic interface)
+    
+    Args:
+        profile_path: Path to specific profile or profiles directory (default: profiles/)
+        verbose: Enable verbose output
+        resolve_profiles: Enable automatic GOTO_PROFILE name resolution
+        
+    Returns:
+        Exit code (0 = success, 1 = failure)
+    """
+    compiler = DuckyScriptCompiler(verbose=verbose, resolve_profiles=resolve_profiles)
+    return compiler.run(profile_path=profile_path)
+
+
 def main():
     """Main entry point"""
     parser = argparse.ArgumentParser(

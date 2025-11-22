@@ -79,6 +79,57 @@ python tools/generate_profile.py discord-tools 20
 python tools/generate_profile.py photo-editing 26
 ```
 
+### generate_profile_from_yaml.py
+
+**THE ONLY script that reads YAML template files.** Converts YAML profile definitions (with templates, inheritance, and layers) into duckyScript profiles ready for compilation.
+
+**Features:**
+
+- Parses YAML templates with inheritance and layers
+- Generates config.txt with all settings
+- Creates keyN.txt files for each defined key
+- Supports all layer types (modifier_hold, toggle, oneshot, momentary)
+- Auto-generates README.md for each profile
+- Handles template extension and key ranges
+
+**Usage:**
+
+```bash
+# Generate profile from YAML template
+python tools/generate_profile_from_yaml.py workbench/foxhole.yaml
+
+# Specify custom output directory
+python tools/generate_profile_from_yaml.py workbench/test.yaml -o workbench/profiles/my-test
+
+# Verbose output
+python tools/generate_profile_from_yaml.py workbench/foxhole.yaml -v
+```
+
+**YAML Template Features:**
+
+- **Templates**: Reusable key definitions (e.g., `media_encoder` for volume controls)
+- **Inheritance**: `extends: parent` or `extends: [template1, template2]`
+- **Layers**: Multiple profiles linked by layer switchers
+- **Ranges**: Define multiple keys: `6-10: [A, E, "1", "2", "3"]`
+- **Configuration**: Orientation, colors, labels in one file
+
+**Example YAML:**
+
+```yaml
+profile:
+  name: MyProfile
+  config:
+    orientation: landscape
+    background_color: [100, 100, 100]
+  keys:
+    1: { key: A, label: [A] }
+    2: { key: SHIFT, hold: true, label: [Run] }
+  layers:
+    ctrl:
+      name: MyProfile-Ctrl
+      extends: parent
+```
+
 ### convert_text.py
 
 Converts plain text to duckyScript STRING commands.

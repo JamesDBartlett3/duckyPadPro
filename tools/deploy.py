@@ -427,6 +427,22 @@ class ProfileDeployer:
             return 1
 
 
+def deploy(source_profiles: List[Path], backup_path: Optional[Path] = None, verbose: bool = False, force: bool = False) -> int:
+    """Deploy profiles to duckyPad SD card (programmatic interface)
+    
+    Args:
+        source_profiles: List of profile directories to deploy
+        backup_path: Custom backup location (default: ~/.duckypad/backups/backup_TIMESTAMP)
+        verbose: Enable verbose output
+        force: Skip confirmation prompts
+        
+    Returns:
+        Exit code (0 = success, 1 = failure)
+    """
+    deployer = ProfileDeployer(verbose=verbose, force=force)
+    return deployer.run(source_profiles=source_profiles, backup_path=backup_path)
+
+
 def main():
     """Main entry point"""
     parser = argparse.ArgumentParser(

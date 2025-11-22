@@ -294,40 +294,38 @@ class ProfileLoader:
             if not extends:
                 continue
             
-            # Determine source keys
-            if extends == 'parent':
-                source_keys = self.profile.get('keys', {})
-            elif extends in layers:
-                # Extending another layer
-                source_layer = layers[extends]
-                source_keys = source_layer.get('keys', {})
-            else:
-                print(f"Warning: Layer '{layer_id}' extends unknown source '{extends}'")
-                continue
-            
             # Ensure layer has keys dict
             if 'keys' not in layer:
                 layer['keys'] = {}
             
-            # Check for label-only overrides and warn
-            import copy
-            for key_num in list(layer['keys'].keys()):
-                override = layer['keys'][key_num]
-                if isinstance(override, dict):
-                    # Check if this is a label-only override (has label/color but no action)
-                    has_visual_only = ('label' in override or 'color' in override)
-                    has_action = any(k in override for k in ['key', 'action', 'layer', 'layer_type', 'modifier'])
-                    
-                    if has_visual_only and not has_action:
-                        print(f"Warning: Layer '{layer_id}' key {key_num} has label/color only - ignoring incomplete override, using inherited definition")
-                        # Remove the incomplete override
-                        del layer['keys'][key_num]
+            # Handle extends as string or list
+            if isinstance(extends, str):
+                extends_list = [extends]
+            else:
+                extends_list = extends
             
-            # Copy source keys (don't override existing layer keys)
-            for key_num, key_def in source_keys.items():
-                if key_num not in layer['keys']:
-                    # Deep copy the key definition
-                    layer['keys'][key_num] = copy.deepcopy(key_def)
+            # Process each extends source
+            for extend_source in extends_list:
+                # Determine source keys
+                if extend_source == 'parent':
+                    source_keys = self.profile.get('keys', {})
+                elif extend_source in self.templates:
+                    # Extending a template
+                    source_keys = self.templates[extend_source]
+                elif extend_source in layers:
+                    # Extending another layer
+                    source_layer = layers[extend_source]
+                    source_keys = source_layer.get('keys', {})
+                else:
+                    print(f"Warning: Layer '{layer_id}' extends unknown source '{extend_source}'")
+                    continue
+                
+                # Copy source keys (don't override existing layer keys)
+                import copy
+                for key_num, key_def in source_keys.items():
+                    if key_num not in layer['keys']:
+                        # Deep copy the key definition
+                        layer['keys'][key_num] = copy.deepcopy(key_def)
             
             # Apply templates to layer if specified
             layer_templates = layer.get('templates', [])
