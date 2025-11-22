@@ -30,8 +30,9 @@ class SampleProfilesDownloader:
         """
         self.force = force
         self.verbose = verbose
+        # Destination is profiles/sample_profiles/ from tests/ directory
         self.script_dir = Path(__file__).parent
-        self.sample_profiles_dir = self.script_dir / "sample_profiles"
+        self.sample_profiles_dir = self.script_dir.parent / "profiles" / "sample_profiles"
     
     def _print_color(self, message: str, color: str = "white"):
         """Print colored message

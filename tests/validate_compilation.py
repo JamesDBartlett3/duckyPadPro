@@ -9,6 +9,9 @@ import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
+# Add helpers directory to path for potential future imports
+sys.path.insert(0, str(Path(__file__).parent.parent / "helpers"))
+
 
 class ValidationResult:
     """Result of validating a single compilation pair"""
@@ -219,8 +222,8 @@ class CompilationValidator:
         
         # Determine validation scope
         if profile_path is None:
-            # Default to profiles directory
-            profile_path = self.script_dir.parent.parent / "profiles"
+            # Default to profiles directory (now from tests/)
+            profile_path = self.script_dir.parent / "profiles"
         else:
             # Resolve relative paths from current working directory
             if not profile_path.is_absolute():
