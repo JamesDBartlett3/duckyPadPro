@@ -1,5 +1,0 @@
-REM Script: Task Manager (Windows)
-REM Description: Opens Task Manager on Windows
-REM Platform: Windows
-
-CONTROL SHIFT ESCAPE

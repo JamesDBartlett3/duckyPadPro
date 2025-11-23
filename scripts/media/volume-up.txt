@@ -1,5 +1,0 @@
-REM Script: Volume Up
-REM Description: Increases system volume
-REM Platform: Windows/Linux (use F12 or appropriate key)
-
-F12

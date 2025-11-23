@@ -62,11 +62,7 @@ profiles/
 When submitting standalone scripts:
 
 1. **Place in appropriate category**:
-   - `scripts/productivity/`
-   - `scripts/development/`
-   - `scripts/system/`
-   - `scripts/media/`
-2. **Use descriptive filenames**: `task-manager-windows.txt`, not `script1.txt`
+2. **Use descriptive filenames**: `my-workflow.txt`, not `profile1.txt`
 3. **Add comments** explaining:
    - What the script does
    - Platform requirements

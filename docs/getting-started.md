@@ -18,7 +18,7 @@ This guide will help you get started with using the profiles and scripts in this
 
 ## Using Standalone Scripts
 
-Standalone scripts from the `scripts/` directory can be used in several ways:
+Standalone duckyScript files can be used in several ways:
 
 ### Option 1: Add to an Existing Profile
 
@@ -124,7 +124,7 @@ python profile_generator.py profile-name 8
 ## Next Steps
 
 - Explore the [profiles](../profiles/readme-profiles.md) directory for ready-to-use profiles
-- Browse [scripts](../scripts/readme-scripts.md) for standalone automations
+- Browse profiles for automation ideas
 - Check out [tools](../tools/readme-tools.md) for useful utilities
 - Read the [duckyScript documentation](https://dekunukem.github.io/duckyPad-Pro/doc/duckyscript_info.html)
 

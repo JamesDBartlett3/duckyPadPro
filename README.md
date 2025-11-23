@@ -39,7 +39,6 @@ Run `python execute.py --help` to see all available commands.
 duckyPadPro/
 ├── execute.py         # Main launcher (unified interface to all tools)
 ├── profiles/          # Complete duckyPad Pro profiles
-├── scripts/           # Standalone duckyScript files
 ├── tools/             # Helper utilities and development tools
 └── docs/              # Documentation and guides
 ```
@@ -53,17 +52,6 @@ Complete profile packages for the duckyPad Pro, organized by use case. Each prof
 - Documentation (`README.md`)
 
 See the [profiles directory](profiles/readme-profiles.md) for available profiles.
-
-### 📜 Scripts
-
-Standalone duckyScript files organized by category:
-
-- **productivity**: Workflow automation and productivity enhancers
-- **development**: Developer tools and shortcuts
-- **system**: System administration tasks
-- **media**: Media control scripts
-
-See the [scripts directory](scripts/readme-scripts.md) for available scripts.
 
 ### 🛠️ Tools
 
@@ -79,7 +67,7 @@ See the [tools directory](tools/readme-tools.md) for available utilities.
 ## Getting Started
 
 1. **Explore** the [documentation](docs/readme-docs.md) to learn about duckyPad Pro
-2. **Browse** [profiles](profiles/readme-profiles.md) and [scripts](scripts/readme-scripts.md) for ideas
+2. **Browse** [profiles](profiles/readme-profiles.md) for ideas
 3. **Create** your own profiles using the [YAML workflow](profiles/readme-profiles.md#yaml-profile-system)
 4. **Use** the [tools](tools/readme-tools.md) to compile and deploy your profiles
 

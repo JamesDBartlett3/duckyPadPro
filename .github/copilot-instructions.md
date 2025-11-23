@@ -58,7 +58,6 @@ duckyPadPro/
 │   ├── foxhole.yaml
 │   ├── test_profile.yaml
 │   └── layer_type_test.yaml
-├── scripts/                        # Standalone duckyScript files
 │   ├── development/
 │   ├── media/
 │   ├── productivity/
@@ -111,7 +110,7 @@ duckyPadPro/
 
 - `profiles/` → `profiles/readme-profiles.md`
 - `tools/` → `tools/readme-tools.md`
-- `scripts/development/` → `scripts/development/readme-development.md`
+- `profiles/games/` → `profiles/games/readme-games.md`
 - Repository root → `README.md` (only exception)
 
 **IMPORTANT**: When creating documentation files, ALWAYS use `readme-{folder-name}.md` format except for the repository root. Never create `README.md` in subdirectories.
