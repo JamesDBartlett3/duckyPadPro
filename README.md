@@ -10,10 +10,34 @@ This code is provided "as is" without warranty of any kind. Use at your own risk
 
 The duckyPad Pro is a powerful macro keyboard that uses [duckyScript](https://dekunukem.github.io/duckyPad-Pro/doc/duckyscript_info.html) to automate tasks, execute keyboard shortcuts, and streamline workflows.
 
+## Quick Start
+
+The easiest way to work with duckyPad Pro is using the unified launcher:
+
+```bash
+# YAML workflow: generate, compile, and deploy profiles
+python execute.py yaml workbench/my-profile.yaml
+
+# Device control
+python execute.py device scan
+python execute.py device mount
+
+# Backup and restore
+python execute.py backup
+python execute.py restore
+
+# Individual operations
+python execute.py compile profiles/my-profile
+python execute.py deploy profiles/my-profile
+```
+
+Run `python execute.py --help` to see all available commands.
+
 ## Repository Structure
 
 ```
 duckyPadPro/
+├── execute.py         # Main launcher (unified interface to all tools)
 ├── profiles/          # Complete duckyPad Pro profiles
 ├── scripts/           # Standalone duckyScript files
 ├── tools/             # Helper utilities and development tools
