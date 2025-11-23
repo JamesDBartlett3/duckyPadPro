@@ -10,7 +10,7 @@ from pathlib import Path
 tools_path = Path(__file__).parent.parent / "tools"
 sys.path.insert(0, str(tools_path))
 
-from shared.profile_info_manager import ProfileInfoManager  # type: ignore
+from shared.profiles import ProfileInfoManager  # type: ignore
 
 def test_sd_detection():
     """Test SD card detection"""
