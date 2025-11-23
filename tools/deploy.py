@@ -14,6 +14,7 @@ from typing import Dict, List, Optional, Tuple
 # Add shared directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent))
 from shared.profile_info_manager import ProfileInfoManager
+from shared.console_utils import print_color, print_verbose, prompt_yes_no
 from backup_and_restore import backup_sd_card
 
 
@@ -41,54 +42,6 @@ class ProfileDeployer:
         self.force = force
         self.auto_unmount = auto_unmount
         self.profile_manager = ProfileInfoManager()
-    
-    def _print_color(self, message: str, color: str = "white"):
-        """Print colored message
-        
-        Args:
-            message: Message to print
-            color: Color name (green, red, yellow, cyan, white, gray)
-        """
-        colors = {
-            "green": "\033[92m",
-            "red": "\033[91m",
-            "yellow": "\033[93m",
-            "cyan": "\033[96m",
-            "white": "\033[97m",
-            "gray": "\033[90m",
-            "reset": "\033[0m"
-        }
-        print(f"{colors.get(color, colors['white'])}{message}{colors['reset']}")
-    
-    def _print_verbose(self, message: str):
-        """Print verbose message if verbose mode enabled
-        
-        Args:
-            message: Message to print
-        """
-        if self.verbose:
-            self._print_color(f"  {message}", "cyan")
-    
-    def _prompt_yes_no(self, question: str, default: bool = True) -> bool:
-        """Prompt user for yes/no confirmation
-        
-        Args:
-            question: Question to ask
-            default: Default answer if user just presses Enter
-            
-        Returns:
-            True for yes, False for no
-        """
-        if self.force:
-            return True
-        
-        default_str = "Y/n" if default else "y/N"
-        response = input(f"{question} [{default_str}]: ").strip().lower()
-        
-        if not response:
-            return default
-        
-        return response in ("y", "yes")
     
     def find_next_profile_number(self, sd_card_path: Path) -> int:
         """Find next available profile number on SD card
@@ -141,25 +94,25 @@ class ProfileDeployer:
         dest_name = f"profile_{profile_name}"
         dest_path = sd_card_path / dest_name
         
-        self._print_verbose(f"Deploying: {profile_name} → {dest_name}")
+        print_verbose(f"Deploying: {profile_name} → {dest_name}", self.verbose)
         
         try:
             # Check if destination already exists
             if dest_path.exists():
-                self._print_color(f"  Warning: {dest_name} already exists", "yellow")
-                if not self._prompt_yes_no(f"  Overwrite {dest_name}?", default=False):
-                    self._print_color(f"  Skipped: {profile_name}", "yellow")
+                print_color(f"  Warning: {dest_name} already exists", "yellow")
+                if not prompt_yes_no(f"  Overwrite {dest_name}?", default=False, force=self.force):
+                    print_color(f"  Skipped: {profile_name}", "yellow")
                     return False
                 shutil.rmtree(dest_path)
             
             # Copy profile directory
             shutil.copytree(source_path, dest_path)
             
-            self._print_color(f"  ✓ Deployed: {dest_name}", "green")
+            print_color(f"  ✓ Deployed: {dest_name}", "green")
             return True
             
         except Exception as e:
-            self._print_color(f"  ✗ Failed to deploy {profile_name}: {e}", "red")
+            print_color(f"  ✗ Failed to deploy {profile_name}: {e}", "red")
             return False
     
     def update_profile_info(self, sd_card_path: Path) -> bool:
@@ -175,7 +128,7 @@ class ProfileDeployer:
         Returns:
             True if successful, False otherwise
         """
-        self._print_color("\n→ Updating profile_info.txt...", "cyan")
+        print_color("\n→ Updating profile_info.txt...", "cyan")
         
         try:
             profile_info_path = sd_card_path / "profile_info.txt"
@@ -195,11 +148,11 @@ class ProfileDeployer:
                                     num = int(parts[0])
                                     name = parts[1]
                                     existing_profiles[name] = num
-                                    self._print_verbose(f"Existing: {num} {name}")
+                                    print_verbose(f"Existing: {num} {name}", self.verbose)
                                 except ValueError:
                                     continue
                 except Exception as e:
-                    self._print_verbose(f"Could not read existing profile_info.txt: {e}")
+                    print_verbose(f"Could not read existing profile_info.txt: {e}", self.verbose)
             
             # Find all profile directories on SD card
             all_dirs = sorted([
@@ -208,7 +161,7 @@ class ProfileDeployer:
             ])
             
             if not all_dirs:
-                self._print_color("  No directories found", "yellow")
+                print_color("  No directories found", "yellow")
                 return False
             
             # Extract profile names from directories
@@ -233,7 +186,7 @@ class ProfileDeployer:
                 profile_names.append(profile_name)
             
             if not profile_names:
-                self._print_color("  No valid profiles found", "yellow")
+                print_color("  No valid profiles found", "yellow")
                 return False
             
             # Build final entries list
@@ -248,7 +201,7 @@ class ProfileDeployer:
                     num = existing_profiles[name]
                     final_entries.append((num, name))
                     used_numbers.add(num)
-                    self._print_verbose(f"Preserved: {num} {name}")
+                    print_verbose(f"Preserved: {num} {name}", self.verbose)
             
             # Sort existing entries by number to maintain order
             final_entries.sort(key=lambda x: x[0])
@@ -263,7 +216,7 @@ class ProfileDeployer:
             for name in profile_names:
                 if name not in existing_profiles:
                     final_entries.append((next_number, name))
-                    self._print_verbose(f"Added: {next_number} {name}")
+                    print_verbose(f"Added: {next_number} {name}", self.verbose)
                     next_number += 1
             
             # Write profile_info.txt
@@ -271,11 +224,11 @@ class ProfileDeployer:
                 for profile_num, profile_name in final_entries:
                     f.write(f"{profile_num} {profile_name}\n")
             
-            self._print_color(f"✓ Updated profile_info.txt with {len(final_entries)} profile(s)", "green")
+            print_color(f"✓ Updated profile_info.txt with {len(final_entries)} profile(s)", "green")
             return True
             
         except Exception as e:
-            self._print_color(f"✗ Failed to update profile_info.txt: {e}", "red")
+            print_color(f"✗ Failed to update profile_info.txt: {e}", "red")
             return False
     
     def run(self, source_profiles: List[Path], backup_path: Optional[Path] = None) -> int:
@@ -288,9 +241,9 @@ class ProfileDeployer:
         Returns:
             Exit code (0 for success, 1 for failure)
         """
-        self._print_color("\n" + "=" * 60, "cyan")
-        self._print_color("duckyPad Profile Deployment", "cyan")
-        self._print_color("=" * 60, "cyan")
+        print_color("\n" + "=" * 60, "cyan")
+        print_color("duckyPad Profile Deployment", "cyan")
+        print_color("=" * 60, "cyan")
         
         # Track if we auto-mounted (so we can auto-unmount later)
         auto_mounted = False
@@ -300,7 +253,7 @@ class ProfileDeployer:
         
         # If SD card not detected, try to mount it
         if not sd_card_path:
-            self._print_color("\n⚠ SD card not detected, attempting to mount...", "yellow")
+            print_color("\n⚠ SD card not detected, attempting to mount...", "yellow")
             
             # Import device controller
             from duckypad_device import DuckyPadDevice
@@ -308,15 +261,15 @@ class ProfileDeployer:
             
             # Try to mount
             if not device.mount_sd_card():
-                self._print_color("✗ Failed to mount SD card", "red")
-                self._print_color("  Please ensure duckyPad is connected and try again", "yellow")
+                print_color("✗ Failed to mount SD card", "red")
+                print_color("  Please ensure duckyPad is connected and try again", "yellow")
                 return 1
             
             auto_mounted = True
             
             # Wait for SD card to appear
             import time
-            self._print_color("  Waiting for SD card to appear...", "cyan")
+            print_color("  Waiting for SD card to appear...", "cyan")
             max_wait = 10  # seconds
             for i in range(max_wait):
                 time.sleep(1)
@@ -324,26 +277,26 @@ class ProfileDeployer:
                 if sd_card_path:
                     break
                 if self.verbose:
-                    self._print_color(f"  Waiting... ({i+1}/{max_wait})", "gray")
+                    print_color(f"  Waiting... ({i+1}/{max_wait})", "gray")
             
             if not sd_card_path:
-                self._print_color("✗ SD card did not appear after mounting", "red")
-                self._print_color("  Please check duckyPad connection and try again", "yellow")
+                print_color("✗ SD card did not appear after mounting", "red")
+                print_color("  Please check duckyPad connection and try again", "yellow")
                 return 1
             
-            self._print_color("✓ SD card mounted successfully", "green")
+            print_color("✓ SD card mounted successfully", "green")
         
-        self._print_color(f"\n✓ SD card detected: {sd_card_path}", "green")
+        print_color(f"\n✓ SD card detected: {sd_card_path}", "green")
         
         # Validate source profiles
         valid_profiles = []
         for profile_path in source_profiles:
             if not profile_path.exists():
-                self._print_color(f"✗ Profile not found: {profile_path}", "red")
+                print_color(f"✗ Profile not found: {profile_path}", "red")
                 continue
             
             if not profile_path.is_dir():
-                self._print_color(f"✗ Not a directory: {profile_path}", "red")
+                print_color(f"✗ Not a directory: {profile_path}", "red")
                 continue
             
             # Check for required files (config.txt and at least one key file)
@@ -351,36 +304,36 @@ class ProfileDeployer:
             key_files = list(profile_path.glob("key*.txt"))
             
             if not config_file.exists():
-                self._print_color(f"⚠ {profile_path.name}: Missing config.txt", "yellow")
+                print_color(f"⚠ {profile_path.name}: Missing config.txt", "yellow")
             
             if not key_files:
-                self._print_color(f"⚠ {profile_path.name}: No key files found", "yellow")
+                print_color(f"⚠ {profile_path.name}: No key files found", "yellow")
             
             valid_profiles.append(profile_path)
         
         if not valid_profiles:
-            self._print_color("\n✗ No valid profiles to deploy", "red")
+            print_color("\n✗ No valid profiles to deploy", "red")
             return 1
         
         # Display deployment plan
-        self._print_color(f"\nProfiles to deploy: {len(valid_profiles)}", "white")
+        print_color(f"\nProfiles to deploy: {len(valid_profiles)}", "white")
         for profile in valid_profiles:
-            self._print_color(f"  • {profile.name}", "white")
+            print_color(f"  • {profile.name}", "white")
         
         # Confirm deployment
-        if not self._prompt_yes_no("\nProceed with deployment?", default=True):
-            self._print_color("\n✗ Deployment cancelled", "yellow")
+        if not prompt_yes_no("\nProceed with deployment?", default=True, force=self.force):
+            print_color("\n✗ Deployment cancelled", "yellow")
             return 1
         
         # Backup SD card
         backup_result = backup_sd_card(sd_card_path=sd_card_path, backup_path=backup_path, verbose=self.verbose)
         if not backup_result:
-            self._print_color("\n✗ Backup failed", "red")
-            if not self._prompt_yes_no("Continue without backup?", default=False):
+            print_color("\n✗ Backup failed", "red")
+            if not prompt_yes_no("Continue without backup?", default=False, force=self.force):
                 return 1
         
         # Deploy profiles
-        self._print_color("\n→ Deploying profiles...", "cyan")
+        print_color("\n→ Deploying profiles...", "cyan")
         next_number = self.find_next_profile_number(sd_card_path)
         
         stats = DeploymentStats()
@@ -393,16 +346,16 @@ class ProfileDeployer:
         
         # Update profile_info.txt
         if not self.update_profile_info(sd_card_path):
-            self._print_color("\n⚠ Failed to update profile_info.txt", "yellow")
+            print_color("\n⚠ Failed to update profile_info.txt", "yellow")
         
         # Print summary
-        self._print_color("\n" + "=" * 60, "cyan")
-        self._print_color("Deployment Summary", "cyan")
-        self._print_color("=" * 60, "cyan")
-        self._print_color(f"Profiles deployed:  {stats.deployed}", "green")
+        print_color("\n" + "=" * 60, "cyan")
+        print_color("Deployment Summary", "cyan")
+        print_color("=" * 60, "cyan")
+        print_color(f"Profiles deployed:  {stats.deployed}", "green")
         
         if stats.failed > 0:
-            self._print_color(f"Failed:             {stats.failed}", "red")
+            print_color(f"Failed:             {stats.failed}", "red")
         
         # Handle unmounting
         should_unmount = False
@@ -412,23 +365,23 @@ class ProfileDeployer:
             should_unmount = True
         elif self.auto_unmount:
             # SD card was already mounted, ask user if they want to unmount
-            if self._prompt_yes_no("\nUnmount SD card?", default=True):
+            if prompt_yes_no("\nUnmount SD card?", default=True, force=self.force):
                 should_unmount = True
         
         if should_unmount:
-            self._print_color("\n→ Unmounting SD card...", "cyan")
+            print_color("\n→ Unmounting SD card...", "cyan")
             from duckypad_device import DuckyPadDevice
             device = DuckyPadDevice(verbose=self.verbose)
             if device.unmount_sd_card():
-                self._print_color("✓ SD card unmounted, duckyPad rebooting to normal mode", "green")
+                print_color("✓ SD card unmounted, duckyPad rebooting to normal mode", "green")
             else:
-                self._print_color("⚠ Failed to unmount SD card", "yellow")
+                print_color("⚠ Failed to unmount SD card", "yellow")
         
         if stats.deployed > 0:
-            self._print_color("\n✓ Deployment complete!", "green")
+            print_color("\n✓ Deployment complete!", "green")
             return 0
         else:
-            self._print_color("\n✗ No profiles were deployed", "red")
+            print_color("\n✗ No profiles were deployed", "red")
             return 1
 
 
@@ -489,3 +442,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+

@@ -20,6 +20,7 @@ from typing import Optional
 sys.path.insert(0, str(Path(__file__).parent))
 
 from shared.profile_info_manager import ProfileInfoManager
+from shared.console_utils import print_color, print_verbose, prompt_yes_no
 
 
 class BackupStats:
@@ -34,53 +35,17 @@ class BackupStats:
 class SDCardBackupRestore:
     """Backup and restore duckyPad Pro SD card."""
     
-    # ANSI color codes
-    COLORS = {
-        'red': '\033[91m',
-        'green': '\033[92m',
-        'yellow': '\033[93m',
-        'cyan': '\033[96m',
-        'gray': '\033[90m',
-        'reset': '\033[0m'
-    }
-    
-    def __init__(self, verbose: bool = False):
+    def __init__(self, verbose: bool = False, force: bool = False):
         """
         Initialize backup/restore manager.
         
         Args:
             verbose: Enable verbose output
+            force: Skip confirmation prompts
         """
         self.verbose = verbose
+        self.force = force
         self.profile_manager = ProfileInfoManager()
-    
-    def _print_color(self, message: str, color: str):
-        """Print colored message to console."""
-        print(f"{self.COLORS.get(color, '')}{message}{self.COLORS['reset']}")
-    
-    def _print_verbose(self, message: str):
-        """Print message only in verbose mode."""
-        if self.verbose:
-            print(message)
-    
-    def _prompt_yes_no(self, prompt: str, default: bool = True) -> bool:
-        """
-        Prompt user for yes/no confirmation.
-        
-        Args:
-            prompt: Prompt message
-            default: Default value if user just presses Enter
-            
-        Returns:
-            True if user confirms, False otherwise
-        """
-        default_str = "Y/n" if default else "y/N"
-        response = input(f"{prompt} [{default_str}]: ").strip().lower()
-        
-        if not response:
-            return default
-        
-        return response in ['y', 'yes']
     
     def backup(self, sd_card_path: Optional[Path] = None, backup_path: Optional[Path] = None) -> Optional[Path]:
         """
@@ -93,17 +58,17 @@ class SDCardBackupRestore:
         Returns:
             Path to backup directory if successful, None otherwise
         """
-        self._print_color("\n→ Creating SD card backup...", "cyan")
+        print_color("\n→ Creating SD card backup...", "cyan")
         
         # Auto-detect SD card if not provided
         if sd_card_path is None:
             sd_card_path = self.profile_manager.detect_sd_card()
             if sd_card_path is None:
-                self._print_color("\n✗ SD card not found", "red")
-                self._print_color("  Please insert duckyPad SD card and try again", "yellow")
+                print_color("\n✗ SD card not found", "red")
+                print_color("  Please insert duckyPad SD card and try again", "yellow")
                 return None
         
-        self._print_color(f"✓ SD card detected: {sd_card_path}", "green")
+        print_color(f"✓ SD card detected: {sd_card_path}", "green")
         
         # Generate backup path if not provided
         if backup_path is None:
@@ -112,7 +77,7 @@ class SDCardBackupRestore:
         
         backup_path.mkdir(parents=True, exist_ok=True)
         
-        self._print_verbose(f"Backup location: {backup_path}")
+        print_verbose(f"Backup location: {backup_path}", self.verbose)
         
         stats = BackupStats()
         
@@ -122,7 +87,7 @@ class SDCardBackupRestore:
                 if item.is_file():
                     # Skip .dsb bytecode files
                     if item.suffix == ".dsb":
-                        self._print_verbose(f"Skipping: {item.name} (bytecode)")
+                        print_verbose(f"Skipping: {item.name} (bytecode, self.verbose)")
                         stats.skipped += 1
                         continue
                     
@@ -136,15 +101,15 @@ class SDCardBackupRestore:
                     # Copy file
                     shutil.copy2(item, dest_path)
                     stats.backed_up += 1
-                    self._print_verbose(f"Backed up: {rel_path}")
+                    print_verbose(f"Backed up: {rel_path}", self.verbose)
             
-            self._print_color(f"✓ Backup complete: {stats.backed_up} files backed up, {stats.skipped} skipped", "green")
-            self._print_color(f"  Location: {backup_path}", "gray")
+            print_color(f"✓ Backup complete: {stats.backed_up} files backed up, {stats.skipped} skipped", "green")
+            print_color(f"  Location: {backup_path}", "gray")
             
             return backup_path
             
         except Exception as e:
-            self._print_color(f"✗ Backup failed: {e}", "red")
+            print_color(f"✗ Backup failed: {e}", "red")
             return None
     
     def list_backups(self, backup_root: Path = None) -> list:
@@ -180,41 +145,41 @@ class SDCardBackupRestore:
         Returns:
             True if successful, False otherwise
         """
-        self._print_color("\n" + "=" * 60, "cyan")
-        self._print_color("duckyPad SD Card Restore", "cyan")
-        self._print_color("=" * 60, "cyan")
+        print_color("\n" + "=" * 60, "cyan")
+        print_color("duckyPad SD Card Restore", "cyan")
+        print_color("=" * 60, "cyan")
         
         # Validate backup path
         if not backup_path.exists():
-            self._print_color(f"\n✗ Backup not found: {backup_path}", "red")
+            print_color(f"\n✗ Backup not found: {backup_path}", "red")
             return False
         
         # Auto-detect SD card if not provided
         if sd_card_path is None:
             sd_card_path = self.profile_manager.detect_sd_card()
             if sd_card_path is None:
-                self._print_color("\n✗ SD card not found", "red")
-                self._print_color("  Please insert duckyPad SD card and try again", "yellow")
+                print_color("\n✗ SD card not found", "red")
+                print_color("  Please insert duckyPad SD card and try again", "yellow")
                 return False
         
-        self._print_color(f"\n✓ SD card detected: {sd_card_path}", "green")
-        self._print_color(f"\nBackup: {backup_path.name}", "cyan")
+        print_color(f"\n✓ SD card detected: {sd_card_path}", "green")
+        print_color(f"\nBackup: {backup_path.name}", "cyan")
         
         # Count files in backup
         backup_files = list(backup_path.rglob("*"))
         file_count = len([f for f in backup_files if f.is_file()])
         
-        self._print_color(f"Files to restore: {file_count}", "cyan")
+        print_color(f"Files to restore: {file_count}", "cyan")
         
         # Confirm restore
         if not force:
-            self._print_color("\n⚠ WARNING: This will DELETE ALL current files on the SD card!", "yellow")
-            if not self._prompt_yes_no("Proceed with restore?", default=False):
-                self._print_color("\nRestore cancelled", "yellow")
+            print_color("\n⚠ WARNING: This will DELETE ALL current files on the SD card!", "yellow")
+            if not prompt_yes_no("Proceed with restore?", default=False, force=self.force):
+                print_color("\nRestore cancelled", "yellow")
                 return False
         
         # Clear SD card (except System Volume Information)
-        self._print_color("\n→ Clearing SD card...", "cyan")
+        print_color("\n→ Clearing SD card...", "cyan")
         cleared = 0
         for item in sd_card_path.iterdir():
             # Skip system folders
@@ -227,14 +192,14 @@ class SDCardBackupRestore:
                 else:
                     item.unlink()
                 cleared += 1
-                self._print_verbose(f"  Removed: {item.name}")
+                print_verbose(f"  Removed: {item.name}", self.verbose)
             except Exception as e:
-                self._print_color(f"  Warning: Could not remove {item.name}: {e}", "yellow")
+                print_color(f"  Warning: Could not remove {item.name}: {e}", "yellow")
         
-        self._print_color(f"✓ Cleared {cleared} items", "green")
+        print_color(f"✓ Cleared {cleared} items", "green")
         
         # Restore files from backup
-        self._print_color("\n→ Restoring files from backup...", "cyan")
+        print_color("\n→ Restoring files from backup...", "cyan")
         stats = BackupStats()
         
         for src_path in backup_files:
@@ -252,22 +217,22 @@ class SDCardBackupRestore:
             try:
                 shutil.copy2(src_path, dest_path)
                 stats.restored += 1
-                self._print_verbose(f"  Restored: {rel_path}")
+                print_verbose(f"  Restored: {rel_path}", self.verbose)
             except Exception as e:
-                self._print_color(f"  Warning: Could not restore {rel_path}: {e}", "yellow")
+                print_color(f"  Warning: Could not restore {rel_path}: {e}", "yellow")
                 stats.failed += 1
         
-        self._print_color(f"✓ Restored {stats.restored} files", "green")
+        print_color(f"✓ Restored {stats.restored} files", "green")
         
         # Summary
-        self._print_color("\n" + "=" * 60, "cyan")
-        self._print_color("Restore Summary", "cyan")
-        self._print_color("=" * 60, "cyan")
-        self._print_color(f"Files restored: {stats.restored}", "green")
+        print_color("\n" + "=" * 60, "cyan")
+        print_color("Restore Summary", "cyan")
+        print_color("=" * 60, "cyan")
+        print_color(f"Files restored: {stats.restored}", "green")
         if stats.failed > 0:
-            self._print_color(f"Files failed:   {stats.failed}", "red")
+            print_color(f"Files failed:   {stats.failed}", "red")
         
-        self._print_color("\n✓ Restore complete!", "green")
+        print_color("\n✓ Restore complete!", "green")
         
         return True
 
@@ -486,3 +451,4 @@ Examples:
 
 if __name__ == '__main__':
     main()
+

@@ -9,6 +9,10 @@ import sys
 from pathlib import Path
 from typing import List, Optional, Tuple
 
+# Add tools directory to path for shared utilities
+sys.path.insert(0, str(Path(__file__).parent.parent / 'tools'))
+from shared.console_utils import print_color, print_verbose, prompt_yes_no
+
 
 class ReadmeInfo:
     """Information about a readme file"""
@@ -41,32 +45,6 @@ class ReadmeGenerator:
         self.force = force
         self.verbose = verbose
     
-    def _print_color(self, message: str, color: str = "white"):
-        """Print colored message
-        
-        Args:
-            message: Message to print
-            color: Color name (green, red, yellow, cyan, white)
-        """
-        colors = {
-            "green": "\033[92m",
-            "red": "\033[91m",
-            "yellow": "\033[93m",
-            "cyan": "\033[96m",
-            "white": "\033[97m",
-            "reset": "\033[0m"
-        }
-        print(f"{colors.get(color, colors['white'])}{message}{colors['reset']}")
-    
-    def _print_verbose(self, message: str):
-        """Print verbose message if verbose mode enabled
-        
-        Args:
-            message: Message to print
-        """
-        if self.verbose:
-            self._print_color(f"  {message}", "cyan")
-    
     def _get_directories(self) -> List[Path]:
         """Get all directories recursively
         
@@ -74,11 +52,11 @@ class ReadmeGenerator:
             List of directory paths
         """
         if not self.root_path.exists():
-            self._print_color(f"Path not found: {self.root_path}", "red")
+            print_color(f"Path not found: {self.root_path}", "red")
             return []
         
         if not self.root_path.is_dir():
-            self._print_color(f"Not a directory: {self.root_path}", "red")
+            print_color(f"Not a directory: {self.root_path}", "red")
             return []
         
         # Get all subdirectories recursively
@@ -113,7 +91,7 @@ class ReadmeGenerator:
         if not files:
             return True
         
-        self._print_color("The following files will be overwritten:", "yellow")
+        print_color("The following files will be overwritten:", "yellow")
         for file in files:
             print(f"  {file}")
         print()
@@ -203,7 +181,7 @@ class ReadmeGenerator:
             path.write_text(content, encoding='utf-8')
             return True
         except Exception as e:
-            self._print_color(f"Error writing {path}: {e}", "red")
+            print_color(f"Error writing {path}: {e}", "red")
             return False
     
     def process_directory(self, directory: Path) -> bool:
@@ -227,19 +205,19 @@ class ReadmeGenerator:
             if should_write:
                 content = self._create_parent_readme(readme_info, subdirs)
                 if self._write_readme(readme_info.path, content):
-                    self._print_verbose(f"Created parent README: {readme_info.path}")
+                    print_verbose(f"Created parent README: {readme_info.path}", self.verbose, self.verbose)
                     return True
             else:
-                self._print_verbose(f"Skipped (exists): {readme_info.path}")
+                print_verbose(f"Skipped (exists, self.verbose, self.verbose): {readme_info.path}")
         else:
             # Leaf directory: create simple heading
             if not readme_info.path.exists() or self.overwrite:
                 content = self._create_leaf_readme(readme_info)
                 if self._write_readme(readme_info.path, content):
-                    self._print_verbose(f"Created leaf README: {readme_info.path}")
+                    print_verbose(f"Created leaf README: {readme_info.path}", self.verbose, self.verbose)
                     return True
             else:
-                self._print_verbose(f"Skipped (exists): {readme_info.path}")
+                print_verbose(f"Skipped (exists, self.verbose, self.verbose): {readme_info.path}")
         
         return False
     
@@ -249,25 +227,25 @@ class ReadmeGenerator:
         Returns:
             Exit code (0 for success, 1 for failure)
         """
-        self._print_color("\n" + "=" * 60, "cyan")
-        self._print_color("README Generator", "cyan")
-        self._print_color("=" * 60, "cyan")
+        print_color("\n" + "=" * 60, "cyan")
+        print_color("README Generator", "cyan")
+        print_color("=" * 60, "cyan")
         
         # Get all directories
         directories = self._get_directories()
         
         if not directories:
-            self._print_color("\nNo directories found", "yellow")
+            print_color("\nNo directories found", "yellow")
             return 0
         
-        self._print_color(f"\nFound {len(directories)} director{'y' if len(directories) == 1 else 'ies'}", "white")
+        print_color(f"\nFound {len(directories)} director{'y' if len(directories) == 1 else 'ies'}", "white")
         
         # Check for existing files if overwrite without force
         if self.overwrite and not self.force:
             files_to_overwrite = self._get_files_to_overwrite(directories)
             if files_to_overwrite:
                 if not self._prompt_overwrite(files_to_overwrite):
-                    self._print_color("\nOperation cancelled.", "red")
+                    print_color("\nOperation cancelled.", "red")
                     return 1
         
         # Process directories
@@ -277,12 +255,12 @@ class ReadmeGenerator:
                 created += 1
         
         # Print summary
-        self._print_color("\n" + "=" * 60, "cyan")
-        self._print_color("Summary", "cyan")
-        self._print_color("=" * 60, "cyan")
-        self._print_color(f"Processed: {len(directories)} director{'y' if len(directories) == 1 else 'ies'}", "white")
-        self._print_color(f"Created:   {created} README file{'s' if created != 1 else ''}", "green")
-        self._print_color("\n✓ Complete!", "green")
+        print_color("\n" + "=" * 60, "cyan")
+        print_color("Summary", "cyan")
+        print_color("=" * 60, "cyan")
+        print_color(f"Processed: {len(directories)} director{'y' if len(directories) == 1 else 'ies'}", "white")
+        print_color(f"Created:   {created} README file{'s' if created != 1 else ''}", "green")
+        print_color("\n✓ Complete!", "green")
         
         return 0
 
@@ -335,3 +313,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+

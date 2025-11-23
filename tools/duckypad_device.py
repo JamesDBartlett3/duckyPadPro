@@ -6,6 +6,9 @@ Mount/unmount SD card, detect connected duckyPad devices
 
 import sys
 from pathlib import Path
+import sys
+sys.path.insert(0, str(Path(__file__).parent.parent / 'tools'))
+from shared.console_utils import print_color, print_verbose, prompt_yes_no
 from typing import Optional, List, Dict, Any
 
 # Add vendor directory to path
@@ -312,3 +315,4 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
+

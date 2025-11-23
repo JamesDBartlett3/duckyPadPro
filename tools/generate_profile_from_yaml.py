@@ -21,6 +21,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from shared.profile_loader import ProfileLoader
 from shared.key_layout import TOTAL_KEYS
+from shared.console_utils import print_color, print_verbose
 
 
 class YAMLToProfileConverter:
@@ -674,3 +675,4 @@ Examples:
 
 if __name__ == '__main__':
     main()
+

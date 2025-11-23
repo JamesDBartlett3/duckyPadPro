@@ -34,6 +34,7 @@ import argparse
 import sys
 from pathlib import Path
 from typing import List, Optional
+import sys
 
 # Add shared directory to path
 sys.path.insert(0, str(Path(__file__).parent))
@@ -44,6 +45,7 @@ from compile import compile as compile_profiles
 from deploy import deploy as deploy_profiles
 from backup_and_restore import backup_sd_card, restore_sd_card
 from duckypad_device import DuckyPadDevice
+from shared.console_utils import print_color as _print_color
 
 
 class Colors:
@@ -58,15 +60,15 @@ class Colors:
 
 def print_color(message: str, color: str):
     """Print colored message"""
-    print(f"{color}{message}{Colors.RESET}")
+    _print_color(message, color.replace("\033[", "").replace("m", "").replace("91", "red").replace("92", "green").replace("93", "yellow").replace("94", "blue").replace("96", "cyan"))
 
 
 def print_header(message: str):
     """Print section header"""
     print()
     print("=" * 60)
-    print_color(message, Colors.CYAN)
-    print("=" * 60)
+    _print_color(message, "cyan")
+    print("=" * 60")
 
 
 def cmd_yaml(args):
@@ -303,3 +305,4 @@ Examples:
 
 if __name__ == "__main__":
     sys.exit(main())
+
