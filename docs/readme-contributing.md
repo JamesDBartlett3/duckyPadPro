@@ -5,8 +5,7 @@ Thank you for your interest in contributing to the duckyPadPro repository! This 
 ## Ways to Contribute
 
 - **Share Profiles**: Submit complete profile packages
-- **Add Scripts**: Contribute useful standalone scripts
-- **Create Helpers**: Develop tools and utilities
+- **Create Tools**: Develop helper utilities
 - **Improve Documentation**: Enhance guides and examples
 - **Report Issues**: Help identify bugs or problems
 - **Suggest Enhancements**: Propose new features or improvements
@@ -57,42 +56,11 @@ profiles/
 
 **Note**: Each profile's README should explain the deployment naming convention (users rename to `profileN_Name` when copying to SD card).
 
-### For Scripts
-
-When submitting standalone scripts:
-
-1. **Place in appropriate category**:
-2. **Use descriptive filenames**: `my-workflow.txt`, not `profile1.txt`
-3. **Add comments** explaining:
-   - What the script does
-   - Platform requirements
-   - Any prerequisites
-4. **Test the script** before submitting
-
-Example script:
-
-```
-REM Script: Open VS Code
-REM Description: Opens Visual Studio Code using Spotlight
-REM Platform: macOS
-REM Prerequisites: VS Code installed
-
-COMMAND SPACE
-DELAY 500
-STRING visual studio code
-DELAY 300
-ENTER
-```
-
 ### For Helper Utilities
 
 When submitting helper tools:
 
-1. **Place in appropriate category**:
-   - `helpers/converters/` - Format converters
-   - `helpers/generators/` - Template generators
-   - `helpers/validators/` - Validation tools
-   - `helpers/utilities/` - General utilities
+1. **Place in `tools/` directory**
 2. **Include a README** with:
    - Purpose and functionality
    - Installation instructions
@@ -178,7 +146,7 @@ Add productivity profile for macOS developers
 ## Questions?
 
 - Check existing [issues](https://github.com/JamesDBartlett3/duckyPadPro/issues)
-- Review [documentation](docs/)
+- Review [documentation](readme-docs.md)
 - Open a new issue for questions
 
 ## License

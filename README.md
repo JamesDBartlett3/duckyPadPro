@@ -49,7 +49,6 @@ Complete profile packages for the duckyPad Pro, organized by use case. Each prof
 
 - Configuration file (`config.txt`)
 - Key scripts (`key1.txt`, `key2.txt`, etc.)
-- Documentation (`README.md`)
 
 See the [profiles directory](profiles/readme-profiles.md) for available profiles.
 
@@ -78,18 +77,10 @@ For complete setup instructions, see the [Getting Started Guide](docs/getting-st
 Contributions are welcome! Whether you have:
 
 - A new profile to share
-- Useful scripts
 - Helper utilities
 - Documentation improvements
 
-Please feel free to submit a pull request.
-
-### Contribution Guidelines
-
-1. **Profiles**: Include a README describing the profile's purpose
-2. **Scripts**: Add comments explaining what the script does
-3. **Tools**: Include usage instructions and requirements
-4. **Test**: Verify your contributions work on duckyPad Pro
+Please see the [Contributing Guide](docs/readme-contributing.md) for detailed guidelines.
 
 ## Resources
 
