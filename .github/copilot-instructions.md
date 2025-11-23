@@ -44,12 +44,12 @@ duckyPadPro/
 ├── tools/                          # Development tools
 │   ├── compile.py                  # Compile duckyScript to bytecode
 │   ├── deploy.py                   # Deploy profiles to SD card
-│   ├── generate_profile_from_yaml.py  # Generate profiles from YAML (ONLY YAML reader)
+│   ├── generate.py                 # Generate profiles from YAML (ONLY YAML reader)
 │   ├── convert_text.py             # Convert text to duckyScript
 │   ├── vendor/                     # Auto-downloaded compiler dependencies (gitignored)
 │   └── shared/                     # Shared library code
-│       ├── profile_info_manager.py
-│       ├── profile_loader.py
+│       ├── profiles.py
+│       ├── yaml_loader.py
 │       └── key_layout.py
 ├── profiles/                       # Complete profile packages
 │   ├── sample_profiles/            # Auto-downloaded samples (gitignored)
@@ -345,7 +345,7 @@ The recommended workflow uses YAML templates for profile creation. YAML files su
 # Example: workbench/my-game.yaml
 
 # Generate duckyScript profile from YAML
-python tools/generate_profile_from_yaml.py workbench/my-game.yaml
+python tools/generate.py workbench/my-game.yaml
 
 # This creates profiles in workbench/profiles/ directory automatically
 # For profiles with layers, multiple profile folders are created
@@ -365,7 +365,7 @@ python tools/deploy.py
 - **Ranges**: Define multiple keys at once: `6-10: [A, E, "1", "2", "3"]`
 - **Configuration**: Orientation, colors, labels all in one file
 
-**IMPORTANT**: `generate_profile_from_yaml.py` is the ONLY script that reads YAML files. YAML templates (`.yaml` files) are input, and generated duckyScript profiles (folders with `config.txt` and `keyN.txt`) are output to `workbench/profiles/` as working drafts.
+**IMPORTANT**: `generate.py` is the ONLY script that reads YAML files. YAML templates (`.yaml` files) are input, and generated duckyScript profiles (folders with `config.txt` and `keyN.txt`) are output to `workbench/profiles/` as working drafts.
 
 ### Creating New Profiles
 
