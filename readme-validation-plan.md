@@ -12,11 +12,13 @@ Plan for implementing duckyPad Pro operating system limitation checks to prevent
 ### Key Label Limits (Orientation-Dependent)
 
 **Portrait Mode:**
+
 - Total: 10 characters maximum per key
 - Line 1 (z): 5 characters maximum
 - Line 2 (x): 5 characters maximum
 
 **Landscape Mode:**
+
 - Total: 8 characters maximum per key
 - Line 1 (z): 4 characters maximum
 - Line 2 (x): 4 characters maximum
@@ -25,41 +27,49 @@ Plan for implementing duckyPad Pro operating system limitation checks to prevent
 
 ### Phase 1: Planning & Analysis
 
-- [ ] Identify all files that need validation
+- [x] Identify all files that need validation
+
   - `tools/compile.py` - Pre-compilation validation
-  - `tools/generate.py` - YAML generation validation
+  - `tools/generate.py` - YAML generation validation (found silent truncation at line 210-211)
   - `tools/deploy.py` - Deployment validation
-  - `tools/shared/profiles.py` - ProfileInfoManager validation
+  - `tools/shared/profiles.py` - ProfileInfoManager validation (profile_info.txt parsing)
   - `tools/shared/yaml_loader.py` - YAML parsing validation
 
-- [ ] Determine validation points
-  - [ ] YAML file parsing (catch early)
-  - [ ] Profile generation (before writing files)
-  - [ ] Pre-compilation (before invoking compiler)
-  - [ ] Deployment (before copying to SD card)
+- [x] Determine validation points
 
-- [ ] Design validation architecture
-  - [ ] Create shared validation module (`tools/shared/validators.py`?)
-  - [ ] Define validation error types/classes
-  - [ ] Decide on error reporting format
+  - [x] YAML file parsing (catch early)
+  - [x] Profile generation (before writing files)
+  - [x] Pre-compilation (before invoking compiler)
+  - [x] Deployment (before copying to SD card)
+
+- [x] Design validation architecture
+  - [x] Create shared validation module (`tools/shared/validators.py`)
+  - [x] Define validation error types/classes (ValidationError)
+  - [x] Decide on error reporting format (fail-fast approach)
 
 ### Phase 2: Create Validation Module
 
-- [ ] Create `tools/shared/validators.py`
-  - [ ] `validate_profile_name(name: str) -> tuple[bool, str]`
-  - [ ] `validate_key_label(z_line: str, x_line: str, orientation: str) -> tuple[bool, str]`
-  - [ ] `validate_profile_count(profile_paths: list) -> tuple[bool, str]`
-  - [ ] `ValidationError` exception class
-  - [ ] Helper functions for character counting (handle Unicode correctly)
+- [x] Create `tools/shared/validators.py`
 
-- [ ] Add unit tests for validators
-  - [ ] Test edge cases (empty strings, Unicode, emojis)
-  - [ ] Test boundary conditions (exactly at limit)
-  - [ ] Test orientation-specific limits
+  - [x] `validate_profile_name(name: str) -> tuple[bool, str]`
+  - [x] `validate_key_label(z_line: str, x_line: str, orientation: str) -> tuple[bool, str]`
+  - [x] `validate_profile_count(profile_paths: list) -> tuple[bool, str]`
+  - [x] `ValidationError` exception class
+  - [x] Helper functions for character counting (handle Unicode correctly)
+  - [x] Added convenience `require_*` functions for raising exceptions
+  - [x] Exported all validators and constants from `tools/shared/__init__.py`
+  - [x] Tested imports successfully
+
+- [x] Add unit tests for validators
+  - [x] Test edge cases (empty strings, Unicode, emojis)
+  - [x] Test boundary conditions (exactly at limit)
+  - [x] Test orientation-specific limits
+  - [x] All 66 tests passed ✓
 
 ### Phase 3: Integrate into YAML Workflow
 
 - [ ] Update `tools/shared/yaml_loader.py`
+
   - [ ] Validate profile names during parsing
   - [ ] Validate key labels during parsing
   - [ ] Check orientation setting and apply correct limits
@@ -81,6 +91,7 @@ Plan for implementing duckyPad Pro operating system limitation checks to prevent
 ### Phase 5: Integrate into Deployment
 
 - [ ] Update `tools/deploy.py`
+
   - [ ] Count total profiles on SD card + profiles being deployed
   - [ ] Validate count doesn't exceed 64
   - [ ] Validate profile names in profile_info.txt
@@ -99,11 +110,13 @@ Plan for implementing duckyPad Pro operating system limitation checks to prevent
 ### Phase 7: Documentation
 
 - [ ] Create validation documentation
+
   - [ ] Document all limits
   - [ ] Provide examples of valid/invalid configurations
   - [ ] Explain error messages
 
 - [ ] Update existing docs
+
   - [ ] `docs/getting-started.md` - Mention limits
   - [ ] `docs/profile-guide.md` - Explain label limits
   - [ ] `tools/readme-tools.md` - Document validation behavior
@@ -114,11 +127,13 @@ Plan for implementing duckyPad Pro operating system limitation checks to prevent
 ### Phase 8: Testing
 
 - [ ] Create test profiles
+
   - [ ] Valid profiles at boundary limits
   - [ ] Invalid profiles exceeding each limit
   - [ ] Edge cases (Unicode, emojis, special characters)
 
 - [ ] Test each workflow
+
   - [ ] YAML → Generate → Compile → Deploy
   - [ ] Manual config.txt editing → Compile
   - [ ] Deployment with 64 existing profiles
@@ -143,11 +158,13 @@ Plan for implementing duckyPad Pro operating system limitation checks to prevent
 ### Error Reporting Strategy
 
 **Option A: Fail Fast**
+
 - Stop at first validation error
 - Quick feedback
 - User must fix and retry
 
 **Option B: Collect All Errors**
+
 - Report all validation errors at once
 - More efficient for users
 - More complex to implement
