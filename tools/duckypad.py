@@ -1,19 +1,32 @@
 #!/usr/bin/env python3
 """
-duckyPad Pro Orchestrator
-Complete workflow: generate → compile → deploy profiles
+duckyPad Pro Main Menu / Launcher
+Unified interface for all duckyPad Pro tools and workflows
+
+Available commands:
+    yaml        - Generate, compile, and deploy profiles from YAML templates
+    generate    - Generate profiles from YAML (alias for 'yaml --generate-only')
+    compile     - Compile duckyScript files to bytecode
+    deploy      - Deploy profiles to SD card with backup
+    backup      - Create backup of SD card
+    restore     - Restore SD card from backup
+    device      - Control duckyPad device (mount/unmount/scan)
 
 Usage examples:
-    # Full YAML workflow: generate, compile, and deploy
+    # YAML workflow: generate, compile, and deploy
     python duckypad.py yaml workbench/my-profile.yaml -f
     
-    # Generate from YAML only
-    python duckypad.py yaml workbench/my-profile.yaml --generate-only
+    # Device control
+    python duckypad.py device scan
+    python duckypad.py device mount
+    python duckypad.py device unmount
     
-    # Compile existing profiles
+    # Backup and restore
+    python duckypad.py backup
+    python duckypad.py restore
+    
+    # Individual operations
     python duckypad.py compile workbench/profiles/my-profile
-    
-    # Deploy existing profiles
     python duckypad.py deploy workbench/profiles/my-profile
 """
 
@@ -29,6 +42,8 @@ sys.path.insert(0, str(Path(__file__).parent))
 from generate_profile_from_yaml import YAMLToProfileConverter
 from compile import compile as compile_profiles
 from deploy import deploy as deploy_profiles
+from backup_and_restore import backup_sd_card, restore_sd_card
+from duckypad_device import DuckyPadDevice
 
 
 class Colors:
@@ -109,7 +124,8 @@ def cmd_yaml(args):
             source_profiles=profile_paths,
             backup_path=args.backup_path,
             verbose=args.verbose,
-            force=args.force
+            force=args.force,
+            auto_unmount=True  # Always unmount in YAML workflow
         )
         
         if exit_code != 0:
@@ -119,6 +135,56 @@ def cmd_yaml(args):
     print_header("✓ All steps complete!")
     print_color(f"YAML workflow complete: {len(profile_paths)} profile(s) ready", Colors.GREEN)
     return 0
+
+
+def cmd_backup(args):
+    """Create backup of SD card"""
+    print_header("Backing up SD card")
+    return backup_sd_card(
+        backup_path=args.backup_path,
+        verbose=args.verbose
+    )
+
+
+def cmd_restore(args):
+    """Restore SD card from backup"""
+    print_header("Restoring SD card")
+    return restore_sd_card(
+        backup_path=args.backup_path,
+        verbose=args.verbose,
+        force=args.force
+    )
+
+
+def cmd_device(args):
+    """Control duckyPad device"""
+    # For scan, always show output; for mount/unmount, only if verbose
+    verbose = args.verbose if hasattr(args, 'verbose') else False
+    show_scan_output = True  # Always show scan results
+    
+    device = DuckyPadDevice(verbose=verbose)
+    
+    if args.device_command == "scan":
+        device_verbose = DuckyPadDevice(verbose=True)  # Always verbose for scan
+        devices = device_verbose.scan_devices()
+        if not devices:
+            print_color("No duckyPad devices found", Colors.YELLOW)
+            return 1
+        return 0
+    elif args.device_command == "mount":
+        success = device.mount_sd_card()
+        if success and not verbose:
+            print_color("✓ SD card mount command sent", Colors.GREEN)
+            print_color("  Wait a few seconds for SD card to appear", Colors.YELLOW)
+        return 0 if success else 1
+    elif args.device_command == "unmount":
+        success = device.unmount_sd_card()
+        if success and not verbose:
+            print_color("✓ SD card unmount command sent", Colors.GREEN)
+            print_color("  duckyPad is rebooting into normal mode", Colors.YELLOW)
+        return 0 if success else 1
+    
+    return 1
 
 
 def cmd_compile(args):
@@ -143,30 +209,35 @@ def cmd_deploy(args):
 
 
 def main():
-    """Main orchestrator entry point"""
+    """Main menu / launcher entry point"""
     parser = argparse.ArgumentParser(
-        description="duckyPad Pro workflow orchestrator",
+        description="duckyPad Pro - Main Menu / Launcher for all tools",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Generate, compile, and deploy from YAML
+  # YAML Workflow
   python duckypad.py yaml workbench/layer_type_test.yaml -f
+  python duckypad.py yaml workbench/my-profile.yaml --generate-only
   
-  # Generate from YAML only (no compile/deploy)
-  python duckypad.py yaml workbench/layer_type_test.yaml --generate-only
+  # Device Control
+  python duckypad.py device scan
+  python duckypad.py device mount -v
+  python duckypad.py device unmount -v
   
-  # Compile existing profiles
-  python duckypad.py compile workbench/profiles/my-profile
+  # Backup & Restore
+  python duckypad.py backup -v
+  python duckypad.py restore -v
   
-  # Deploy existing profiles
-  python duckypad.py deploy workbench/profiles/profile1 workbench/profiles/profile2
+  # Individual Operations
+  python duckypad.py compile workbench/profiles/my-profile -v
+  python duckypad.py deploy workbench/profiles/profile1 profile2 -f
         """
     )
     
     subparsers = parser.add_subparsers(dest="command", help="Command to run")
     
-    # 'yaml' command - generate from YAML template
-    yaml_parser = subparsers.add_parser("yaml", help="Generate profiles from YAML template")
+    # 'yaml' command - YAML workflow
+    yaml_parser = subparsers.add_parser("yaml", help="YAML workflow: generate, compile, deploy")
     yaml_parser.add_argument("yaml_file", type=Path, help="YAML template file")
     yaml_parser.add_argument("--generate-only", action="store_true", help="Only generate, skip compile and deploy")
     yaml_parser.add_argument("--compile-only", action="store_true", help="Generate and compile, skip deploy")
@@ -191,6 +262,34 @@ Examples:
     deploy_parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
     deploy_parser.add_argument("-f", "--force", action="store_true", help="Skip confirmation prompts")
     deploy_parser.set_defaults(func=cmd_deploy)
+    
+    # 'backup' command - backup SD card
+    backup_parser = subparsers.add_parser("backup", help="Backup SD card")
+    backup_parser.add_argument("-b", "--backup-path", type=Path, help="Custom backup location")
+    backup_parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
+    backup_parser.set_defaults(func=cmd_backup)
+    
+    # 'restore' command - restore SD card
+    restore_parser = subparsers.add_parser("restore", help="Restore SD card from backup")
+    restore_parser.add_argument("backup_path", type=Path, nargs="?", help="Backup directory to restore from")
+    restore_parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
+    restore_parser.add_argument("-f", "--force", action="store_true", help="Skip confirmation prompts")
+    restore_parser.set_defaults(func=cmd_restore)
+    
+    # 'device' command - control duckyPad device
+    device_parser = subparsers.add_parser("device", help="Control duckyPad device (mount/unmount/scan)")
+    device_subparsers = device_parser.add_subparsers(dest="device_command", help="Device command")
+    
+    device_scan = device_subparsers.add_parser("scan", help="Scan for connected devices")
+    device_scan.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
+    
+    device_mount = device_subparsers.add_parser("mount", help="Mount SD card (reboot into USB mode)")
+    device_mount.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
+    
+    device_unmount = device_subparsers.add_parser("unmount", help="Unmount SD card (reboot into normal mode)")
+    device_unmount.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
+    
+    device_parser.set_defaults(func=cmd_device)
     
     args = parser.parse_args()
     
