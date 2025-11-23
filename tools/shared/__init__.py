@@ -35,6 +35,16 @@ from .profile_info_manager import (
     ProfileInfoManager,
 )
 
+from .console_utils import (
+    print_color,
+    print_success,
+    print_error,
+    print_warning,
+    print_info,
+    print_verbose,
+    prompt_yes_no,
+)
+
 __all__ = [
     'PHYSICAL_KEYS',
     'TOTAL_KEYS',
@@ -58,4 +68,11 @@ __all__ = [
     'ProfileLoader',
     'load_profile',
     'ProfileInfoManager',
+    'print_color',
+    'print_success',
+    'print_error',
+    'print_warning',
+    'print_info',
+    'print_verbose',
+    'prompt_yes_no',
 ]

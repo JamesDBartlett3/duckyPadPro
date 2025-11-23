@@ -21,6 +21,7 @@ from urllib.error import URLError, HTTPError
 sys.path.insert(0, str(Path(__file__).parent))
 try:
     from shared.profile_info_manager import ProfileInfoManager
+    from shared.console_utils import print_color, print_verbose
     PROFILE_MANAGER_AVAILABLE = True
 except ImportError:
     PROFILE_MANAGER_AVAILABLE = False
@@ -75,36 +76,10 @@ class DuckyScriptCompiler:
                 if self.profile_manager.load_profile_mapping():
                     if self.verbose:
                         profile_count = len(self.profile_manager.profile_mapping)
-                        self._print_color(f"✓ Loaded {profile_count} profile mappings from SD card", "green")
+                        print_verbose(f"✓ Loaded {profile_count} profile mappings from SD card", self.verbose, indent=False)
             except Exception as e:
                 if self.verbose:
-                    self._print_color(f"Warning: Could not initialize profile manager: {e}", "yellow")
-    
-    def _print_color(self, message: str, color: str = "white"):
-        """Print colored message
-        
-        Args:
-            message: Message to print
-            color: Color name (green, red, yellow, cyan, white)
-        """
-        colors = {
-            "green": "\033[92m",
-            "red": "\033[91m",
-            "yellow": "\033[93m",
-            "cyan": "\033[96m",
-            "white": "\033[97m",
-            "reset": "\033[0m"
-        }
-        print(f"{colors.get(color, colors['white'])}{message}{colors['reset']}")
-    
-    def _print_verbose(self, message: str):
-        """Print verbose message if verbose mode enabled
-        
-        Args:
-            message: Message to print
-        """
-        if self.verbose:
-            self._print_color(message, "cyan")
+                    print_color(f"Warning: Could not initialize profile manager: {e}", "yellow")
     
     def test_python_available(self) -> bool:
         """Check if Python is available
@@ -120,11 +95,11 @@ class DuckyScriptCompiler:
                 check=False
             )
             if result.returncode == 0:
-                self._print_verbose(f"Python found: {result.stdout.strip()}")
+                print_verbose(f"Python found: {result.stdout.strip()}", self.verbose)
                 return True
             return False
         except Exception as e:
-            self._print_color(f"Error checking Python: {e}", "red")
+            print_color(f"Error checking Python: {e}", "red")
             return False
     
     def get_latest_compiler(self) -> bool:
@@ -133,7 +108,7 @@ class DuckyScriptCompiler:
         Returns:
             True if successful, False otherwise
         """
-        self._print_color("\n→ Fetching latest compiler from GitHub...", "cyan")
+        print_color("\n→ Fetching latest compiler from GitHub...", "cyan")
         
         try:
             # Create vendor directory
@@ -150,10 +125,10 @@ class DuckyScriptCompiler:
             # Find zipball URL
             zipball_url = release_data.get("zipball_url")
             if not zipball_url:
-                self._print_color("Could not find release download URL", "red")
+                print_color("Could not find release download URL", "red")
                 return False
             
-            self._print_verbose(f"Downloading from: {zipball_url}")
+            print_verbose(f"Downloading from: {zipball_url}", self.verbose)
             
             # Download zipball
             zip_path = self.vendor_dir / "release.zip"
@@ -164,7 +139,7 @@ class DuckyScriptCompiler:
                 with open(zip_path, "wb") as f:
                     f.write(response.read())
             
-            self._print_verbose("Download complete, extracting files...")
+            print_verbose("Download complete, extracting files...", self.verbose)
             
             # Extract required files
             with zipfile.ZipFile(zip_path, "r") as zip_ref:
@@ -181,7 +156,7 @@ class DuckyScriptCompiler:
                         extracted_path = self.vendor_dir / source_path
                         target_path = self.vendor_dir / filename
                         shutil.move(str(extracted_path), str(target_path))
-                        self._print_verbose(f"  ✓ {filename}")
+                        print_verbose(f"  ✓ {filename}", self.verbose)
             
             # Clean up
             zip_path.unlink()
@@ -191,14 +166,14 @@ class DuckyScriptCompiler:
             if extracted_folder.exists():
                 shutil.rmtree(extracted_folder)
             
-            self._print_color("✓ Compiler fetched successfully", "green")
+            print_color("✓ Compiler fetched successfully", "green")
             return True
             
         except (URLError, HTTPError) as e:
-            self._print_color(f"Network error: {e}", "red")
+            print_color(f"Network error: {e}", "red")
             return False
         except Exception as e:
-            self._print_color(f"Error fetching compiler: {e}", "red")
+            print_color(f"Error fetching compiler: {e}", "red")
             return False
     
     def compile_file(self, txt_path: Path) -> bool:
@@ -211,22 +186,22 @@ class DuckyScriptCompiler:
             True if successful, False otherwise
         """
         if not txt_path.exists():
-            self._print_color(f"File not found: {txt_path}", "red")
+            print_color(f"File not found: {txt_path}", "red")
             return False
         
         if not txt_path.suffix == ".txt":
-            self._print_verbose(f"Skipping non-.txt file: {txt_path.name}")
+            print_verbose(f"Skipping non-.txt file: {txt_path.name}", self.verbose)
             return False
         
         # Check if this is a key file (not config.txt)
         if not txt_path.stem.startswith("key"):
-            self._print_verbose(f"Skipping non-key file: {txt_path.name}")
+            print_verbose(f"Skipping non-key file: {txt_path.name}", self.verbose)
             return False
         
         dsb_path = txt_path.with_suffix(".dsb")
         
         try:
-            self._print_verbose(f"Compiling: {txt_path.name}")
+            print_verbose(f"Compiling: {txt_path.name}", self.verbose)
             
             # Read and potentially transform the content
             content = txt_path.read_text(encoding="utf-8")
@@ -235,11 +210,11 @@ class DuckyScriptCompiler:
             if self.profile_manager and self.profile_manager.profile_mapping:
                 transformed_content, warnings = self.profile_manager.transform_goto_commands(content)
                 if transformed_content != content:
-                    self._print_verbose(f"  → Resolved GOTO_PROFILE name(s) to index")
+                    print_verbose(f"  → Resolved GOTO_PROFILE name(s) to index", self.verbose)
                     content = transformed_content
                 # Display any warnings
                 for warning in warnings:
-                    self._print_color(f"  Warning: {warning}", "yellow")
+                    print_color(f"  Warning: {warning}", "yellow")
             
             # Create a temporary file with the (potentially transformed) content
             with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False, encoding="utf-8") as tmp:
@@ -260,19 +235,19 @@ class DuckyScriptCompiler:
                 )
                 
                 if result.returncode == 0:
-                    self._print_color(f"  ✓ {txt_path.name} → {dsb_path.name}", "green")
+                    print_color(f"  ✓ {txt_path.name} → {dsb_path.name}", "green")
                     return True
                 else:
-                    self._print_color(f"  ✗ {txt_path.name}", "red")
+                    print_color(f"  ✗ {txt_path.name}", "red")
                     if result.stderr:
-                        self._print_color(f"    Error: {result.stderr.strip()}", "red")
+                        print_color(f"    Error: {result.stderr.strip()}", "red")
                     return False
             finally:
                 # Clean up temporary file
                 tmp_path.unlink(missing_ok=True)
                 
         except Exception as e:
-            self._print_color(f"  ✗ {txt_path.name}: {e}", "red")
+            print_color(f"  ✗ {txt_path.name}: {e}", "red")
             return False
     
     def compile_profile(self, profile_path: Path) -> CompilerStats:
@@ -287,24 +262,24 @@ class DuckyScriptCompiler:
         stats = CompilerStats()
         
         if not profile_path.exists():
-            self._print_color(f"Profile path not found: {profile_path}", "red")
+            print_color(f"Profile path not found: {profile_path}", "red")
             return stats
         
         if not profile_path.is_dir():
-            self._print_color(f"Not a directory: {profile_path}", "red")
+            print_color(f"Not a directory: {profile_path}", "red")
             return stats
         
-        self._print_color(f"\n→ Compiling profile: {profile_path.name}", "cyan")
+        print_color(f"\n→ Compiling profile: {profile_path.name}", "cyan")
         
         # Find all .txt files
         txt_files = sorted(profile_path.glob("*.txt"))
         key_files = [f for f in txt_files if f.stem.startswith("key")]
         
         if not key_files:
-            self._print_color("  No key files found", "yellow")
+            print_color("  No key files found", "yellow")
             return stats
         
-        self._print_verbose(f"  Found {len(key_files)} key file(s)")
+        print_verbose(f"  Found {len(key_files)} key file(s)", self.verbose)
         
         # Compile each file
         for txt_file in key_files:
@@ -327,20 +302,20 @@ class DuckyScriptCompiler:
         total_stats = CompilerStats()
         
         if not profiles_path.exists():
-            self._print_color(f"Profiles directory not found: {profiles_path}", "red")
+            print_color(f"Profiles directory not found: {profiles_path}", "red")
             return total_stats
         
         # Find all profile directories (starting with "profile")
         profile_dirs = sorted([
             d for d in profiles_path.iterdir()
             if d.is_dir() and d.name.lower().startswith("profile")
-        ])
+        ]
         
         if not profile_dirs:
-            self._print_color("No profile directories found", "yellow")
+            print_color("No profile directories found", "yellow")
             return total_stats
         
-        self._print_color(f"\nFound {len(profile_dirs)} profile(s)", "white")
+        print_color(f"\nFound {len(profile_dirs)} profile(s)", "white")
         
         # Compile each profile
         for profile_dir in profile_dirs:
@@ -360,22 +335,22 @@ class DuckyScriptCompiler:
         Returns:
             Exit code (0 for success, 1 for failure)
         """
-        self._print_color("\n" + "=" * 60, "cyan")
-        self._print_color("duckyScript Compiler", "cyan")
-        self._print_color("=" * 60, "cyan")
+        print_color("\n" + "=" * 60, "cyan")
+        print_color("duckyScript Compiler", "cyan")
+        print_color("=" * 60, "cyan")
         
         # Check Python availability
         if not self.test_python_available():
-            self._print_color("\n✗ Python is not available", "red")
+            print_color("\n✗ Python is not available", "red")
             return 1
         
         # Check if compiler exists, fetch if not
         if not self.compiler_path.exists():
             if not self.get_latest_compiler():
-                self._print_color("\n✗ Failed to fetch compiler", "red")
+                print_color("\n✗ Failed to fetch compiler", "red")
                 return 1
         else:
-            self._print_verbose("\n→ Using existing compiler")
+            print_verbose("\n→ Using existing compiler", self.verbose)
         
         # Compile profiles
         if profile_path is None:
@@ -387,11 +362,11 @@ class DuckyScriptCompiler:
                 profile_path = Path.cwd() / profile_path
         
         if not profile_path.exists():
-            self._print_color(f"\nPath not found: {profile_path}", "red")
+            print_color(f"\nPath not found: {profile_path}", "red")
             return 1
         
         if not profile_path.is_dir():
-            self._print_color(f"\nNot a directory: {profile_path}", "red")
+            print_color(f"\nNot a directory: {profile_path}", "red")
             return 1
         
         # Check if this is a single profile or profiles directory
@@ -406,20 +381,20 @@ class DuckyScriptCompiler:
             stats = self.compile_profiles(profile_path)
         
         # Print summary
-        self._print_color("\n" + "=" * 60, "cyan")
-        self._print_color("Compilation Summary", "cyan")
-        self._print_color("=" * 60, "cyan")
-        self._print_color(f"Total files:           {stats.total}", "white")
-        self._print_color(f"Successfully compiled: {stats.success}", "green")
+        print_color("\n" + "=" * 60, "cyan")
+        print_color("Compilation Summary", "cyan")
+        print_color("=" * 60, "cyan")
+        print_color(f"Total files:           {stats.total}", "white")
+        print_color(f"Successfully compiled: {stats.success}", "green")
         
         failed_color = "red" if stats.failed > 0 else "green"
-        self._print_color(f"Failed:                {stats.failed}", failed_color)
+        print_color(f"Failed:                {stats.failed}", failed_color)
         
         if stats.failed > 0:
-            self._print_color("\n✗ Compilation completed with errors", "red")
+            print_color("\n✗ Compilation completed with errors", "red")
             return 1
         
-        self._print_color("\n✓ Compilation complete!", "green")
+        print_color("\n✓ Compilation complete!", "green")
         return 0
 
 
