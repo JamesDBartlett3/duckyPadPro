@@ -11,7 +11,7 @@ from typing import List, Optional, Tuple
 
 # Add tools directory to path for shared utilities
 sys.path.insert(0, str(Path(__file__).parent.parent / 'tools'))
-from shared.console_utils import print_color, print_verbose, prompt_yes_no
+from shared.console import print_color, print_verbose, prompt_yes_no # type: ignore
 
 
 class ReadmeInfo:
