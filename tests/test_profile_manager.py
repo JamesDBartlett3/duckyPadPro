@@ -6,11 +6,11 @@ Test ProfileInfoManager
 import sys
 from pathlib import Path
 
-# Add helpers directory to path
-sys.path.insert(0, str(Path(__file__).parent.parent / "helpers"))
+# Add tools directory to path
+tools_path = Path(__file__).parent.parent / "tools"
+sys.path.insert(0, str(tools_path))
 
-from shared.profile_info_manager import ProfileInfoManager
-
+from shared.profile_info_manager import ProfileInfoManager  # type: ignore
 
 def test_sd_detection():
     """Test SD card detection"""

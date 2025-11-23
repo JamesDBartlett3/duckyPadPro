@@ -52,7 +52,6 @@ duckyPadPro/
 │       ├── profile_loader.py
 │       └── key_layout.py
 ├── profiles/                       # Complete profile packages
-│   ├── example-productivity/
 │   ├── sample_profiles/            # Auto-downloaded samples (gitignored)
 │   └── generate_readme_files.py    # Auto-generate readme files
 ├── workbench/                      # YAML profile templates (input files)
@@ -64,9 +63,8 @@ duckyPadPro/
 │   ├── media/
 │   ├── productivity/
 │   └── system/
-├── settings/                       # Device configuration files
 ├── tests/                          # Test and validation scripts
-│   ├── get_sample_profiles.py      # Download official samples
+│   ├── get_sample_profiles.py      # Download official sample profiles
 │   ├── test_profile_manager.py     # Test profile name mapping
 │   └── validate_compilation.py     # Validate .txt → .dsb conversions
 ├── CONTRIBUTING.md
