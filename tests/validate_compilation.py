@@ -154,9 +154,12 @@ class CompilationValidator:
         # Find all duckyScript .txt files
         txt_files = sorted([
             f for f in path.rglob("*.txt")
-            if f.is_file() and f.name.startswith("key") and 
-            (f.name.endswith(".txt") and not f.name.endswith("-release.txt") or 
-             f.name.endswith("-release.txt"))
+            if f.is_file() 
+            and f.name.startswith("key") 
+            and (
+                f.name.endswith(".txt") and not f.name.endswith("-release.txt") 
+                or f.name.endswith("-release.txt")
+            )
         ])
         
         if not txt_files:
