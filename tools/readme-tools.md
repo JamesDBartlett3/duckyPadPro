@@ -179,7 +179,6 @@ tools/
 ├── compile.py              # duckyScript compiler
 ├── deploy.py               # Profile deployment manager
 ├── device.py               # Device control (mount/unmount SD card)
-├── execute.py              # Main launcher/unified interface
 ├── generate.py             # YAML to duckyScript profile generator
 ├── vendor/                 # Auto-downloaded compiler dependencies (gitignored)
 └── shared/                 # Shared library code
@@ -189,6 +188,8 @@ tools/
     ├── profiles.py         # SD card and profile_info.txt handling
     └── yaml_loader.py      # YAML profile loading utilities
 ```
+
+**Note:** The main launcher `execute.py` is located in the project root for easy access.
 
 ## Compilation Details
 
