@@ -102,12 +102,14 @@ def _print_verbose(message: str):
 
 - [ ] Update all scripts to import from shared module:
   - [x] compile.py
-  - [ ] deploy.py
-  - [ ] backup_and_restore.py
-  - [ ] generate_profile_from_yaml.py
-  - [ ] generate_readme_files.py (in profiles/)
-  - [ ] duckypad_device.py
-  - [ ] duckypad.py
+  - [x] deploy.py
+  - [x] backup_and_restore.py
+  - [x] generate_profile_from_yaml.py
+  - [x] generate_readme_files.py (in profiles/)
+  - [x] duckypad_device.py (no changes needed - no duplicate functions)
+  - [x] duckypad.py (no changes needed - uses own Colors class design)
+
+**Status**: ✅ Complete - Removed ~150 lines of duplicate code across 5 files
 
 ### Profile Validation Logic
 
