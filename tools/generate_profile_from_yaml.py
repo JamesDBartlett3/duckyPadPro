@@ -195,27 +195,8 @@ class YAMLToProfileConverter:
         """
         lines = []
         
-        # Orientation
-        orientation = config.get('orientation', 'portrait')
-        if orientation == 'landscape':
-            lines.append('IS_LANDSCAPE 1')
-        
-        # Background color
-        bg_color = config.get('background_color', config.get('bg_color'))
-        if bg_color:
-            lines.append(f'BG_COLOR {bg_color[0]} {bg_color[1]} {bg_color[2]}')
-        
-        # Dim unused keys
-        dim_unused = config.get('dim_unused', config.get('dim_unused_keys'))
-        if dim_unused:
-            lines.append('DIM_UNUSED_KEYS 1')
-        
-        # Keydown color
-        keydown_color = config.get('keydown_color')
-        if keydown_color:
-            lines.append(f'KEYDOWN_COLOR {keydown_color[0]} {keydown_color[1]} {keydown_color[2]}')
-        
-        # Process each key for labels, colors, and flags
+        # Process each key for labels, colors, and flags FIRST
+        # (This must come before IS_LANDSCAPE for proper firmware parsing)
         for key_num in range(1, TOTAL_KEYS + 1):
             if key_num not in keys:
                 continue
@@ -232,17 +213,47 @@ class YAMLToProfileConverter:
             if len(label) >= 2 and label[1]:
                 lines.append(f'x{key_num} {label[1][:5]}')  # Max 5 chars
             
-            # Key color (SWCOLOR_N)
-            color = key_def.get('color')
-            if color:
-                lines.append(f'SWCOLOR_{key_num} {color[0]} {color[1]} {color[2]}')
-            
-            # Don't repeat flag (dr)
+            # Don't repeat flag (dr) - must come after label
             no_repeat = key_def.get('no_repeat', False)
             if no_repeat:
                 lines.append(f'dr {key_num}')
+        
+        # Background color
+        bg_color = config.get('background_color', config.get('bg_color'))
+        if bg_color:
+            lines.append(f'BG_COLOR {bg_color[0]} {bg_color[1]} {bg_color[2]}')
+        
+        # Orientation - MUST come after key labels
+        orientation = config.get('orientation', 'portrait')
+        if orientation == 'landscape':
+            lines.append('IS_LANDSCAPE 1')
+        
+        # Key colors (SWCOLOR_N) - after global settings
+        for key_num in range(1, TOTAL_KEYS + 1):
+            if key_num not in keys:
+                continue
             
-            # Allow abort flag (ab)
+            key_def = keys[key_num]
+            color = key_def.get('color')
+            if color:
+                lines.append(f'SWCOLOR_{key_num} {color[0]} {color[1]} {color[2]}')
+        
+        # Dim unused keys
+        dim_unused = config.get('dim_unused', config.get('dim_unused_keys'))
+        if dim_unused:
+            lines.append('DIM_UNUSED_KEYS 1')
+        
+        # Keydown color
+        keydown_color = config.get('keydown_color')
+        if keydown_color:
+            lines.append(f'KEYDOWN_COLOR {keydown_color[0]} {keydown_color[1]} {keydown_color[2]}')
+        
+        # Allow abort flags (ab)
+        for key_num in range(1, TOTAL_KEYS + 1):
+            if key_num not in keys:
+                continue
+            
+            key_def = keys[key_num]
             allow_abort = key_def.get('allow_abort', False)
             if allow_abort:
                 lines.append(f'ab {key_num}')
@@ -340,6 +351,11 @@ class YAMLToProfileConverter:
                     if modifier:
                         lines.append(f'KEYDOWN {modifier.upper()}')
                     lines.append(f'GOTO_PROFILE {layer_name}')
+                else:
+                    # Release on main profile: just release the modifier
+                    # (don't switch profiles, we're already on main)
+                    if modifier:
+                        lines.append(f'KEYUP {modifier.upper()}')
         
         elif layer_type == 'toggle':
             # Toggle: press to switch, press again to return
