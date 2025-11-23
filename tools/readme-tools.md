@@ -175,16 +175,19 @@ python tools/convert_text.py input.txt output.txt
 
 ```
 tools/
+├── backup.py               # SD card backup and restore
 ├── compile.py              # duckyScript compiler
 ├── deploy.py               # Profile deployment manager
-├── generate_profile.py     # Profile template generator
-├── convert_text.py         # Text to duckyScript converter
+├── device.py               # Device control (mount/unmount SD card)
+├── execute.py              # Main launcher/unified interface
+├── generate.py             # YAML to duckyScript profile generator
 ├── vendor/                 # Auto-downloaded compiler dependencies (gitignored)
 └── shared/                 # Shared library code
     ├── __init__.py
-    ├── profiles.py              # SD card and profile_info.txt handling
-    ├── yaml_loader.py           # Profile loading utilities
-    └── key_layout.py            # Key layout constants and helpers
+    ├── console.py          # Console output utilities
+    ├── key_layout.py       # Key layout constants and helpers
+    ├── profiles.py         # SD card and profile_info.txt handling
+    └── yaml_loader.py      # YAML profile loading utilities
 ```
 
 ## Compilation Details

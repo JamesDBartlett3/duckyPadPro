@@ -14,20 +14,20 @@ Available commands:
 
 Usage examples:
     # YAML workflow: generate, compile, and deploy
-    python duckypad.py yaml workbench/my-profile.yaml -f
+    python execute.py yaml workbench/my-profile.yaml -f
     
     # Device control
-    python duckypad.py device scan
-    python duckypad.py device mount
-    python duckypad.py device unmount
+    python execute.py device scan
+    python execute.py device mount
+    python execute.py device unmount
     
     # Backup and restore
-    python duckypad.py backup
-    python duckypad.py restore
+    python execute.py backup
+    python execute.py restore
     
     # Individual operations
-    python duckypad.py compile workbench/profiles/my-profile
-    python duckypad.py deploy workbench/profiles/my-profile
+    python execute.py compile workbench/profiles/my-profile
+    python execute.py deploy workbench/profiles/my-profile
 """
 
 import argparse
@@ -36,8 +36,8 @@ import traceback
 from pathlib import Path
 from typing import List, Optional
 
-# Add shared directory to path
-sys.path.insert(0, str(Path(__file__).parent))
+# Add tools directory to path
+sys.path.insert(0, str(Path(__file__).parent / 'tools'))
 
 # Import tool functions
 from generate import YAMLToProfileConverter
