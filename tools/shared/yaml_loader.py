@@ -368,7 +368,7 @@ if __name__ == '__main__':
     import sys
     
     if len(sys.argv) < 2:
-        print("Usage: python profile_loader.py <profile.yaml>")
+        print("Usage: python yaml_loader.py <profile.yaml>")
         sys.exit(1)
     
     loader = load_profile(sys.argv[1])

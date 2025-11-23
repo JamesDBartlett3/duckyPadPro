@@ -20,8 +20,8 @@ from typing import Optional
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent))
 
-from shared.profile_info_manager import ProfileInfoManager
-from shared.console_utils import print_color, print_verbose, prompt_yes_no
+from shared.profiles import ProfileInfoManager
+from shared.console import print_color, print_verbose, prompt_yes_no
 
 
 class BackupStats:
@@ -279,22 +279,22 @@ def main():
         epilog="""
 Examples:
   # Create backup
-  python backup_and_restore.py --backup
+  python backup.py --backup
   
   # List available backups
-  python backup_and_restore.py --list
+  python backup.py --list
   
   # Restore from latest backup
-  python backup_and_restore.py --restore --latest
+  python backup.py --restore --latest
   
   # Restore from specific backup
-  python backup_and_restore.py --restore backup_20251122_153000
+  python backup.py --restore backup_20251122_153000
   
   # Restore with custom backup directory
-  python backup_and_restore.py --restore backup_20251122_153000 --backup-dir /path/to/backups
+  python backup.py --restore backup_20251122_153000 --backup-dir /path/to/backups
   
   # Skip confirmation
-  python backup_and_restore.py --restore --latest -f
+  python backup.py --restore --latest -f
         """
     )
     

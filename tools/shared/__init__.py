@@ -26,16 +26,16 @@ from .key_layout import (
     get_landscape_position,
 )
 
-from .profile_loader import (
+from .yaml_loader import (
     ProfileLoader,
     load_profile,
 )
 
-from .profile_info_manager import (
+from .profiles import (
     ProfileInfoManager,
 )
 
-from .console_utils import (
+from .console import (
     print_color,
     print_success,
     print_error,

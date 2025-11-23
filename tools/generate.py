@@ -20,9 +20,9 @@ from typing import Dict, Any, List, Optional
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent))
 
-from shared.profile_loader import ProfileLoader
+from shared.yaml_loader import ProfileLoader
 from shared.key_layout import TOTAL_KEYS
-from shared.console_utils import print_color, print_verbose
+from shared.console import print_color, print_verbose
 
 
 class YAMLToProfileConverter:
@@ -621,13 +621,13 @@ def main():
         epilog="""
 Examples:
   # Generate profile from YAML
-  python generate_profile_from_yaml.py workbench/foxhole.yaml
+  python generate.py workbench/foxhole.yaml
   
   # Specify output directory
-  python generate_profile_from_yaml.py workbench/test_profile.yaml -o workbench/profiles/my-test
+  python generate.py workbench/test_profile.yaml -o workbench/profiles/my-test
   
   # Verbose output
-  python generate_profile_from_yaml.py workbench/foxhole.yaml -v
+  python generate.py workbench/foxhole.yaml -v
         """
     )
     

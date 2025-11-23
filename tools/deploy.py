@@ -13,9 +13,9 @@ from typing import Dict, List, Optional, Tuple
 
 # Add shared directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent))
-from shared.profile_info_manager import ProfileInfoManager
-from shared.console_utils import print_color, print_verbose, prompt_yes_no
-from backup_and_restore import backup_sd_card
+from shared.profiles import ProfileInfoManager
+from shared.console import print_color, print_verbose, prompt_yes_no
+from backup import backup_sd_card
 
 
 class DeploymentStats:
@@ -256,7 +256,7 @@ class ProfileDeployer:
             print_color("\n⚠ SD card not detected, attempting to mount...", "yellow")
             
             # Import device controller
-            from duckypad_device import DuckyPadDevice
+            from device import DuckyPadDevice
             device = DuckyPadDevice(verbose=self.verbose)
             
             # Try to mount
@@ -369,7 +369,7 @@ class ProfileDeployer:
         
         if should_unmount:
             print_color("\n→ Unmounting SD card...", "cyan")
-            from duckypad_device import DuckyPadDevice
+            from device import DuckyPadDevice
             device = DuckyPadDevice(verbose=self.verbose)
             if device.unmount_sd_card():
                 print_color("✓ SD card unmounted, duckyPad rebooting to normal mode", "green")

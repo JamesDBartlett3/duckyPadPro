@@ -40,12 +40,12 @@ from typing import List, Optional
 sys.path.insert(0, str(Path(__file__).parent))
 
 # Import tool functions
-from generate_profile_from_yaml import YAMLToProfileConverter
+from generate import YAMLToProfileConverter
 from compile import compile as compile_profiles
 from deploy import deploy as deploy_profiles
-from backup_and_restore import backup_sd_card, restore_sd_card
-from duckypad_device import DuckyPadDevice
-from shared.console_utils import print_color as _print_color
+from backup import backup_sd_card, restore_sd_card
+from device import DuckyPadDevice
+from shared.console import print_color as _print_color
 
 
 class Colors:

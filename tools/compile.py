@@ -20,8 +20,8 @@ from urllib.error import URLError, HTTPError
 # Add shared directory to path for ProfileInfoManager
 sys.path.insert(0, str(Path(__file__).parent))
 try:
-    from shared.profile_info_manager import ProfileInfoManager
-    from shared.console_utils import print_color, print_verbose
+    from shared.profiles import ProfileInfoManager
+    from shared.console import print_color, print_verbose
     PROFILE_MANAGER_AVAILABLE = True
 except ImportError:
     PROFILE_MANAGER_AVAILABLE = False

@@ -31,7 +31,7 @@ python tools/compile.py -v
 python tools/compile.py --no-resolve-profiles
 ```
 
-### backup_and_restore.py
+### backup.py
 
 Manages SD card backups and restoration. Backups are automatically created by deploy.py and stored in `~/.duckypad/backups/`.
 
@@ -47,19 +47,19 @@ Manages SD card backups and restoration. Backups are automatically created by de
 
 ```bash
 # Create backup
-python tools/backup_and_restore.py --backup
+python tools/backup.py --backup
 
 # List available backups
-python tools/backup_and_restore.py --list
+python tools/backup.py --list
 
 # Restore from latest backup
-python tools/backup_and_restore.py --restore --latest
+python tools/backup.py --restore --latest
 
 # Restore from specific backup
-python tools/backup_and_restore.py --restore backup_20251122_153000
+python tools/backup.py --restore backup_20251122_153000
 
-# Skip confirmation prompts
-python tools/backup_and_restore.py --restore --latest -f
+# Skip confirmation
+python tools/backup.py --restore --latest -f
 ```
 
 ### deploy.py
@@ -69,7 +69,7 @@ Deploys profiles to duckyPad Pro SD card with automatic backup and profile_info.
 **Features:**
 
 - Automatic SD card detection (Windows/macOS/Linux)
-- Backs up SD card before deployment (uses backup_and_restore.py)
+- Backs up SD card before deployment (uses backup.py)
 - Creates profile\_<name> folders (no ordinal numbers)
 - Updates profile_info.txt preserving existing order
 
@@ -110,7 +110,7 @@ python tools/generate_profile.py discord-tools 20
 python tools/generate_profile.py photo-editing 26
 ```
 
-### generate_profile_from_yaml.py
+### generate.py
 
 **THE ONLY script that reads YAML template files.** Converts YAML profile definitions (with templates, inheritance, and layers) into duckyScript profiles ready for compilation.
 
@@ -126,14 +126,14 @@ python tools/generate_profile.py photo-editing 26
 **Usage:**
 
 ```bash
-# Generate profile from YAML template
-python tools/generate_profile_from_yaml.py workbench/foxhole.yaml
+# Generate profile from YAML
+python tools/generate.py workbench/foxhole.yaml
 
-# Specify custom output directory
-python tools/generate_profile_from_yaml.py workbench/test.yaml -o workbench/profiles/my-test
+# Specify output directory
+python tools/generate.py workbench/test.yaml -o workbench/profiles/my-test
 
 # Verbose output
-python tools/generate_profile_from_yaml.py workbench/foxhole.yaml -v
+python tools/generate.py workbench/foxhole.yaml -v
 ```
 
 **YAML Template Features:**
@@ -182,8 +182,8 @@ tools/
 ├── vendor/                 # Auto-downloaded compiler dependencies (gitignored)
 └── shared/                 # Shared library code
     ├── __init__.py
-    ├── profile_info_manager.py  # SD card and profile_info.txt handling
-    ├── profile_loader.py        # Profile loading utilities
+    ├── profiles.py              # SD card and profile_info.txt handling
+    ├── yaml_loader.py           # Profile loading utilities
     └── key_layout.py            # Key layout constants and helpers
 ```
 
