@@ -12,11 +12,60 @@ from typing import Optional, List, Dict, Any
 sys.path.insert(0, str(Path(__file__).parent / "vendor"))
 
 try:
-    from hid_common import scan_duckypads  # type: ignore
-    from hid_op import duckypad_hid_sw_reset  # type: ignore
+    import hid  # type: ignore
+    from hid_common import scan_duckypads, get_empty_pc_to_duckypad_buf  # type: ignore
     HID_AVAILABLE = True
 except ImportError:
     HID_AVAILABLE = False
+
+# HID command constant for software reset
+HID_COMMAND_SW_RESET = 20
+
+
+def duckypad_hid_sw_reset(dp_dict: Dict[str, Any], reboot_into_usb_msc_mode: bool = False) -> bool:
+    """Send software reset command to duckyPad device
+    
+    Args:
+        dp_dict: Device info dictionary from scan_duckypads()
+        reboot_into_usb_msc_mode: True to mount SD card, False to unmount
+        
+    Returns:
+        True if reset command was sent successfully
+    """
+    if not HID_AVAILABLE:
+        return False
+        
+    try:
+        # Scan again because HID path might have changed
+        dp_list = scan_duckypads()
+        if dp_list is None or len(dp_list) == 0:
+            return False
+            
+        # Find device with matching serial
+        dp_to_reset_hid_path = []
+        for this_dp in dp_list:
+            if this_dp["serial"] == dp_dict["serial"]:
+                dp_to_reset_hid_path.append(this_dp["hid_path"])
+                
+        if len(dp_to_reset_hid_path) == 0:
+            return False
+            
+        # Build HID command buffer
+        pc_to_duckypad_buf = get_empty_pc_to_duckypad_buf()
+        pc_to_duckypad_buf[2] = HID_COMMAND_SW_RESET  # Command type
+        if reboot_into_usb_msc_mode:
+            pc_to_duckypad_buf[3] = 1
+            
+        # Send reset command
+        myh = hid.device()
+        myh.open_path(dp_to_reset_hid_path[0])
+        myh.write(pc_to_duckypad_buf)
+        myh.close()
+        
+        return True
+        
+    except Exception:
+        return False
 
 
 class Colors:
@@ -101,7 +150,13 @@ class DuckyPadDevice:
                 print_color("Mounting SD card...", Colors.CYAN)
             
             # Reboot into USB mass storage mode (mounts SD card)
-            duckypad_hid_sw_reset(device_dict, reboot_into_usb_msc_mode=True)
+            # Suppress vendor debug output
+            import io
+            import contextlib
+            
+            f = io.StringIO()
+            with contextlib.redirect_stdout(f):
+                duckypad_hid_sw_reset(device_dict, reboot_into_usb_msc_mode=True)
             
             if self.verbose:
                 print_color("✓ SD card mount command sent", Colors.GREEN)
@@ -144,7 +199,13 @@ class DuckyPadDevice:
                 print_color("Unmounting SD card...", Colors.CYAN)
             
             # Reboot into normal mode (unmounts SD card)
-            duckypad_hid_sw_reset(device_dict, reboot_into_usb_msc_mode=False)
+            # Suppress vendor debug output
+            import io
+            import contextlib
+            
+            f = io.StringIO()
+            with contextlib.redirect_stdout(f):
+                duckypad_hid_sw_reset(device_dict, reboot_into_usb_msc_mode=False)
             
             if self.verbose:
                 print_color("✓ SD card unmount command sent", Colors.GREEN)
