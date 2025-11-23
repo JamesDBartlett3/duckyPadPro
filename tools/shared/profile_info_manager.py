@@ -241,11 +241,8 @@ class ProfileInfoManager:
             if index is not None:
                 return f"GOTO_PROFILE {index}"
             else:
-                # Profile not found
-                warnings.append(
-                    f"Profile '{profile_name}' not found in profile_info.txt. "
-                    f"Available profiles: {', '.join(self.get_available_profiles())}"
-                )
+                # Profile not found - it's likely a new profile that will be deployed
+                # Leave the name as-is; it will be resolved at deployment time
                 return match.group(0)  # Leave unchanged
         
         transformed = re.sub(pattern, replace_func, script_content, flags=re.MULTILINE)
