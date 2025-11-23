@@ -110,7 +110,6 @@ duckyPadPro/
 
 - `profiles/` → `profiles/readme-profiles.md`
 - `tools/` → `tools/readme-tools.md`
-- `profiles/games/` → `profiles/games/readme-games.md`
 - Repository root → `README.md` (only exception)
 
 **IMPORTANT**: When creating documentation files, ALWAYS use `readme-{folder-name}.md` format except for the repository root. Never create `README.md` in subdirectories.
