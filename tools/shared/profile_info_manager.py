@@ -5,6 +5,7 @@ Handles SD card detection and profile_info.txt parsing for duckyPad Pro
 """
 
 import platform
+import re
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -220,8 +221,6 @@ class ProfileInfoManager:
         Returns:
             Tuple of (transformed content, list of warnings)
         """
-        import re
-        
         warnings = []
         
         # Pattern to match GOTO_PROFILE ProfileName (non-greedy, stops at newline or end)
@@ -248,3 +247,4 @@ class ProfileInfoManager:
         transformed = re.sub(pattern, replace_func, script_content, flags=re.MULTILINE)
         
         return transformed, warnings
+

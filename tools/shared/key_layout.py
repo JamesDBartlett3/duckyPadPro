@@ -9,6 +9,9 @@ Author: JamesDBartlett3
 Date: 2025-11-16
 """
 
+import io
+import sys
+
 # Key layout constants
 PHYSICAL_KEYS = 20  # Physical keys in grid
 TOTAL_KEYS = 26     # Including rotary encoders
@@ -277,8 +280,6 @@ def get_landscape_position(key_num):
 
 if __name__ == '__main__':
     # Demo when run directly
-    import sys
-    import io
     
     # Set UTF-8 encoding for output
     if sys.platform == 'win32':
@@ -306,3 +307,4 @@ if __name__ == '__main__':
         # Display as 1-indexed for user readability
         print(f"Key {key:2d}: Portrait row={p_pos[0]+1} col={p_pos[1]+1}, "
               f"Landscape row={l_pos[0]+1} col={l_pos[1]+1}")
+

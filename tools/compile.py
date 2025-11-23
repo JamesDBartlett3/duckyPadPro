@@ -309,7 +309,7 @@ class DuckyScriptCompiler:
         profile_dirs = sorted([
             d for d in profiles_path.iterdir()
             if d.is_dir() and d.name.lower().startswith("profile")
-        ]
+        ])
         
         if not profile_dirs:
             print_color("No profile directories found", "yellow")

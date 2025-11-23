@@ -8,10 +8,10 @@ duckyScript files and config.txt for deployment.
 Author: JamesDBartlett3
 Date: 2025-11-16
 """
-
-import yaml
 from pathlib import Path
 from typing import Dict, List, Any, Optional, Union
+
+import yaml
 
 
 class ProfileLoader:
@@ -314,7 +314,6 @@ class ProfileLoader:
                         layer['config'] = {}
                     parent_config = self.profile.get('config', {})
                     # Merge parent config with layer config (layer config takes precedence)
-                    import copy
                     merged_config = copy.deepcopy(parent_config)
                     merged_config.update(layer.get('config', {}))
                     layer['config'] = merged_config
@@ -330,7 +329,6 @@ class ProfileLoader:
                     continue
                 
                 # Copy source keys (don't override existing layer keys)
-                import copy
                 for key_num, key_def in source_keys.items():
                     if key_num not in layer['keys']:
                         # Deep copy the key definition
@@ -347,7 +345,6 @@ class ProfileLoader:
                 
                 for key_num, key_def in template_keys.items():
                     if key_num not in layer['keys']:
-                        import copy
                         layer['keys'][key_num] = copy.deepcopy(key_def)
 
 
@@ -387,3 +384,4 @@ if __name__ == '__main__':
         print(f"  {layer_id}:")
         print(f"    Name: {layer_def.get('name')}")
         print(f"    Keys: {len(loader.get_layer_keys(layer_id))}")
+

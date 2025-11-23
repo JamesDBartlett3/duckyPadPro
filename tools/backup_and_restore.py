@@ -9,11 +9,12 @@ Author: JamesDBartlett3
 Date: 2025-11-22
 """
 
-import sys
 import argparse
 import shutil
-from pathlib import Path
+import sys
+import traceback
 from datetime import datetime
+from pathlib import Path
 from typing import Optional
 
 # Add parent directory to path for imports
@@ -397,7 +398,6 @@ Examples:
         except Exception as e:
             print(f"\n✗ Error during backup: {e}")
             if args.verbose:
-                import traceback
                 traceback.print_exc()
             sys.exit(1)
     
@@ -440,7 +440,6 @@ Examples:
         except Exception as e:
             print(f"\n✗ Error during restore: {e}")
             if args.verbose:
-                import traceback
                 traceback.print_exc()
             sys.exit(1)
     
@@ -451,4 +450,5 @@ Examples:
 
 if __name__ == '__main__':
     main()
+
 

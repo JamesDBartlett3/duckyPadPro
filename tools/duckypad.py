@@ -32,9 +32,9 @@ Usage examples:
 
 import argparse
 import sys
+import traceback
 from pathlib import Path
 from typing import List, Optional
-import sys
 
 # Add shared directory to path
 sys.path.insert(0, str(Path(__file__).parent))
@@ -68,7 +68,7 @@ def print_header(message: str):
     print()
     print("=" * 60)
     _print_color(message, "cyan")
-    print("=" * 60")
+    print("=" * 60)
 
 
 def cmd_yaml(args):
@@ -91,7 +91,6 @@ def cmd_yaml(args):
     except Exception as e:
         print_color(f"✗ Generation failed: {e}", Colors.RED)
         if args.verbose:
-            import traceback
             traceback.print_exc()
         return 1
     
@@ -305,4 +304,5 @@ Examples:
 
 if __name__ == "__main__":
     sys.exit(main())
+
 

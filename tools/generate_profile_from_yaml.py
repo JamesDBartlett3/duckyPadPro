@@ -11,8 +11,9 @@ Author: JamesDBartlett3
 Date: 2025-11-22
 """
 
-import sys
 import argparse
+import sys
+import traceback
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 
@@ -668,11 +669,11 @@ Examples:
     except Exception as e:
         print(f"\n✗ Error generating profile: {e}")
         if args.verbose:
-            import traceback
             traceback.print_exc()
         sys.exit(1)
 
 
 if __name__ == '__main__':
     main()
+
 

@@ -3,12 +3,10 @@
 duckyPad Device Controller
 Mount/unmount SD card, detect connected duckyPad devices
 """
-
+import contextlib
+import io
 import sys
 from pathlib import Path
-import sys
-sys.path.insert(0, str(Path(__file__).parent.parent / 'tools'))
-from shared.console_utils import print_color, print_verbose, prompt_yes_no
 from typing import Optional, List, Dict, Any
 
 # Add vendor directory to path
@@ -154,8 +152,6 @@ class DuckyPadDevice:
             
             # Reboot into USB mass storage mode (mounts SD card)
             # Suppress vendor debug output
-            import io
-            import contextlib
             
             f = io.StringIO()
             with contextlib.redirect_stdout(f):
@@ -203,8 +199,6 @@ class DuckyPadDevice:
             
             # Reboot into normal mode (unmounts SD card)
             # Suppress vendor debug output
-            import io
-            import contextlib
             
             f = io.StringIO()
             with contextlib.redirect_stdout(f):
@@ -263,8 +257,6 @@ def scan(verbose: bool = True) -> Optional[List[Dict[str, Any]]]:
 
 def main():
     """Main entry point"""
-    import argparse
-    
     parser = argparse.ArgumentParser(
         description="Control duckyPad Pro device (mount/unmount SD card)"
     )
@@ -315,4 +307,5 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
+
 

@@ -268,7 +268,6 @@ class ProfileDeployer:
             auto_mounted = True
             
             # Wait for SD card to appear
-            import time
             print_color("  Waiting for SD card to appear...", "cyan")
             max_wait = 10  # seconds
             for i in range(max_wait):
@@ -442,6 +441,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
