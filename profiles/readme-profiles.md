@@ -623,4 +623,4 @@ profile:
 - [Getting Started Guide](../docs/getting-started.md)
 - [Profile Guide](../docs/profile-guide.md)
 - [duckyScript Documentation](https://dekunukem.github.io/duckyPad-Pro/doc/duckyscript_info.html)
-- [Helper Utilities](../helpers/readme-helpers.md)
+- [Tools & Utilities](../tools/readme-tools.md)
