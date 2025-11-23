@@ -92,11 +92,21 @@ Plan for implementing duckyPad Pro operating system limitation checks to prevent
 
 ### Phase 4: Integrate into Compilation
 
-- [ ] Update `tools/compile.py`
-  - [ ] Read config.txt to get orientation setting
-  - [ ] Parse key labels from config.txt (z1-z26, x1-x26)
-  - [ ] Validate all labels before compilation
-  - [ ] Exit with clear error if validation fails
+- [x] Update `tools/compile.py`
+  - [x] Read config.txt to get orientation setting
+  - [x] Parse key labels from config.txt (z1-z26, x1-x26)
+  - [x] Validate all labels before compilation
+  - [x] Exit with clear error if validation fails
+  - [x] Added validator imports (ValidationError, validate_key_label, require_valid_key_label)
+  - [x] Created `_parse_config()` method to extract orientation and labels from config.txt
+  - [x] Created `_validate_profile_config()` method to validate before compilation
+  - [x] Integrated validation into `compile_profile()` workflow
+  - [x] Tested with multiple scenarios:
+    - ✓ Portrait mode: caught 7-char label (exceeds 5-char limit)
+    - ✓ Portrait mode: valid 4+3 char label passes
+    - ✓ Landscape mode: caught 5-char label (exceeds 4-char limit)
+    - ✓ Landscape mode: valid 4+4 char label passes
+    - ✓ YAML-generated profiles compile successfully
 
 ### Phase 5: Integrate into Deployment
 

@@ -22,9 +22,16 @@ sys.path.insert(0, str(Path(__file__).parent))
 try:
     from shared.profiles import ProfileInfoManager
     from shared.console import print_color, print_verbose
+    from shared.validators import (
+        ValidationError,
+        validate_key_label,
+        require_valid_key_label,
+    )
     PROFILE_MANAGER_AVAILABLE = True
+    VALIDATORS_AVAILABLE = True
 except ImportError:
     PROFILE_MANAGER_AVAILABLE = False
+    VALIDATORS_AVAILABLE = False
 
 
 class CompilerStats:
@@ -176,6 +183,96 @@ class DuckyScriptCompiler:
             print_color(f"Error fetching compiler: {e}", "red")
             return False
     
+    def _parse_config(self, config_path: Path) -> Tuple[str, Dict[int, Tuple[str, str]]]:
+        """Parse config.txt to extract orientation and key labels
+        
+        Args:
+            config_path: Path to config.txt file
+            
+        Returns:
+            Tuple of (orientation, labels_dict) where:
+            - orientation: 'portrait' or 'landscape'
+            - labels_dict: {key_num: (z_line, x_line)}
+        """
+        orientation = 'portrait'  # Default
+        labels = {}  # {key_num: (z_line, x_line)}
+        
+        if not config_path.exists():
+            return orientation, labels
+        
+        try:
+            with open(config_path, 'r', encoding='utf-8') as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    
+                    # Check for orientation
+                    if line == 'IS_LANDSCAPE 1':
+                        orientation = 'landscape'
+                    
+                    # Parse key labels (z1, x1, z2, x2, etc.)
+                    parts = line.split(None, 1)  # Split on first whitespace
+                    if len(parts) == 2:
+                        directive, value = parts
+                        
+                        # Check for z labels (line 1)
+                        if directive.startswith('z') and directive[1:].isdigit():
+                            key_num = int(directive[1:])
+                            if key_num not in labels:
+                                labels[key_num] = ('', '')
+                            labels[key_num] = (value, labels[key_num][1])
+                        
+                        # Check for x labels (line 2)
+                        elif directive.startswith('x') and directive[1:].isdigit():
+                            key_num = int(directive[1:])
+                            if key_num not in labels:
+                                labels[key_num] = ('', '')
+                            labels[key_num] = (labels[key_num][0], value)
+        
+        except Exception as e:
+            if self.verbose:
+                print_color(f"Warning: Error parsing config.txt: {e}", "yellow")
+        
+        return orientation, labels
+    
+    def _validate_profile_config(self, profile_path: Path) -> bool:
+        """Validate profile configuration before compilation
+        
+        Args:
+            profile_path: Path to profile directory
+            
+        Returns:
+            True if valid, False if validation errors found
+        """
+        if not VALIDATORS_AVAILABLE:
+            return True  # Skip validation if validators not available
+        
+        config_path = profile_path / "config.txt"
+        if not config_path.exists():
+            if self.verbose:
+                print_color("  No config.txt found, skipping validation", "yellow")
+            return True
+        
+        # Parse config to get orientation and labels
+        orientation, labels = self._parse_config(config_path)
+        
+        if not labels:
+            return True  # No labels to validate
+        
+        # Validate each label
+        has_errors = False
+        for key_num, (z_line, x_line) in labels.items():
+            if not z_line and not x_line:
+                continue  # Skip empty labels
+            
+            valid, error = validate_key_label(z_line, x_line, orientation, key_num)
+            if not valid:
+                print_color(f"  ✗ Validation error: {error}", "red")
+                has_errors = True
+        
+        return not has_errors
+    
     def compile_file(self, txt_path: Path) -> bool:
         """Compile a single duckyScript file
         
@@ -270,6 +367,12 @@ class DuckyScriptCompiler:
             return stats
         
         print_color(f"\n→ Compiling profile: {profile_path.name}", "cyan")
+        
+        # Validate profile configuration before compilation
+        if not self._validate_profile_config(profile_path):
+            print_color("  ✗ Profile validation failed, skipping compilation", "red")
+            print_color("    Please fix the labels in config.txt to match orientation limits", "yellow")
+            return stats
         
         # Find all .txt files
         txt_files = sorted(profile_path.glob("*.txt"))
