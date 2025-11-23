@@ -61,11 +61,13 @@ DELAY 1000  # Long delay (1 second)
 Different operating systems use different modifier keys:
 
 **macOS:**
+
 - `COMMAND` for CMD/⌘
 - `OPTION` for ALT/⌥
 - `CONTROL` for CTRL
 
 **Windows/Linux:**
+
 - `CONTROL` for CTRL
 - `ALT` for ALT
 - `WINDOWS` or `GUI` for Windows key
@@ -123,7 +125,7 @@ python profile_generator.py profile-name 8
 
 - Explore the [profiles](../profiles/readme-profiles.md) directory for ready-to-use profiles
 - Browse [scripts](../scripts/readme-scripts.md) for standalone automations
-- Check out [helpers](../helpers/readme-helpers.md) for useful utilities
+- Check out [tools](../tools/readme-tools.md) for useful utilities
 - Read the [duckyScript documentation](https://dekunukem.github.io/duckyPad-Pro/doc/duckyscript_info.html)
 
 ## Getting Help
