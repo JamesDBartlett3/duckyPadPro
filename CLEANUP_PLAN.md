@@ -65,8 +65,8 @@ Reduce maintenance burden by extracting common patterns.
 These functions are duplicated across **all** Python scripts in `tools/`:
 
 ```python
-# Found in: compile.py, deploy.py, backup_and_restore.py, generate_profile_from_yaml.py,
-#           duckypad_device.py, generate_readme_files.py, etc.
+# Found in: compile.py, deploy.py, backup.py, generate.py,
+#           device.py, generate_readme_files.py, etc.
 
 def _print_color(message: str, color: str = "white"):
     """Print colored message"""
@@ -88,7 +88,7 @@ def _print_verbose(message: str):
 
 #### Action Items
 
-- [x] Create `tools/shared/console_utils.py` with:
+- [x] Create `tools/shared/console.py` with:
 
   - `print_color(message, color)`
   - `print_verbose(message, verbose_flag)`
@@ -96,17 +96,17 @@ def _print_verbose(message: str):
   - `print_error(message)`
   - `print_warning(message)`
   - `print_info(message)`
-  - `prompt_yes_no()` (unified from deploy.py, backup_and_restore.py, generate_readme_files.py)
+  - `prompt_yes_no()` (unified from deploy.py, backup.py, generate_readme_files.py)
 
 - [x] Update `tools/shared/__init__.py` to export new functions
 
 - [ ] Update all scripts to import from shared module:
   - [x] compile.py
   - [x] deploy.py
-  - [x] backup_and_restore.py
-  - [x] generate_profile_from_yaml.py
+  - [x] backup.py
+  - [x] generate.py
   - [x] generate_readme_files.py (in profiles/)
-  - [x] duckypad_device.py (no changes needed - no duplicate functions)
+  - [x] device.py (no changes needed - no duplicate functions)
   - [x] duckypad.py (no changes needed - uses own Colors class design)
 
 **Status**: ✅ Complete - Removed ~150 lines of duplicate code across 5 files
@@ -115,7 +115,7 @@ def _print_verbose(message: str):
 
 Profile validation code appears in multiple places but could be centralized.
 
-- [ ] Review if `tools/shared/profile_loader.py` should handle all validation
+- [ ] Review if `tools/shared/yaml_loader.py` should handle all validation
 - [ ] Remove duplicate validation from individual scripts
 
 ---
@@ -145,10 +145,10 @@ Current state: Inconsistent patterns across scripts
 
 ### Import Organization
 
-- [x] Move all `import copy` statements to top of files (profile_loader.py)
-- [x] Move all `import io`, `import contextlib`, `import argparse` to top (duckypad_device.py)
-- [x] Move all `import re` to top (profile_info_manager.py)
-- [x] Move all `import traceback` to top (backup_and_restore.py, duckypad.py, generate_profile_from_yaml.py)
+- [x] Move all `import copy` statements to top of files (yaml_loader.py)
+- [x] Move all `import io`, `import contextlib`, `import argparse` to top (device.py)
+- [x] Move all `import re` to top (profiles.py)
+- [x] Move all `import traceback` to top (backup.py, duckypad.py, generate.py)
 - [x] Move `import time` to top (deploy.py)
 - [x] Organize imports: stdlib → third-party → local
 - [x] Fix all indentation issues from import removal
@@ -177,42 +177,35 @@ Current state: Inconsistent patterns across scripts
 
 Apply critical thinking to features and files.
 
-### Files to Question
+### Analysis Results
 
-Note: As a general rule, "helpers" (scripts that are utilized by one or more other scripts) should be capable of running independently. The reason for this is to allow for development and testing of individual components without needing to run a full workflow.
+- [x] **device.py** (312 lines)
 
-- [ ] **workbench/readme-workbench.md**
+  - ✅ Actively used by `deploy.py` and `duckypad.py` for SD card mount/unmount
+  - ✅ Keep - essential functionality
 
-  - Entire directory is gitignored
-  - Is documentation for a gitignored directory useful?
-  - **Recommendation**: Remove or drastically simplify to one paragraph in main README
+- [x] **tests/test_profile_manager.py**
 
-- [ ] **tools/duckypad_device.py**
+  - ✅ Manual test script for ProfileInfoManager
+  - ✅ Keep - useful for development and testing
+  - Runs when executed directly (`python tests/test_profile_manager.py`)
 
-  - 263 lines of device communication code
-  - Is this actively used? By which scripts?
-  - If only used by deploy.py, consider inlining or making it optional
+- [x] **YAML Multiple Inheritance**
 
-- [ ] **tests/test_profile_manager.py**
+  - ✅ Feature IS implemented (supports both single and list format)
+  - ✅ Keep - `extends: "parent"` and `extends: ["parent", "template"]` both work
+  - Currently used: Single inheritance only
+  - Reserved for future use: Multi-inheritance
 
-  - Is this an actual test that runs, or example code?
-  - Should it be in tests/ if not run automatically?
+- [x] **Profile number auto-detection** (`find_next_profile_number()`)
 
-- [ ] **Multiple compiled profile output directories**
-  - workbench/profiles/ contains many test profiles
-  - These are gitignored, so documentation about them may be confusing
-  - Ensure docs don't reference gitignored content
+  - ✅ Actively used in deployment workflow
+  - ✅ Keep - essential for automatic profile numbering
 
-### Features to Question
+- [x] **workbench/readme-workbench.md**
+  - ✅ Already removed in Phase 5
 
-- [ ] **Profile number auto-detection** (deploy.py lines 100-120)
-
-  - Is this feature used in practice?
-  - Could deployment be simpler?
-
-- [ ] **Multiple inheritance in YAML profiles**
-  - Used anywhere in actual profiles?
-  - If not, consider removing to simplify profile_loader.py
+**Status**: ✅ Complete - All features analyzed, no unused code found
 
 ---
 
