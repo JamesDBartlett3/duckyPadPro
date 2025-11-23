@@ -3,6 +3,7 @@
 duckyPad Device Controller
 Mount/unmount SD card, detect connected duckyPad devices
 """
+import argparse
 import contextlib
 import io
 import sys
