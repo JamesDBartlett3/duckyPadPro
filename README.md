@@ -15,10 +15,9 @@ The duckyPad Pro is a powerful macro keyboard that uses [duckyScript](https://de
 ```
 duckyPadPro/
 ├── profiles/          # Complete duckyPad Pro profiles
-├── settings/          # Device configuration and settings
 ├── scripts/           # Standalone duckyScript files
-├── helpers/           # Helper utilities in various languages
-└── docs/             # Documentation and guides
+├── tools/             # Helper utilities and development tools
+└── docs/              # Documentation and guides
 ```
 
 ### 📁 Profiles
@@ -31,12 +30,6 @@ Complete profile packages for the duckyPad Pro, organized by use case. Each prof
 
 See the [profiles directory](profiles/readme-profiles.md) for available profiles.
 
-### ⚙️ Settings
-
-Device settings, color schemes, and configuration templates for customizing your duckyPad Pro.
-
-See the [settings directory](settings/readme-settings.md) for available configurations.
-
 ### 📜 Scripts
 
 Standalone duckyScript files organized by category:
@@ -48,32 +41,25 @@ Standalone duckyScript files organized by category:
 
 See the [scripts directory](scripts/readme-scripts.md) for available scripts.
 
-### 🛠️ Helpers
+### 🛠️ Tools
 
-Helper applications and utilities written in Python, JavaScript, Bash, and other languages:
+Helper utilities and development tools written in Python:
 
-- **converters**: Convert between different formats
-- **generators**: Generate profiles and scripts from templates
-- **validators**: Validate duckyScript syntax
-- **utilities**: General-purpose tools
+- **Profile generation**: Generate profiles from YAML templates
+- **Compilation**: Compile duckyScript to bytecode
+- **Deployment**: Deploy profiles to duckyPad Pro
+- **Backup/Restore**: Backup and restore SD card contents
 
-See the [helpers directory](helpers/readme-helpers.md) for available tools.
+See the [tools directory](tools/readme-tools.md) for available utilities.
 
 ## Getting Started
 
-1. **Browse the repository** to find profiles, scripts, or helpers that fit your needs
-2. **Download** the files you want to use
-3. **Copy** them to your duckyPad Pro device
-4. **Customize** as needed for your specific use case
+1. **Explore** the [documentation](docs/readme-docs.md) to learn about duckyPad Pro
+2. **Browse** [profiles](profiles/readme-profiles.md) and [scripts](scripts/readme-scripts.md) for ideas
+3. **Create** your own profiles using the [YAML workflow](profiles/readme-profiles.md#yaml-profile-system)
+4. **Use** the [tools](tools/readme-tools.md) to compile and deploy your profiles
 
-## Quick Start Example
-
-To use the example productivity profile:
-
-1. Navigate to `profiles/example-productivity/`
-2. Copy the entire directory to your duckyPad Pro device
-3. Select the profile from your device menu
-4. Press the configured keys to execute scripts
+For complete setup instructions, see the [Getting Started Guide](docs/getting-started.md).
 
 ## Contributing
 
@@ -90,7 +76,7 @@ Please feel free to submit a pull request.
 
 1. **Profiles**: Include a README describing the profile's purpose
 2. **Scripts**: Add comments explaining what the script does
-3. **Helpers**: Include usage instructions and requirements
+3. **Tools**: Include usage instructions and requirements
 4. **Test**: Verify your contributions work on duckyPad Pro
 
 ## Resources
