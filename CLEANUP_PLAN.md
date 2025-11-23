@@ -100,7 +100,7 @@ def _print_verbose(message: str):
 
 - [x] Update `tools/shared/__init__.py` to export new functions
 
-- [ ] Update all scripts to import from shared module:
+- [x] Update all scripts to import from shared module:
   - [x] compile.py
   - [x] deploy.py
   - [x] backup.py
@@ -111,37 +111,11 @@ def _print_verbose(message: str):
 
 **Status**: ✅ Complete - Removed ~150 lines of duplicate code across 5 files
 
-### Profile Validation Logic
-
-Profile validation code appears in multiple places but could be centralized.
-
-- [ ] Review if `tools/shared/yaml_loader.py` should handle all validation
-- [ ] Remove duplicate validation from individual scripts
-
 ---
 
 ## 🔵 Phase 4: Code Quality Improvements
 
-Make code more maintainable without adding complexity.
-
-### Type Hints
-
-- [ ] Add type hints to functions missing them (maintain consistency)
-- [ ] Ensure all public functions have type hints
-
-### Error Handling Patterns
-
-Current state: Inconsistent patterns across scripts
-
-- Some use inline `import traceback` in except blocks
-- Some have minimal error handling
-- Some suppress errors silently
-
-#### Action Items
-
-- [ ] Standardize error handling pattern
-- [ ] Move traceback imports to top of files (not inline)
-- [ ] Ensure user-facing errors are clear and actionable
+**Status**: ✅ Complete - All import organization tasks finished
 
 ### Import Organization
 
