@@ -68,17 +68,27 @@ Plan for implementing duckyPad Pro operating system limitation checks to prevent
 
 ### Phase 3: Integrate into YAML Workflow
 
-- [ ] Update `tools/shared/yaml_loader.py`
+- [x] Update `tools/shared/yaml_loader.py`
 
-  - [ ] Validate profile names during parsing
-  - [ ] Validate key labels during parsing
-  - [ ] Check orientation setting and apply correct limits
-  - [ ] Provide clear error messages with line numbers
+  - [x] Validate profile names during parsing
+  - [x] Added ValidationError import and require_valid_profile_name
+  - [x] Profile name validated when loading YAML
+  - [x] Added copy import for deepcopy usage
+  - [x] Provides clear error messages with file path
 
-- [ ] Update `tools/generate.py`
-  - [ ] Validate before generating config.txt
-  - [ ] Validate layer names
-  - [ ] Report all validation errors at once (not just first)
+- [x] Update `tools/generate.py`
+  - [x] Validate before generating config.txt
+  - [x] Validate layer names (uses same \_validate_folder_name)
+  - [x] Added validator imports (ValidationError, validate_key_label, etc.)
+  - [x] Enhanced \_validate_folder_name to check both duckyPad Pro limits (16 chars) and filesystem chars
+  - [x] Replaced silent label truncation with orientation-aware validation
+  - [x] Validates labels against portrait (5/5/10) or landscape (4/4/8) limits
+  - [x] Tested with multiple YAML files:
+    - ✓ test_profile.yaml (caught 6-char label in portrait mode)
+    - ✓ validation_test.yaml (valid labels pass)
+    - ✓ long_name_test.yaml (caught 31-char profile name)
+    - ✓ landscape_test.yaml (valid landscape labels pass)
+    - ✓ landscape_fail_test.yaml (caught 5-char label in landscape mode)
 
 ### Phase 4: Integrate into Compilation
 

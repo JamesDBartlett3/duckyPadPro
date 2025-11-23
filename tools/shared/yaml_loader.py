@@ -8,10 +8,17 @@ duckyScript files and config.txt for deployment.
 Author: JamesDBartlett3
 Date: 2025-11-16
 """
+import copy
 from pathlib import Path
 from typing import Dict, List, Any, Optional, Union
 
 import yaml
+
+from .validators import (
+    ValidationError,
+    validate_profile_name,
+    require_valid_profile_name,
+)
 
 
 class ProfileLoader:
@@ -49,6 +56,17 @@ class ProfileLoader:
             self.profile = self.data['profile']
         else:
             raise ValueError("YAML file must contain 'profile' key")
+        
+        # Validate profile name early
+        profile_name = self.profile.get('name', 'Unnamed')
+        try:
+            require_valid_profile_name(profile_name, context="profile name in YAML")
+        except ValidationError as e:
+            raise ValidationError(
+                f"{e}\n"
+                f"File: {self.yaml_path}\n"
+                f"Please shorten the profile name in your YAML file."
+            )
         
         # Load external templates
         self._load_external_templates()

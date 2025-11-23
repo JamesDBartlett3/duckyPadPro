@@ -23,6 +23,13 @@ sys.path.insert(0, str(Path(__file__).parent))
 from shared.yaml_loader import ProfileLoader
 from shared.key_layout import TOTAL_KEYS
 from shared.console import print_color, print_verbose
+from shared.validators import (
+    ValidationError,
+    validate_profile_name,
+    validate_key_label,
+    require_valid_profile_name,
+    require_valid_key_label,
+)
 
 
 class YAMLToProfileConverter:
@@ -211,9 +218,31 @@ class YAMLToProfileConverter:
                 label = [label]
             
             if len(label) >= 1 and label[0]:
-                lines.append(f'z{key_num} {label[0][:5]}')  # Max 5 chars
+                z_line = label[0]
+            else:
+                z_line = ""
+            
             if len(label) >= 2 and label[1]:
-                lines.append(f'x{key_num} {label[1][:5]}')  # Max 5 chars
+                x_line = label[1]
+            else:
+                x_line = ""
+            
+            # Validate label against orientation limits
+            if z_line or x_line:
+                orientation = config.get('orientation', 'portrait')
+                try:
+                    require_valid_key_label(z_line, x_line, orientation, key_num)
+                except ValidationError as e:
+                    raise ValidationError(
+                        f"{e}\n"
+                        f"Label: ['{z_line}', '{x_line}']\n"
+                        f"Please shorten the label in your YAML file."
+                    )
+            
+            if z_line:
+                lines.append(f'z{key_num} {z_line}')
+            if x_line:
+                lines.append(f'x{key_num} {x_line}')
             
             # Don't repeat flag (dr) - must come after label
             no_repeat = key_def.get('no_repeat', False)
@@ -589,7 +618,9 @@ class YAMLToProfileConverter:
     def _validate_folder_name(self, name: str) -> str:
         """
         Validate profile name for use as folder name.
-        Profile names must not contain invalid filesystem characters.
+        Profile names must:
+        1. Not exceed 16 characters (duckyPad Pro limit)
+        2. Not contain invalid filesystem characters
         
         Args:
             name: Profile name
@@ -598,8 +629,19 @@ class YAMLToProfileConverter:
             Profile name unchanged if valid
             
         Raises:
+            ValidationError: If profile name exceeds duckyPad Pro limit
             ValueError: If profile name contains invalid filesystem characters
         """
+        # First check duckyPad Pro limit (16 chars)
+        try:
+            require_valid_profile_name(name, context=f"profile '{name}'")
+        except ValidationError as e:
+            raise ValidationError(
+                f"{e}\n"
+                f"Please shorten the profile name in your YAML file."
+            )
+        
+        # Then check filesystem characters
         # Windows/Linux/macOS invalid chars: < > : " / \ | ? *
         invalid_chars = '<>:"/\\|?*'
         found_invalid = [c for c in name if c in invalid_chars]
