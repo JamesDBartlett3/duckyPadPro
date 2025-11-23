@@ -29,15 +29,17 @@ class DeploymentStats:
 class ProfileDeployer:
     """Deploy profiles to duckyPad SD card with backup"""
     
-    def __init__(self, verbose: bool = False, force: bool = False):
+    def __init__(self, verbose: bool = False, force: bool = False, auto_unmount: bool = False):
         """Initialize deployer
         
         Args:
             verbose: Enable verbose output
             force: Skip confirmations
+            auto_unmount: Always unmount SD card after deployment (even if already mounted)
         """
         self.verbose = verbose
         self.force = force
+        self.auto_unmount = auto_unmount
         self.profile_manager = ProfileInfoManager()
     
     def _print_color(self, message: str, color: str = "white"):
@@ -290,13 +292,46 @@ class ProfileDeployer:
         self._print_color("duckyPad Profile Deployment", "cyan")
         self._print_color("=" * 60, "cyan")
         
+        # Track if we auto-mounted (so we can auto-unmount later)
+        auto_mounted = False
+        
         # Detect SD card
         sd_card_path = self.profile_manager.detect_sd_card()
         
+        # If SD card not detected, try to mount it
         if not sd_card_path:
-            self._print_color("\n✗ SD card not detected", "red")
-            self._print_color("  Please insert duckyPad SD card and try again", "yellow")
-            return 1
+            self._print_color("\n⚠ SD card not detected, attempting to mount...", "yellow")
+            
+            # Import device controller
+            from duckypad_device import DuckyPadDevice
+            device = DuckyPadDevice(verbose=self.verbose)
+            
+            # Try to mount
+            if not device.mount_sd_card():
+                self._print_color("✗ Failed to mount SD card", "red")
+                self._print_color("  Please ensure duckyPad is connected and try again", "yellow")
+                return 1
+            
+            auto_mounted = True
+            
+            # Wait for SD card to appear
+            import time
+            self._print_color("  Waiting for SD card to appear...", "cyan")
+            max_wait = 10  # seconds
+            for i in range(max_wait):
+                time.sleep(1)
+                sd_card_path = self.profile_manager.detect_sd_card()
+                if sd_card_path:
+                    break
+                if self.verbose:
+                    self._print_color(f"  Waiting... ({i+1}/{max_wait})", "gray")
+            
+            if not sd_card_path:
+                self._print_color("✗ SD card did not appear after mounting", "red")
+                self._print_color("  Please check duckyPad connection and try again", "yellow")
+                return 1
+            
+            self._print_color("✓ SD card mounted successfully", "green")
         
         self._print_color(f"\n✓ SD card detected: {sd_card_path}", "green")
         
@@ -369,6 +404,26 @@ class ProfileDeployer:
         if stats.failed > 0:
             self._print_color(f"Failed:             {stats.failed}", "red")
         
+        # Handle unmounting
+        should_unmount = False
+        
+        if auto_mounted:
+            # We auto-mounted, so always auto-unmount
+            should_unmount = True
+        elif self.auto_unmount:
+            # SD card was already mounted, ask user if they want to unmount
+            if self._prompt_yes_no("\nUnmount SD card?", default=True):
+                should_unmount = True
+        
+        if should_unmount:
+            self._print_color("\n→ Unmounting SD card...", "cyan")
+            from duckypad_device import DuckyPadDevice
+            device = DuckyPadDevice(verbose=self.verbose)
+            if device.unmount_sd_card():
+                self._print_color("✓ SD card unmounted, duckyPad rebooting to normal mode", "green")
+            else:
+                self._print_color("⚠ Failed to unmount SD card", "yellow")
+        
         if stats.deployed > 0:
             self._print_color("\n✓ Deployment complete!", "green")
             return 0
@@ -377,7 +432,7 @@ class ProfileDeployer:
             return 1
 
 
-def deploy(source_profiles: List[Path], backup_path: Optional[Path] = None, verbose: bool = False, force: bool = False) -> int:
+def deploy(source_profiles: List[Path], backup_path: Optional[Path] = None, verbose: bool = False, force: bool = False, auto_unmount: bool = False) -> int:
     """Deploy profiles to duckyPad SD card (programmatic interface)
     
     Args:
@@ -385,6 +440,7 @@ def deploy(source_profiles: List[Path], backup_path: Optional[Path] = None, verb
         backup_path: Custom backup location (default: ~/.duckypad/backups/backup_TIMESTAMP)
         verbose: Enable verbose output
         force: Skip confirmation prompts
+        auto_unmount: Always unmount SD card after deployment (even if already mounted)
         
     Returns:
         Exit code (0 = success, 1 = failure)
@@ -393,7 +449,7 @@ def deploy(source_profiles: List[Path], backup_path: Optional[Path] = None, verb
         The function automatically reads profile_info.txt from the SD card, scans for
         all profiles, and updates the file with all profiles on the card.
     """
-    deployer = ProfileDeployer(verbose=verbose, force=force)
+    deployer = ProfileDeployer(verbose=verbose, force=force, auto_unmount=auto_unmount)
     return deployer.run(source_profiles=source_profiles, backup_path=backup_path)
 
 
