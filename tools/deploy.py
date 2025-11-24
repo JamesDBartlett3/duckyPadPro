@@ -7,6 +7,7 @@ Backs up SD card, deploys profiles to duckyPad, updates profile_info.txt
 import argparse
 import shutil
 import sys
+import time
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
