@@ -245,8 +245,15 @@ class ProfileLoader:
     
     def _load_external_templates(self):
         """Load template files from profiles/templates/ directory."""
-        # Get list of template names to load
-        template_names = self.profile.get('templates', [])
+        # Collect all template names from profile and layers
+        template_names = set(self.profile.get('templates', []))
+        
+        # Also collect templates from layers
+        layers = self.profile.get('layers', {})
+        for layer in layers.values():
+            layer_templates = layer.get('templates', [])
+            template_names.update(layer_templates)
+        
         if not template_names:
             return
         
