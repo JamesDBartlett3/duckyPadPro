@@ -5,17 +5,12 @@ Compiles .txt duckyScript source files to .dsb bytecode using make_bytecode.py
 """
 
 import argparse
-import json
 import os
-import shutil
 import subprocess
 import sys
 import tempfile
-import zipfile
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
-from urllib.request import Request, urlopen
-from urllib.error import URLError, HTTPError
 
 # Add shared directory to path for ProfileInfoManager
 sys.path.insert(0, str(Path(__file__).parent))
@@ -58,15 +53,6 @@ class CompilerStats:
 
 class DuckyScriptCompiler:
     """Compile duckyScript files to bytecode"""
-    
-    # Configuration
-    GITHUB_REPO = "duckyPad/duckyPad-Configurator"
-    REQUIRED_FILES = [
-        "make_bytecode.py",
-        "ds3_preprocessor.py", 
-        "attrdict.py",
-        "duckypad_config.py"
-    ]
     
     def __init__(self, verbose: bool = False, resolve_profiles: bool = True):
         """Initialize compiler
@@ -116,77 +102,38 @@ class DuckyScriptCompiler:
             return False
     
     def get_latest_compiler(self) -> bool:
-        """Download latest compiler from GitHub
+        """Download latest compiler using vendor.py script
         
         Returns:
             True if successful, False otherwise
         """
-        print_color("\n→ Fetching latest compiler from GitHub...", "cyan")
+        vendor_script = self.script_dir / "vendor.py"
+        
+        if not vendor_script.exists():
+            print_color(f"✗ vendor.py not found at {vendor_script}", "red")
+            return False
         
         try:
-            # Create vendor directory
-            self.vendor_dir.mkdir(parents=True, exist_ok=True)
+            # Run vendor.py to download compiler files
+            result = subprocess.run(
+                [sys.executable, str(vendor_script)],
+                capture_output=True,
+                text=True,
+                check=False
+            )
             
-            # Get latest release info
-            api_url = f"https://api.github.com/repos/{self.GITHUB_REPO}/releases/latest"
-            req = Request(api_url)
-            req.add_header("User-Agent", "duckyPad-Compiler")
-            
-            with urlopen(req, timeout=10) as response:
-                release_data = json.loads(response.read().decode())
-            
-            # Find zipball URL
-            zipball_url = release_data.get("zipball_url")
-            if not zipball_url:
-                print_color("Could not find release download URL", "red")
+            if result.returncode == 0:
+                if self.verbose and result.stdout:
+                    print(result.stdout)
+                return True
+            else:
+                print_color(f"✗ Failed to download compiler files", "red")
+                if result.stderr:
+                    print_color(result.stderr, "red")
                 return False
-            
-            print_verbose(f"Downloading from: {zipball_url}", self.verbose)
-            
-            # Download zipball
-            zip_path = self.vendor_dir / "release.zip"
-            req = Request(zipball_url)
-            req.add_header("User-Agent", "duckyPad-Compiler")
-            
-            with urlopen(req, timeout=30) as response:
-                with open(zip_path, "wb") as f:
-                    f.write(response.read())
-            
-            print_verbose("Download complete, extracting files...", self.verbose)
-            
-            # Extract required files
-            with zipfile.ZipFile(zip_path, "r") as zip_ref:
-                # Find root folder in zip
-                namelist = zip_ref.namelist()
-                root_folder = namelist[0].split("/")[0] if namelist else ""
                 
-                for filename in self.REQUIRED_FILES:
-                    source_path = f"{root_folder}/{filename}"
-                    if source_path in namelist:
-                        # Extract to vendor directory
-                        zip_ref.extract(source_path, self.vendor_dir)
-                        # Move from nested folder to vendor root
-                        extracted_path = self.vendor_dir / source_path
-                        target_path = self.vendor_dir / filename
-                        shutil.move(str(extracted_path), str(target_path))
-                        print_verbose(f"  ✓ {filename}", self.verbose)
-            
-            # Clean up
-            zip_path.unlink()
-            
-            # Remove extracted folder if it exists
-            extracted_folder = self.vendor_dir / root_folder
-            if extracted_folder.exists():
-                shutil.rmtree(extracted_folder)
-            
-            print_color("✓ Compiler fetched successfully", "green")
-            return True
-            
-        except (URLError, HTTPError) as e:
-            print_color(f"Network error: {e}", "red")
-            return False
         except Exception as e:
-            print_color(f"Error fetching compiler: {e}", "red")
+            print_color(f"✗ Error running vendor.py: {e}", "red")
             return False
     
     def _parse_config(self, config_path: Path) -> Tuple[str, Dict[int, Tuple[str, str]]]:
