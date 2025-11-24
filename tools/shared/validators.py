@@ -6,7 +6,7 @@ Validates profiles, labels, and configurations against duckyPad Pro OS limitatio
 
 Limits enforced:
 - Profile count: 64 maximum
-- Profile/layer names: 16 characters maximum
+- Profile/layer names: 14 characters maximum
 - Key labels (portrait): 10 chars total (5 per line)
 - Key labels (landscape): 8 chars total (4 per line)
 
@@ -25,7 +25,7 @@ class ValidationError(Exception):
 
 # System limits
 MAX_PROFILES = 64
-MAX_PROFILE_NAME_LENGTH = 16
+MAX_PROFILE_NAME_LENGTH = 14
 MAX_LABEL_CHARS_PORTRAIT = 10
 MAX_LABEL_CHARS_PER_LINE_PORTRAIT = 5
 MAX_LABEL_CHARS_LANDSCAPE = 8
@@ -47,7 +47,7 @@ def validate_profile_name(name: str, context: str = "Profile") -> Tuple[bool, st
         >>> validate_profile_name("MyProfile")
         (True, '')
         >>> validate_profile_name("ThisNameIsWayTooLongForDuckyPad")
-        (False, 'Profile name "ThisNameIsWayTooLongForDuckyPad" exceeds 16 character limit (35 chars)')
+        (False, 'Profile name "ThisNameIsWayTooLongForDuckyPad" exceeds 14 character limit (35 chars)')
     """
     if not name:
         return False, f"{context} name cannot be empty"
