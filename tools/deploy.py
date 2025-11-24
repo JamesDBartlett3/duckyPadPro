@@ -115,7 +115,7 @@ class ProfileDeployer:
             # Check if destination already exists
             if dest_path.exists():
                 print_color(f"  Warning: {dest_name} already exists", "yellow")
-                if not prompt_yes_no(f"  Overwrite {dest_name}?", default=False, force=self.force):
+                if not prompt_yes_no(f"  Overwrite {dest_name}?", default=True, force=self.force):
                     print_color(f"  Skipped: {profile_name}", "yellow")
                     return False
                 shutil.rmtree(dest_path)
