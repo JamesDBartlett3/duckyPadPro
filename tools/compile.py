@@ -40,6 +40,7 @@ class CompilerStats:
         self.total = 0
         self.success = 0
         self.failed = 0
+        self.validation_failed = 0
     
     def add_success(self):
         self.total += 1
@@ -47,6 +48,11 @@ class CompilerStats:
     
     def add_failure(self):
         self.total += 1
+        self.failed += 1
+    
+    def add_validation_failure(self):
+        """Mark that validation failed (counts as failure but no files were compiled)"""
+        self.validation_failed += 1
         self.failed += 1
 
 
@@ -372,6 +378,7 @@ class DuckyScriptCompiler:
         if not self._validate_profile_config(profile_path):
             print_color("  ✗ Profile validation failed, skipping compilation", "red")
             print_color("    Please fix the labels in config.txt to match orientation limits", "yellow")
+            stats.add_validation_failure()
             return stats
         
         # Find all .txt files
@@ -490,11 +497,15 @@ class DuckyScriptCompiler:
         print_color(f"Total files:           {stats.total}", "white")
         print_color(f"Successfully compiled: {stats.success}", "green")
         
-        failed_color = "red" if stats.failed > 0 else "green"
-        print_color(f"Failed:                {stats.failed}", failed_color)
+        compilation_failed = stats.failed - stats.validation_failed
+        if compilation_failed > 0:
+            print_color(f"Compilation failed:    {compilation_failed}", "red")
+        
+        if stats.validation_failed > 0:
+            print_color(f"Validation failed:     {stats.validation_failed}", "red")
         
         if stats.failed > 0:
-            print_color("\n✗ Compilation completed with errors", "red")
+            print_color("\n✗ Compilation failed", "red")
             return 1
         
         print_color("\n✓ Compilation complete!", "green")
