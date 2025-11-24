@@ -7,4 +7,4 @@ template:
     6: { key: A, label: [Left, A], hold: true }
     14: { key: D, label: [Rght, D], hold: true }
     17: { key: SPACE, label: [Jump], hold: true }
-    9: { key: C, label: [Crou] }
+    9: { key: C, label: [Crch] }  # Crouch abbreviated for landscape mode

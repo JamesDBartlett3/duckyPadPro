@@ -243,9 +243,13 @@ class ProfileLoader:
         else:
             raise ValueError(f"Invalid key definition type: {type(definition)}")
     
-    def _load_external_templates(self):
-        """Load template files from profiles/templates/ directory."""
-        # Collect all template names from profile and layers
+    def _collect_all_template_names(self):
+        """
+        Collect all template names from profile and layers.
+        
+        Returns:
+            Set of template names to load
+        """
         template_names = set(self.profile.get('templates', []))
         
         # Also collect templates from layers
@@ -253,6 +257,13 @@ class ProfileLoader:
         for layer in layers.values():
             layer_templates = layer.get('templates', [])
             template_names.update(layer_templates)
+        
+        return template_names
+    
+    def _load_external_templates(self):
+        """Load template files from profiles/templates/ directory."""
+        # Collect all template names from profile and layers
+        template_names = self._collect_all_template_names()
         
         if not template_names:
             return
