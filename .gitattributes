@@ -1,0 +1,3 @@
+# Merge strategy for .github folder
+# Always keep the dev branch version (present) when merging from main
+.github/** merge=ours
