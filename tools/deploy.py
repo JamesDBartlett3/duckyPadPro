@@ -120,8 +120,12 @@ class ProfileDeployer:
                     return False
                 shutil.rmtree(dest_path)
             
-            # Copy profile directory
-            shutil.copytree(source_path, dest_path)
+            # Copy profile directory (excluding README files)
+            def ignore_readme(directory, files):
+                """Ignore README.md and readme files during copy"""
+                return [f for f in files if f.upper().startswith('README')]
+            
+            shutil.copytree(source_path, dest_path, ignore=ignore_readme)
             
             print_color(f"  ✓ Deployed: {dest_name}", "green")
             return True
