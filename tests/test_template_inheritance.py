@@ -308,6 +308,169 @@ def test_multiple_layer_templates():
             results.fail_test("Layer multiple templates key 21", "Key 21 not found")
 
 
+def test_inline_templates_main_profile():
+    """Test that main profile can use inline templates"""
+    print("\n--- Inline Templates (Main Profile) ---")
+    
+    # Create temporary directory for test
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        tmp_path = Path(tmp_dir)
+        
+        # Create test YAML profile with inline template
+        profile_yaml = tmp_path / 'test_inline_main.yaml'
+        profile_yaml.write_text("""templates:
+  inline_keys:
+    keys:
+      8: { key: "1", label: [One] }
+      9: { key: "2", label: [Two] }
+
+profile:
+  name: TestInline
+  
+  templates:
+    - inline_keys
+  
+  keys:
+    1: { key: CTRL, label: [Ctrl] }
+""")
+        
+        # Load profile
+        loader = ProfileLoader(profile_yaml)
+        loader.load()
+        
+        # Get keys
+        keys = loader.get_keys()
+        
+        # Check that inline template keys are present
+        if 8 in keys:
+            results.pass_test("Main profile has key 8 from inline template")
+        else:
+            results.fail_test("Main inline template key 8", "Key 8 not found")
+        
+        if 9 in keys:
+            results.pass_test("Main profile has key 9 from inline template")
+        else:
+            results.fail_test("Main inline template key 9", "Key 9 not found")
+        
+        # Check that main profile keys still work
+        if 1 in keys and keys[1].get('key') == 'CTRL':
+            results.pass_test("Main profile key 1 works with inline template")
+        else:
+            results.fail_test("Main profile key with inline template", "Key 1 not correctly set")
+
+
+def test_inline_templates_layer():
+    """Test that layers can use inline templates"""
+    print("\n--- Inline Templates (Layer) ---")
+    
+    # Create temporary directory for test
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        tmp_path = Path(tmp_dir)
+        
+        # Create test YAML profile with layer using inline template
+        profile_yaml = tmp_path / 'test_inline_layer.yaml'
+        profile_yaml.write_text("""templates:
+  inline_layer_keys:
+    keys:
+      5: { key: E, label: [Use] }
+      7: { key: Q, label: [Abil] }
+
+profile:
+  name: TestInLayer
+  
+  keys:
+    1: { modifier: CTRL, layer: ctrl, label: [Ctrl], no_repeat: true }
+    2: { key: SHIFT, label: [Shft] }
+  
+  layers:
+    ctrl:
+      extends: parent
+      name: TestLyrInln
+      templates:
+        - inline_layer_keys
+      
+      keys:
+        1: { label: [Ctrl] }
+""")
+        
+        # Load profile
+        loader = ProfileLoader(profile_yaml)
+        loader.load()
+        
+        # Get layer keys
+        layer_keys = loader.get_layer_keys('ctrl')
+        
+        # Check that layer has keys from inline template
+        if 5 in layer_keys:
+            results.pass_test("Layer has key 5 from inline template")
+        else:
+            results.fail_test("Layer inline template key 5", "Key 5 not found")
+        
+        if 7 in layer_keys:
+            results.pass_test("Layer has key 7 from inline template")
+        else:
+            results.fail_test("Layer inline template key 7", "Key 7 not found")
+        
+        # Check that layer still has parent keys
+        if 2 in layer_keys:
+            results.pass_test("Layer has key 2 from parent with inline template")
+        else:
+            results.fail_test("Layer parent key with inline template", "Key 2 not found")
+
+
+def test_mixed_inline_and_external_templates():
+    """Test that profiles can use both inline and external templates"""
+    print("\n--- Mixed Inline and External Templates ---")
+    
+    # Create temporary directory for test
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        tmp_path = Path(tmp_dir)
+        templates_dir = setup_test_templates(tmp_path)
+        
+        # Create test YAML profile mixing inline and external templates
+        profile_yaml = tmp_path / 'test_mixed.yaml'
+        profile_yaml.write_text("""templates:
+  inline_action:
+    keys:
+      4: { key: R, label: [Reld] }
+
+profile:
+  name: TestMixed
+  
+  templates:
+    - inline_action
+    - media_controls
+  
+  keys:
+    1: { key: CTRL, label: [Ctrl] }
+""")
+        
+        # Load profile
+        loader = ProfileLoader(profile_yaml)
+        loader.load()
+        
+        # Get keys
+        keys = loader.get_keys()
+        
+        # Check inline template key
+        if 4 in keys:
+            results.pass_test("Profile has key 4 from inline template")
+        else:
+            results.fail_test("Mixed templates inline key 4", "Key 4 not found")
+        
+        # Check external template key
+        if 21 in keys:
+            results.pass_test("Profile has key 21 from external template")
+        else:
+            results.fail_test("Mixed templates external key 21", "Key 21 not found")
+        
+        # Check profile key
+        if 1 in keys:
+            results.pass_test("Profile has key 1 with mixed templates")
+        else:
+            results.fail_test("Mixed templates profile key 1", "Key 1 not found")
+
+
 def main():
     """Run all tests"""
     print("=" * 60)
@@ -318,6 +481,9 @@ def main():
     test_layer_template_inheritance()
     test_template_application_order()
     test_multiple_layer_templates()
+    test_inline_templates_main_profile()
+    test_inline_templates_layer()
+    test_mixed_inline_and_external_templates()
     
     success = results.print_summary()
     sys.exit(0 if success else 1)

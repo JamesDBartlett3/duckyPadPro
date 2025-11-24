@@ -245,10 +245,10 @@ class ProfileLoader:
     
     def _collect_all_template_names(self):
         """
-        Collect all template names from profile and layers.
+        Collect all template names from profile and layers that need external loading.
         
         Returns:
-            Set of template names to load
+            Set of template names to load from external files (excludes inline templates)
         """
         template_names = set(self.profile.get('templates', []))
         
@@ -257,6 +257,9 @@ class ProfileLoader:
         for layer in layers.values():
             layer_templates = layer.get('templates', [])
             template_names.update(layer_templates)
+        
+        # Remove inline templates (already in self.templates)
+        template_names = template_names - set(self.templates.keys())
         
         return template_names
     
@@ -308,16 +311,19 @@ class ProfileLoader:
         
         # Apply templates in order
         for template_name in template_names:
-            if template_name not in self.template_cache:
-                continue
-            
-            template = self.template_cache[template_name]
-            template_keys = template.get('keys', {})
-            
-            # Apply template keys (don't override existing keys)
-            for key_num, key_def in template_keys.items():
-                if key_num not in self.profile['keys']:
-                    self.profile['keys'][key_num] = key_def
+            # Check inline templates first
+            if template_name in self.templates:
+                template_keys = self.templates[template_name].get('keys', {})
+                for key_num, key_def in template_keys.items():
+                    if key_num not in self.profile['keys']:
+                        self.profile['keys'][key_num] = key_def
+            # Then check external templates
+            elif template_name in self.template_cache:
+                template = self.template_cache[template_name]
+                template_keys = template.get('keys', {})
+                for key_num, key_def in template_keys.items():
+                    if key_num not in self.profile['keys']:
+                        self.profile['keys'][key_num] = key_def
     
     def _process_layer_inheritance(self):
         """Process extends directives in layers."""
@@ -373,15 +379,19 @@ class ProfileLoader:
             # Apply templates to layer if specified
             layer_templates = layer.get('templates', [])
             for template_name in layer_templates:
-                if template_name not in self.template_cache:
-                    continue
-                
-                template = self.template_cache[template_name]
-                template_keys = template.get('keys', {})
-                
-                for key_num, key_def in template_keys.items():
-                    if key_num not in layer['keys']:
-                        layer['keys'][key_num] = copy.deepcopy(key_def)
+                # Check inline templates first
+                if template_name in self.templates:
+                    template_keys = self.templates[template_name].get('keys', {})
+                    for key_num, key_def in template_keys.items():
+                        if key_num not in layer['keys']:
+                            layer['keys'][key_num] = copy.deepcopy(key_def)
+                # Then check external templates
+                elif template_name in self.template_cache:
+                    template = self.template_cache[template_name]
+                    template_keys = template.get('keys', {})
+                    for key_num, key_def in template_keys.items():
+                        if key_num not in layer['keys']:
+                            layer['keys'][key_num] = copy.deepcopy(key_def)
 
 
 def load_profile(yaml_path: Union[str, Path]) -> ProfileLoader:
