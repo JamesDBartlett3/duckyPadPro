@@ -110,31 +110,40 @@ class CompilerUpdater:
                 namelist = zip_ref.namelist()
                 root_folder = namelist[0].split("/")[0] if namelist else ""
                 
-                # Extract all .py files from root directory
+                if self.verbose:
+                    print_verbose(f"Archive root folder: {root_folder}", self.verbose)
+                    print_verbose(f"Total files in archive: {len(namelist)}", self.verbose)
+                
+                # Extract all .py files from src/ directory
+                src_prefix = f"{root_folder}/src/"
                 for file_path in namelist:
-                    # Only process files in the root directory (not subdirectories)
-                    if file_path.startswith(f"{root_folder}/") and file_path.endswith(".py"):
-                        # Get just the filename without the root folder
-                        filename = file_path.split("/")[-1]
-                        
-                        # Skip if it's in a subdirectory
-                        path_parts = file_path.replace(f"{root_folder}/", "").split("/")
-                        if len(path_parts) > 1:
-                            continue
-                        
-                        # Extract to vendor directory
-                        zip_ref.extract(file_path, self.vendor_dir)
-                        # Move from nested folder to vendor root
-                        extracted_path = self.vendor_dir / file_path
-                        target_path = self.vendor_dir / filename
-                        
-                        # Remove existing file if present
-                        if target_path.exists():
-                            target_path.unlink()
-                        
-                        shutil.move(str(extracted_path), str(target_path))
-                        extracted_count += 1
-                        print_color(f"  ✓ {filename}", "green")
+                    # Only process .py files in src/ directory
+                    if not file_path.startswith(src_prefix) or not file_path.endswith(".py"):
+                        continue
+                    
+                    # Get just the filename
+                    filename = file_path.split("/")[-1]
+                    
+                    # Skip if it's a directory entry
+                    if not filename:
+                        continue
+                    
+                    if self.verbose:
+                        print_verbose(f"  Extracting: {filename}", self.verbose)
+                    
+                    # Extract to vendor directory
+                    zip_ref.extract(file_path, self.vendor_dir)
+                    # Move from nested folder to vendor root
+                    extracted_path = self.vendor_dir / file_path
+                    target_path = self.vendor_dir / filename
+                    
+                    # Remove existing file if present
+                    if target_path.exists():
+                        target_path.unlink()
+                    
+                    shutil.move(str(extracted_path), str(target_path))
+                    extracted_count += 1
+                    print_color(f"  ✓ {filename}", "green")
             
             # Clean up
             zip_path.unlink()
