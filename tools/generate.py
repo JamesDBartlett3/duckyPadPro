@@ -319,6 +319,18 @@ class YAMLToProfileConverter:
         action = key_def.get('action')
         layer_type = key_def.get('layer_type')
         
+        # Check if we're on a oneshot layer (need to determine parent layer type)
+        is_oneshot_layer = False
+        if self.current_profile_type == 'layer' and self.current_layer_id:
+            # Check parent keys to see if this layer is accessed via oneshot
+            parent_keys = self.loader.get_keys()
+            for parent_key_def in parent_keys.values():
+                parent_layer = parent_key_def.get('layer')
+                parent_layer_type = parent_key_def.get('layer_type')
+                if parent_layer == self.current_layer_id and parent_layer_type == 'oneshot':
+                    is_oneshot_layer = True
+                    break
+        
         if layer_type:
             # Layer switcher key
             self._generate_layer_switcher(lines, key_def, is_release)
@@ -326,13 +338,22 @@ class YAMLToProfileConverter:
             # Media command
             command = key_def.get('command', 'MUTE')
             lines.append(command)
+            # If on oneshot layer, return to parent after media action
+            if is_oneshot_layer and not is_release:
+                lines.append(f'GOTO_PROFILE {self._get_parent_profile_name()}')
         elif action == 'custom':
             # Custom script
             script = key_def.get('script', '')
             lines.append(script)
+            # If on oneshot layer, return to parent after custom script
+            if is_oneshot_layer and not is_release:
+                lines.append(f'GOTO_PROFILE {self._get_parent_profile_name()}')
         else:
             # Regular key press
             self._generate_key_press(lines, key_def)
+            # If on oneshot layer, return to parent after key press
+            if is_oneshot_layer and not is_release:
+                lines.append(f'GOTO_PROFILE {self._get_parent_profile_name()}')
         
         # Write file
         with open(path, 'w', encoding='utf-8') as f:
