@@ -1,0 +1,10 @@
+template:
+  name: media_controls
+  description: Standard media playback controls
+  keys:
+    21: { action: media, command: VOLUME_UP }
+    22: { action: media, command: VOLUME_DOWN }
+    23: { action: media, command: MUTE }
+    24: { action: media, command: NEXT_TRACK }
+    25: { action: media, command: PREV_TRACK }
+    26: { action: media, command: PLAY_PAUSE }
