@@ -309,20 +309,25 @@ class ProfileLoader:
         if 'keys' not in self.profile:
             self.profile['keys'] = {}
         
-        # Apply templates in order
+        # Save explicitly defined keys (these should override all templates)
+        explicit_keys = copy.deepcopy(self.profile.get('keys', {}))
+        
+        # Apply templates in order (later templates override earlier ones)
         for template_name in template_names:
             # Check inline templates first
             if template_name in self.templates:
                 template_keys = self.templates[template_name].get('keys', {})
                 for key_num, key_def in template_keys.items():
-                    if key_num not in self.profile['keys']:
+                    # Only apply if not explicitly defined
+                    if key_num not in explicit_keys:
                         self.profile['keys'][key_num] = key_def
             # Then check external templates
             elif template_name in self.template_cache:
                 template = self.template_cache[template_name]
                 template_keys = template.get('keys', {})
                 for key_num, key_def in template_keys.items():
-                    if key_num not in self.profile['keys']:
+                    # Only apply if not explicitly defined
+                    if key_num not in explicit_keys:
                         self.profile['keys'][key_num] = key_def
     
     def _process_layer_inheritance(self):
@@ -332,6 +337,10 @@ class ProfileLoader:
             return
         
         for layer_id, layer in layers.items():
+            # Save explicitly defined layer keys before any inheritance processing
+            # These should override both extends and templates
+            explicit_layer_keys = copy.deepcopy(layer.get('keys', {}))
+            
             extends = layer.get('extends')
             if not extends:
                 continue
@@ -370,27 +379,29 @@ class ProfileLoader:
                     print(f"Warning: Layer '{layer_id}' extends unknown source '{extend_source}'")
                     continue
                 
-                # Copy source keys (don't override existing layer keys)
+                # Copy source keys (don't override explicit layer keys)
                 for key_num, key_def in source_keys.items():
-                    if key_num not in layer['keys']:
+                    if key_num not in explicit_layer_keys:
                         # Deep copy the key definition
                         layer['keys'][key_num] = copy.deepcopy(key_def)
             
-            # Apply templates to layer if specified
+            # Apply templates to layer if specified (later templates override earlier ones and extends)
             layer_templates = layer.get('templates', [])
             for template_name in layer_templates:
                 # Check inline templates first
                 if template_name in self.templates:
                     template_keys = self.templates[template_name].get('keys', {})
                     for key_num, key_def in template_keys.items():
-                        if key_num not in layer['keys']:
+                        # Only skip if explicitly defined in layer
+                        if key_num not in explicit_layer_keys:
                             layer['keys'][key_num] = copy.deepcopy(key_def)
                 # Then check external templates
                 elif template_name in self.template_cache:
                     template = self.template_cache[template_name]
                     template_keys = template.get('keys', {})
                     for key_num, key_def in template_keys.items():
-                        if key_num not in layer['keys']:
+                        # Only skip if explicitly defined in layer
+                        if key_num not in explicit_layer_keys:
                             layer['keys'][key_num] = copy.deepcopy(key_def)
 
 

@@ -260,6 +260,53 @@ def test_template_application_order():
             results.fail_test("Template order key 6", "Key 6 not found")
 
 
+def test_template_last_wins():
+    """Test that later templates override earlier templates (coats of paint)"""
+    print("\n--- Template Last-Wins Behavior ---")
+    
+    # Create temporary directory for test
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        tmp_path = Path(tmp_dir)
+        
+        # Create test YAML profile with overlapping inline templates
+        profile_yaml = tmp_path / 'test_last_wins.yaml'
+        profile_yaml.write_text("""templates:
+  first:
+    keys:
+      5: { key: F, label: [Fst] }
+  second:
+    keys:
+      5: { key: S, label: [Snd] }
+
+profile:
+  name: TestLastWins
+  
+  templates:
+    - first
+    - second  # Should win for key 5 (last wins like "coats of paint")
+  
+  keys:
+    1: { key: CTRL, label: [Ctrl] }
+""")
+        
+        # Load profile
+        loader = ProfileLoader(profile_yaml)
+        loader.load()
+        
+        # Get keys
+        keys = loader.get_keys()
+        
+        # Check that second template wins
+        if 5 in keys:
+            key5_def = keys[5]
+            if key5_def.get('key') == 'S' and key5_def.get('label', [''])[0] == 'Snd':
+                results.pass_test("Later template overrides earlier template (last wins)")
+            else:
+                results.fail_test("Template last wins", f"Expected second template to win, got: {key5_def}")
+        else:
+            results.fail_test("Template last wins key 5", "Key 5 not found")
+
+
 def test_multiple_layer_templates():
     """Test that layers can use multiple templates"""
     print("\n--- Multiple Layer Templates ---")
@@ -480,6 +527,7 @@ def main():
     test_main_profile_template_inheritance()
     test_layer_template_inheritance()
     test_template_application_order()
+    test_template_last_wins()
     test_multiple_layer_templates()
     test_inline_templates_main_profile()
     test_inline_templates_layer()
