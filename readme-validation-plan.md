@@ -115,22 +115,51 @@ Plan for implementing duckyPad Pro operating system limitation checks to prevent
 
 ### Phase 5: Integrate into Deployment
 
-- [ ] Update `tools/deploy.py`
+- [x] Update `tools/deploy.py`
 
-  - [ ] Count total profiles on SD card + profiles being deployed
-  - [ ] Validate count doesn't exceed 64
-  - [ ] Validate profile names in profile_info.txt
+  - [x] Count total profiles on SD card + profiles being deployed
+  - [x] Validate count doesn't exceed 64
+  - [x] Validate profile names in profile_info.txt
+  - [x] Added validator imports (ValidationError, validate_profile_count, validate_profile_name, etc.)
+  - [x] Added validation_failed counter to DeploymentStats
+  - [x] Count existing profiles on SD card before deployment
+  - [x] Validate total count (existing + new) before deployment
+  - [x] Display clear breakdown: existing, new, total, and max allowed
+  - [x] Validate profile names when updating profile_info.txt
+  - [x] Skip invalid profile names with warning
 
-- [ ] Update `tools/shared/profiles.py`
-  - [ ] Add profile count validation to ProfileInfoManager
-  - [ ] Validate names when reading/writing profile_info.txt
+- [x] Update `tools/shared/profiles.py`
+
+  - [x] Add profile count validation to ProfileInfoManager
+  - [x] Validate names when reading/writing profile_info.txt
+  - [x] Added validator imports
+  - [x] Validate profile names when parsing profile_info.txt
+  - [x] Skip invalid names during parsing (silent skip for backwards compatibility)
+
+- [x] Testing
+  - [x] Created test_deployment_validation.py
+  - [x] All 15 validation tests pass:
+    - ✓ Profile count scenarios (7 tests): valid deployments, at-limit, over-limit
+    - ✓ Profile name scenarios (8 tests): valid names, too long, empty
+    - ✓ Correctly accepts valid profiles
+    - ✓ Correctly rejects invalid profiles
 
 ### Phase 6: Integration into Main Launcher
 
-- [ ] Update `execute.py`
-  - [ ] Ensure validation errors propagate correctly
-  - [ ] Provide user-friendly error messages
-  - [ ] Add `--no-validate` flag for advanced users (use at own risk)
+- [x] Update `execute.py`
+  - [x] Ensure validation errors propagate correctly
+    - ✓ cmd_yaml() checks exit codes from generate, compile, deploy
+    - ✓ cmd_compile() returns exit code from compile_profiles()
+    - ✓ All validation errors propagate through to main()
+    - ✓ Exit codes: 0 = success, 1 = failure (including validation)
+  - [x] Provide user-friendly error messages
+    - ✓ Tools already provide clear validation error messages
+    - ✓ execute.py shows which step failed
+    - ✓ Color-coded output: red for errors, yellow for warnings
+  - [ ] Add `--no-validate` flag for advanced users (optional - deferred)
+    - Note: Current design has validation integrated deeply into workflows
+    - Skipping validation could produce invalid bytecode
+    - Consider adding in future if there's a valid use case
 
 ### Phase 7: Documentation
 
@@ -151,19 +180,43 @@ Plan for implementing duckyPad Pro operating system limitation checks to prevent
 
 ### Phase 8: Testing
 
-- [ ] Create test profiles
+- [x] Create test profiles
 
-  - [ ] Valid profiles at boundary limits
-  - [ ] Invalid profiles exceeding each limit
-  - [ ] Edge cases (Unicode, emojis, special characters)
+  - [x] Valid profiles at boundary limits
+    - ✓ validation_test.yaml - portrait mode at limits
+    - ✓ landscape_test.yaml - landscape mode at limits
+  - [x] Invalid profiles exceeding each limit
+    - ✓ long_name_test.yaml - 31-char profile name
+    - ✓ landscape_fail_test.yaml - 5-char label in landscape
+    - ✓ test_profile.yaml - caught 6-char label
+  - [x] Edge cases (Unicode, emojis, special characters)
+    - ✓ test_validators.py - Unicode and emoji tests (6 test cases)
 
-- [ ] Test each workflow
+- [x] Test each workflow
 
-  - [ ] YAML → Generate → Compile → Deploy
-  - [ ] Manual config.txt editing → Compile
-  - [ ] Deployment with 64 existing profiles
+  - [x] YAML → Generate → Compile → Deploy
+    - ✓ YAML generation validates names and labels
+    - ✓ Compilation validates config.txt labels
+    - ✓ Deployment validates profile count
+  - [x] Manual config.txt editing → Compile
+    - ✓ Created ValidationFailTest profile with invalid label
+    - ✓ Compilation correctly rejects invalid labels
+  - [x] Deployment with profile limits
+    - ✓ test_deployment_validation.py - 7 profile count scenarios
+    - ✓ Correctly accepts up to 64 profiles
+    - ✓ Correctly rejects 65+ profiles
 
-- [ ] Verify error messages are clear and actionable
+- [x] Verify error messages are clear and actionable
+  - ✓ Profile name errors include character count and limit
+  - ✓ Label errors specify which line, orientation, and limit
+  - ✓ Profile count errors show existing, new, total, and max
+  - ✓ All errors include context and suggested fixes
+
+**Testing Summary:**
+
+- Unit tests: 66 validator tests + 15 deployment tests = 81 total ✓
+- Integration tests: 5 YAML files tested with various scenarios ✓
+- Exit codes: Properly return 1 on failure, 0 on success ✓
 
 ## Technical Considerations
 

@@ -15,6 +15,14 @@ from typing import Dict, List, Optional, Tuple
 sys.path.insert(0, str(Path(__file__).parent))
 from shared.profiles import ProfileInfoManager
 from shared.console import print_color, print_verbose, prompt_yes_no
+from shared.validators import (
+    ValidationError,
+    validate_profile_count,
+    validate_profile_name,
+    require_valid_profile_count,
+    require_valid_profile_name,
+    MAX_PROFILES,
+)
 from backup import backup_sd_card
 
 
@@ -25,6 +33,12 @@ class DeploymentStats:
         self.deployed = 0
         self.skipped = 0
         self.failed = 0
+        self.validation_failed = 0
+    
+    def add_validation_failure(self):
+        """Mark validation failure"""
+        self.validation_failed += 1
+        self.failed += 1
 
 
 class ProfileDeployer:
@@ -215,6 +229,12 @@ class ProfileDeployer:
             # Add new profiles at the end
             for name in profile_names:
                 if name not in existing_profiles:
+                    # Validate profile name before adding
+                    valid, error = validate_profile_name(name)
+                    if not valid:
+                        print_color(f"  ⚠ Skipping invalid profile name '{name}': {error}", "yellow")
+                        continue
+                    
                     final_entries.append((next_number, name))
                     print_verbose(f"Added: {next_number} {name}", self.verbose)
                     next_number += 1
@@ -314,10 +334,34 @@ class ProfileDeployer:
             print_color("\n✗ No valid profiles to deploy", "red")
             return 1
         
+        # Count existing profiles on SD card
+        existing_profile_dirs = [
+            d for d in sd_card_path.iterdir()
+            if d.is_dir() and d.name.lower().startswith("profile")
+        ]
+        existing_count = len(existing_profile_dirs)
+        total_after_deployment = existing_count + len(valid_profiles)
+        
+        # Validate profile count
+        try:
+            require_valid_profile_count(
+                total_after_deployment,
+                context=f"deployment ({existing_count} existing + {len(valid_profiles)} new)"
+            )
+        except ValidationError as e:
+            print_color(f"\n✗ Validation error: {e}", "red")
+            print_color(f"  Current profiles on SD card: {existing_count}", "yellow")
+            print_color(f"  Attempting to deploy: {len(valid_profiles)}", "yellow")
+            print_color(f"  Total would be: {total_after_deployment}", "yellow")
+            print_color(f"  Maximum allowed: {MAX_PROFILES}", "yellow")
+            return 1
+        
         # Display deployment plan
         print_color(f"\nProfiles to deploy: {len(valid_profiles)}", "white")
         for profile in valid_profiles:
             print_color(f"  • {profile.name}", "white")
+        print_color(f"\nCurrent profiles on SD card: {existing_count}", "white")
+        print_color(f"Total after deployment: {total_after_deployment}/{MAX_PROFILES}", "white")
         
         # Confirm deployment
         if not prompt_yes_no("\nProceed with deployment?", default=True, force=self.force):

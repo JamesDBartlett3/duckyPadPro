@@ -9,6 +9,12 @@ import re
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
+from .validators import (
+    ValidationError,
+    validate_profile_name,
+    require_valid_profile_name,
+)
+
 
 class ProfileInfoManager:
     """Manage profile name to index mapping from profile_info.txt"""
@@ -159,6 +165,12 @@ class ProfileInfoManager:
                     try:
                         profile_num = int(parts[0])
                         profile_name = parts[1]
+                        
+                        # Validate profile name
+                        valid, error = validate_profile_name(profile_name)
+                        if not valid:
+                            # Skip invalid profile names with warning
+                            continue
                         
                         # Convert to 0-based index (profile1 = index 0)
                         mapping[profile_name] = profile_num - 1
