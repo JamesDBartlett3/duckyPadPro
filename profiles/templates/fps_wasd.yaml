@@ -1,10 +1,30 @@
 template:
   name: fps_wasd
   description: Standard FPS WASD movement controls
-  keys:
-    11: { key: W, label: [Fwd, W], hold: true }
-    10: { key: S, label: [Back, S], hold: true }
-    6: { key: A, label: [Left, A], hold: true }
-    14: { key: D, label: [Rght, D], hold: true }
-    17: { key: SPACE, label: [Jump], hold: true }
-    9: { key: C, label: [Crch] }  # Crouch abbreviated for landscape mode
+  supported_orientations: [landscape, portrait]
+  
+  # Abstract key definitions (label, color, action)
+  key_definitions:
+    move_forward: { key: W, label: [Fwd, W], hold: true }
+    move_backward: { key: S, label: [Back, S], hold: true }
+    strafe_left: { key: A, label: [Left, A], hold: true }
+    strafe_right: { key: D, label: [Rght, D], hold: true }
+    jump: { key: SPACE, label: [Jump], hold: true }
+    crouch: { key: C, label: [Crch] }
+  
+  # Physical key assignments per orientation
+  key_positions:
+    landscape:
+      move_forward: 11
+      move_backward: 10
+      strafe_left: 6
+      strafe_right: 14
+      jump: 17
+      crouch: 9
+    portrait:
+      move_forward: 7
+      move_backward: 12
+      strafe_left: 11
+      strafe_right: 13
+      jump: 17
+      crouch: 16

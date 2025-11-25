@@ -518,6 +518,218 @@ profile:
             results.fail_test("Mixed templates profile key 1", "Key 1 not found")
 
 
+def test_oriented_templates_landscape():
+    """Test that oriented templates resolve correctly for landscape orientation"""
+    print("\n--- Oriented Templates (Landscape) ---")
+    
+    # Create temporary directory for test
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        tmp_path = Path(tmp_dir)
+        
+        # Create profile subdirectory structure that matches expected layout:
+        # profiles/test/profile.yaml looks for templates at profiles/templates/
+        profiles_dir = tmp_path / 'profiles'
+        templates_dir = profiles_dir / 'templates'
+        templates_dir.mkdir(parents=True, exist_ok=True)
+        profile_dir = profiles_dir / 'test'
+        profile_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Create oriented template
+        oriented_template = templates_dir / 'test_fps.yaml'
+        oriented_template.write_text("""template:
+  name: test_fps
+  description: Test oriented template
+  supported_orientations: [landscape, portrait]
+  
+  key_definitions:
+    move_forward: { key: W, label: [Fwd] }
+    move_backward: { key: S, label: [Back] }
+  
+  key_positions:
+    landscape:
+      move_forward: 11
+      move_backward: 10
+    portrait:
+      move_forward: 7
+      move_backward: 12
+""")
+        
+        # Create test YAML profile with landscape orientation
+        profile_yaml = profile_dir / 'test_oriented_landscape.yaml'
+        profile_yaml.write_text("""profile:
+  name: TestLandscpe
+  
+  config:
+    orientation: landscape
+  
+  templates:
+    - test_fps
+  
+  keys:
+    1: { key: CTRL, label: [Ctrl] }
+""")
+        
+        # Load profile
+        loader = ProfileLoader(profile_yaml)
+        loader.load()
+        
+        # Get keys
+        keys = loader.get_keys()
+        
+        # Check that landscape key positions are used
+        if 11 in keys and keys[11].get('key') == 'W':
+            results.pass_test("Landscape profile has key 11 (move_forward)")
+        else:
+            results.fail_test("Oriented landscape key 11", f"Key 11 not found or wrong: {keys.get(11)}")
+        
+        if 10 in keys and keys[10].get('key') == 'S':
+            results.pass_test("Landscape profile has key 10 (move_backward)")
+        else:
+            results.fail_test("Oriented landscape key 10", f"Key 10 not found or wrong: {keys.get(10)}")
+        
+        # Portrait keys should NOT be present
+        if 7 not in keys and 12 not in keys:
+            results.pass_test("Portrait keys (7, 12) not present in landscape profile")
+        else:
+            results.fail_test("Portrait keys in landscape", "Keys 7 or 12 should not be present")
+
+
+def test_oriented_templates_portrait():
+    """Test that oriented templates resolve correctly for portrait orientation"""
+    print("\n--- Oriented Templates (Portrait) ---")
+    
+    # Create temporary directory for test
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        tmp_path = Path(tmp_dir)
+        
+        # Create profile subdirectory structure
+        profiles_dir = tmp_path / 'profiles'
+        templates_dir = profiles_dir / 'templates'
+        templates_dir.mkdir(parents=True, exist_ok=True)
+        profile_dir = profiles_dir / 'test'
+        profile_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Create oriented template
+        oriented_template = templates_dir / 'test_fps.yaml'
+        oriented_template.write_text("""template:
+  name: test_fps
+  description: Test oriented template
+  supported_orientations: [landscape, portrait]
+  
+  key_definitions:
+    move_forward: { key: W, label: [Fwd] }
+    move_backward: { key: S, label: [Back] }
+  
+  key_positions:
+    landscape:
+      move_forward: 11
+      move_backward: 10
+    portrait:
+      move_forward: 7
+      move_backward: 12
+""")
+        
+        # Create test YAML profile with portrait orientation
+        profile_yaml = profile_dir / 'test_oriented_portrait.yaml'
+        profile_yaml.write_text("""profile:
+  name: TestPortrait
+  
+  config:
+    orientation: portrait
+  
+  templates:
+    - test_fps
+  
+  keys:
+    1: { key: CTRL, label: [Ctrl] }
+""")
+        
+        # Load profile
+        loader = ProfileLoader(profile_yaml)
+        loader.load()
+        
+        # Get keys
+        keys = loader.get_keys()
+        
+        # Check that portrait key positions are used
+        if 7 in keys and keys[7].get('key') == 'W':
+            results.pass_test("Portrait profile has key 7 (move_forward)")
+        else:
+            results.fail_test("Oriented portrait key 7", f"Key 7 not found or wrong: {keys.get(7)}")
+        
+        if 12 in keys and keys[12].get('key') == 'S':
+            results.pass_test("Portrait profile has key 12 (move_backward)")
+        else:
+            results.fail_test("Oriented portrait key 12", f"Key 12 not found or wrong: {keys.get(12)}")
+        
+        # Landscape keys should NOT be present
+        if 11 not in keys and 10 not in keys:
+            results.pass_test("Landscape keys (11, 10) not present in portrait profile")
+        else:
+            results.fail_test("Landscape keys in portrait", "Keys 11 or 10 should not be present")
+
+
+def test_non_oriented_templates():
+    """Test that non-oriented templates (with direct keys) still work"""
+    print("\n--- Non-Oriented Templates ---")
+    
+    # Create temporary directory for test
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        tmp_path = Path(tmp_dir)
+        
+        # Create profile subdirectory structure
+        profiles_dir = tmp_path / 'profiles'
+        templates_dir = profiles_dir / 'templates'
+        templates_dir.mkdir(parents=True, exist_ok=True)
+        profile_dir = profiles_dir / 'test'
+        profile_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Create non-oriented template (direct keys)
+        non_oriented_template = templates_dir / 'test_media.yaml'
+        non_oriented_template.write_text("""template:
+  name: test_media
+  description: Non-oriented template (direct keys)
+  supported_orientations: [landscape, portrait]
+  
+  keys:
+    21: { action: media, command: VOLUME_UP }
+    22: { action: media, command: VOLUME_DOWN }
+""")
+        
+        # Create test YAML profile
+        profile_yaml = profile_dir / 'test_non_oriented.yaml'
+        profile_yaml.write_text("""profile:
+  name: TestNonOrien
+  
+  config:
+    orientation: landscape
+  
+  templates:
+    - test_media
+  
+  keys:
+    1: { key: CTRL, label: [Ctrl] }
+""")
+        
+        # Load profile
+        loader = ProfileLoader(profile_yaml)
+        loader.load()
+        
+        # Get keys
+        keys = loader.get_keys()
+        
+        # Check that direct keys are present regardless of orientation
+        if 21 in keys and keys[21].get('command') == 'VOLUME_UP':
+            results.pass_test("Non-oriented template has key 21")
+        else:
+            results.fail_test("Non-oriented key 21", f"Key 21 not found or wrong: {keys.get(21)}")
+        
+        if 22 in keys and keys[22].get('command') == 'VOLUME_DOWN':
+            results.pass_test("Non-oriented template has key 22")
+        else:
+            results.fail_test("Non-oriented key 22", f"Key 22 not found or wrong: {keys.get(22)}")
+
+
 def main():
     """Run all tests"""
     print("=" * 60)
@@ -532,6 +744,9 @@ def main():
     test_inline_templates_main_profile()
     test_inline_templates_layer()
     test_mixed_inline_and_external_templates()
+    test_oriented_templates_landscape()
+    test_oriented_templates_portrait()
+    test_non_oriented_templates()
     
     success = results.print_summary()
     sys.exit(0 if success else 1)

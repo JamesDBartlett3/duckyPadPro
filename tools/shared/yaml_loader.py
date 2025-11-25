@@ -299,6 +299,55 @@ class ProfileLoader:
             else:
                 print(f"Warning: Template file '{template_file}' missing 'template' key")
     
+    def _get_profile_orientation(self) -> str:
+        """Get the orientation from profile config, defaulting to 'landscape'."""
+        config = self.profile.get('config', {})
+        return config.get('orientation', 'landscape')
+    
+    def _resolve_template_keys(self, template: Dict[str, Any], orientation: str) -> Dict[int, Any]:
+        """
+        Resolve template keys based on orientation.
+        
+        Handles both:
+        - Oriented templates (with key_definitions and key_positions)
+        - Non-oriented templates (with direct keys mapping)
+        
+        Args:
+            template: Template data dictionary
+            orientation: Either 'landscape' or 'portrait'
+            
+        Returns:
+            Dictionary mapping key slot numbers to key definitions
+        """
+        # Check if this is an oriented template (has key_definitions and key_positions)
+        if 'key_definitions' in template and 'key_positions' in template:
+            key_definitions = template['key_definitions']
+            key_positions = template.get('key_positions', {})
+            
+            # Get positions for the specified orientation
+            orientation_positions = key_positions.get(orientation, {})
+            
+            if not orientation_positions:
+                # Check supported_orientations and warn if needed
+                supported = template.get('supported_orientations', [])
+                if supported and orientation not in supported:
+                    template_name = template.get('name', 'unknown')
+                    print(f"Warning: Template '{template_name}' does not support {orientation} orientation")
+                return {}
+            
+            # Map abstract key names to physical slot numbers
+            resolved_keys = {}
+            for key_name, slot_num in orientation_positions.items():
+                if key_name in key_definitions:
+                    resolved_keys[slot_num] = copy.deepcopy(key_definitions[key_name])
+                else:
+                    print(f"Warning: Key '{key_name}' in key_positions not found in key_definitions")
+            
+            return resolved_keys
+        
+        # Non-oriented template: direct keys mapping
+        return copy.deepcopy(template.get('keys', {}))
+    
     def _apply_templates(self):
         """Apply templates to profile keys."""
         template_names = self.profile.get('templates', [])
@@ -309,26 +358,28 @@ class ProfileLoader:
         if 'keys' not in self.profile:
             self.profile['keys'] = {}
         
+        # Get profile orientation for resolving oriented templates
+        orientation = self._get_profile_orientation()
+        
         # Save explicitly defined keys (these should override all templates)
         explicit_keys = copy.deepcopy(self.profile.get('keys', {}))
         
         # Apply templates in order (later templates override earlier ones)
         for template_name in template_names:
+            template_keys = {}
+            
             # Check inline templates first
             if template_name in self.templates:
-                template_keys = self.templates[template_name].get('keys', {})
-                for key_num, key_def in template_keys.items():
-                    # Only apply if not explicitly defined
-                    if key_num not in explicit_keys:
-                        self.profile['keys'][key_num] = key_def
+                template_keys = self._resolve_template_keys(self.templates[template_name], orientation)
             # Then check external templates
             elif template_name in self.template_cache:
-                template = self.template_cache[template_name]
-                template_keys = template.get('keys', {})
-                for key_num, key_def in template_keys.items():
-                    # Only apply if not explicitly defined
-                    if key_num not in explicit_keys:
-                        self.profile['keys'][key_num] = key_def
+                template_keys = self._resolve_template_keys(self.template_cache[template_name], orientation)
+            
+            # Apply resolved keys
+            for key_num, key_def in template_keys.items():
+                # Only apply if not explicitly defined
+                if key_num not in explicit_keys:
+                    self.profile['keys'][key_num] = key_def
     
     def _process_layer_inheritance(self):
         """Process extends directives in layers."""
@@ -387,22 +438,26 @@ class ProfileLoader:
             
             # Apply templates to layer if specified (later templates override earlier ones and extends)
             layer_templates = layer.get('templates', [])
+            
+            # Get orientation for layer (inherit from layer config, or fall back to profile config)
+            layer_config = layer.get('config', {})
+            layer_orientation = layer_config.get('orientation', self._get_profile_orientation())
+            
             for template_name in layer_templates:
+                template_keys = {}
+                
                 # Check inline templates first
                 if template_name in self.templates:
-                    template_keys = self.templates[template_name].get('keys', {})
-                    for key_num, key_def in template_keys.items():
-                        # Only skip if explicitly defined in layer
-                        if key_num not in explicit_layer_keys:
-                            layer['keys'][key_num] = copy.deepcopy(key_def)
+                    template_keys = self._resolve_template_keys(self.templates[template_name], layer_orientation)
                 # Then check external templates
                 elif template_name in self.template_cache:
-                    template = self.template_cache[template_name]
-                    template_keys = template.get('keys', {})
-                    for key_num, key_def in template_keys.items():
-                        # Only skip if explicitly defined in layer
-                        if key_num not in explicit_layer_keys:
-                            layer['keys'][key_num] = copy.deepcopy(key_def)
+                    template_keys = self._resolve_template_keys(self.template_cache[template_name], layer_orientation)
+                
+                # Apply resolved keys
+                for key_num, key_def in template_keys.items():
+                    # Only skip if explicitly defined in layer
+                    if key_num not in explicit_layer_keys:
+                        layer['keys'][key_num] = copy.deepcopy(key_def)
 
 
 def load_profile(yaml_path: Union[str, Path]) -> ProfileLoader:
