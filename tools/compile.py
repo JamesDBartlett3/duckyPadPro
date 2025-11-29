@@ -15,7 +15,7 @@ from typing import Dict, List, Optional, Tuple
 # Add shared directory to path for ProfileInfoManager
 sys.path.insert(0, str(Path(__file__).parent))
 try:
-    from shared.profiles import ProfileInfoManager
+    from shared.profiles import ProfileInfoManager, parse_key_settings, make_script_preamble
     from shared.console import print_color, print_verbose
     from shared.validators import (
         ValidationError,
@@ -226,11 +226,12 @@ class DuckyScriptCompiler:
         
         return not has_errors
     
-    def compile_file(self, txt_path: Path) -> bool:
+    def compile_file(self, txt_path: Path, key_settings=None) -> bool:
         """Compile a single duckyScript file
         
         Args:
             txt_path: Path to .txt source file
+            key_settings: Optional KeySettings for this key (for preamble injection)
             
         Returns:
             True if successful, False otherwise
@@ -265,6 +266,14 @@ class DuckyScriptCompiler:
                 # Display any warnings
                 for warning in warnings:
                     print_color(f"  Warning: {warning}", "yellow")
+            
+            # Inject preamble based on key settings (ab/dr from config.txt)
+            if key_settings is not None:
+                preamble_lines = make_script_preamble(key_settings)
+                if preamble_lines:
+                    preamble = '\n'.join(preamble_lines) + '\n'
+                    content = preamble + content.lstrip()
+                    print_verbose(f"  → Injected preamble: {', '.join(preamble_lines)}", self.verbose)
             
             # Create a temporary file with the (potentially transformed) content
             with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False, encoding="utf-8") as tmp:
@@ -328,6 +337,19 @@ class DuckyScriptCompiler:
             stats.add_validation_failure()
             return stats
         
+        # Parse config.txt for key settings (ab/dr directives)
+        config_path = profile_path / "config.txt"
+        key_settings_map = parse_key_settings(config_path)
+        
+        if key_settings_map and self.verbose:
+            for key_num, settings in key_settings_map.items():
+                flags = []
+                if settings.allow_abort:
+                    flags.append("allow_abort")
+                if settings.dont_repeat:
+                    flags.append("dont_repeat")
+                print_verbose(f"  Key {key_num}: {', '.join(flags)}", self.verbose)
+        
         # Find all .txt files
         txt_files = sorted(profile_path.glob("*.txt"))
         key_files = [f for f in txt_files if f.stem.startswith("key")]
@@ -340,12 +362,33 @@ class DuckyScriptCompiler:
         
         # Compile each file
         for txt_file in key_files:
-            if self.compile_file(txt_file):
+            # Extract key number from filename (key1.txt -> 1, key5-release.txt -> 5)
+            key_num = self._extract_key_number(txt_file.stem)
+            key_settings = key_settings_map.get(key_num) if key_num else None
+            
+            if self.compile_file(txt_file, key_settings=key_settings):
                 stats.add_success()
             else:
                 stats.add_failure()
         
         return stats
+    
+    def _extract_key_number(self, stem: str) -> Optional[int]:
+        """Extract key number from filename stem
+        
+        Args:
+            stem: Filename without extension (e.g., 'key1', 'key5-release')
+            
+        Returns:
+            Key number (1-26) or None if not parseable
+        """
+        import re
+        match = re.match(r'^key(\d+)', stem)
+        if match:
+            key_num = int(match.group(1))
+            if 1 <= key_num <= 26:
+                return key_num
+        return None
     
     def compile_profiles(self, profiles_path: Path) -> CompilerStats:
         """Compile all profiles in a directory
