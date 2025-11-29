@@ -45,12 +45,16 @@ duckyPadPro/
 │   ├── compile.py                  # Compile duckyScript to bytecode
 │   ├── deploy.py                   # Deploy profiles to SD card
 │   ├── generate.py                 # Generate profiles from YAML (ONLY YAML reader)
-│   ├── convert_text.py             # Convert text to duckyScript
+│   ├── backup.py                   # Backup and restore SD card
+│   ├── device.py                   # Device control (mount/unmount SD card)
+│   ├── vendor.py                   # Download compiler dependencies
 │   ├── vendor/                     # Auto-downloaded compiler dependencies (gitignored)
 │   └── shared/                     # Shared library code
 │       ├── profiles.py
 │       ├── yaml_loader.py
-│       └── key_layout.py
+│       ├── key_layout.py
+│       ├── validators.py
+│       └── console.py
 ├── profiles/                       # Complete profile packages
 │   ├── sample_profiles/            # Auto-downloaded samples (gitignored)
 │   └── generate_readme_files.py    # Auto-generate readme files
@@ -147,6 +151,9 @@ python tools/compile.py -p profiles/example-productivity -v
 - Requires Python 3 installed on system
 - Uses GitHub API to fetch latest release
 - Downloads all .py files from release zipball
+- Parses `ab N` and `dr N` directives from config.txt for preamble injection
+- Injects `$_ALLOW_ABORT = 1` and `$_DONT_REPEAT = 1` preambles as needed
+- Resolves `GOTO_PROFILE ProfileName` to `GOTO_PROFILE N` (1-based profile numbers)
 
 ## Profile Structure
 
@@ -267,22 +274,29 @@ ab 5
 
 ## Python Scripting Guidelines
 
-### Profile Generator
+### Profile Generator (YAML Workflow)
 
-- Located at: `tools/generate_profile.py`
-- Supports keys 1-26 (not just 1-20)
-- Includes helpful comments for rotary encoder keys (21-26)
-- Creates: `config.txt`, `keyN.txt` files, `README.md`
+The YAML workflow (`tools/generate.py`) is the recommended way to create profiles:
+
+- Parses YAML templates with templates, inheritance, and layers
+- Generates `config.txt`, `keyN.txt` files, and `README.md`
+- Supports keys 1-26 including rotary encoders (21-26)
+- Handles all layer types (modifier_hold, toggle, oneshot, momentary)
 
 ### Usage
 
 ```bash
-python profile_generator.py <profile-name> <number-of-keys>
-python profile_generator.py discord-tools 20
-python profile_generator.py photo-editing 15
+# Full workflow: generate, compile, deploy
+python execute.py yaml workbench/my-profile.yaml
+
+# Generate only
+python execute.py yaml workbench/my-profile.yaml --generate-only
+
+# Or use generate.py directly
+python tools/generate.py workbench/my-profile.yaml
 ```
 
-**Note**: Generated profiles use descriptive names. Users rename to `profileN_Name` format when deploying to their duckyPad Pro.
+**Note**: Generated profiles use descriptive names. The deploy step handles SD card naming conventions automatically.
 
 ### Key Descriptions
 
