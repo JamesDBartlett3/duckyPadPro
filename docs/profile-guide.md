@@ -226,16 +226,19 @@ Organize keys by category:
 4. **Copy** to your duckyPad Pro device
 5. **Verify** all keys work as expected
 
-## Using the Profile Generator
+## Using the YAML Workflow
 
-Quick-start with the helper tool:
+Quick-start with the YAML workflow:
 
 ```bash
-cd helpers/generators
-python profile_generator.py my-profile 8
+# Generate, compile, and deploy from YAML template
+python execute.py yaml workbench/my-profile.yaml
+
+# Or generate only (no compile/deploy)
+python execute.py yaml workbench/my-profile.yaml --generate-only
 ```
 
-This creates a basic profile structure with 8 keys that you can customize.
+This creates profile folders in `workbench/profiles/` that you can customize.
 
 ## Rotary Encoder Keys
 

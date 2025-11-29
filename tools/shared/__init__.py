@@ -33,6 +33,9 @@ from .yaml_loader import (
 
 from .profiles import (
     ProfileInfoManager,
+    KeySettings,
+    parse_key_settings,
+    make_script_preamble,
 )
 
 from .console import (

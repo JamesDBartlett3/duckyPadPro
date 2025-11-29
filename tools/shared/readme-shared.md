@@ -9,6 +9,7 @@ Shared Python utilities for duckyPad Pro profile generation and management.
 Centralized key layout information for duckyPad Pro device. Provides constants, diagrams, and utilities for both portrait and landscape orientations.
 
 **Constants:**
+
 - `PHYSICAL_KEYS = 20` - Physical keys in grid
 - `TOTAL_KEYS = 26` - Including rotary encoders
 - `PORTRAIT_ROWS = 4` - Rows in portrait mode
@@ -19,6 +20,7 @@ Centralized key layout information for duckyPad Pro device. Provides constants, 
 **Functions:**
 
 **Display Functions:**
+
 - `get_portrait_diagram()` - Returns portrait layout diagram as string
 - `get_landscape_diagram()` - Returns landscape layout diagram as string
 - `get_both_diagrams()` - Returns both diagrams as string
@@ -27,11 +29,13 @@ Centralized key layout information for duckyPad Pro device. Provides constants, 
 - `print_both_layouts()` - Prints both diagrams to console
 
 **Validation Functions:**
+
 - `validate_key_number(key_num)` - Validates key number (1-26)
 - `is_physical_key(key_num)` - True if physical key (1-20)
 - `is_rotary_encoder(key_num)` - True if rotary encoder (21-26)
 
 **Utility Functions:**
+
 - `get_key_description(key_num)` - Returns human-readable key description
 - `parse_key_list(key_string)` - Parses "1,3-5,8" into [1,3,4,5,8]
 - `get_portrait_position(key_num)` - Returns (row, col) for portrait mode
@@ -100,14 +104,67 @@ from shared.key_layout import TOTAL_KEYS, parse_key_list, get_key_description
 Run the module directly to see a demo:
 
 ```bash
-python helpers/shared/key_layout.py
+python tools/shared/key_layout.py
 ```
+
+### `profiles.py`
+
+Manages SD card detection, profile_info.txt parsing, and compilation support.
+
+**Classes:**
+
+- `ProfileInfoManager` - Auto-detects SD card, parses profile_info.txt, resolves GOTO_PROFILE commands
+- `KeySettings` - Holds per-key settings (allow_abort, dont_repeat) parsed from config.txt
+
+**Functions:**
+
+- `parse_key_settings(config_path)` - Parses `ab N` and `dr N` directives from config.txt, returns `Dict[int, KeySettings]`
+- `make_script_preamble(key_settings)` - Generates preamble lines (`$_ALLOW_ABORT = 1`, `$_DONT_REPEAT = 1`) for script compilation
+
+**ProfileInfoManager Methods:**
+
+- `detect_sd_card()` - Auto-detect SD card on Windows/macOS/Linux
+- `parse_profile_info(sd_card_path)` - Parse profile_info.txt to build name→index mapping
+- `load_profile_mapping()` - Load profile mapping from detected SD card
+- `get_profile_index(name)` - Get 0-based index for profile name
+- `transform_goto_commands(script_content)` - Replace `GOTO_PROFILE Name` with `GOTO_PROFILE N` (1-based)
+
+**Usage:**
+
+```python
+from shared.profiles import ProfileInfoManager, parse_key_settings, make_script_preamble
+
+# Profile resolution
+manager = ProfileInfoManager()
+if manager.load_profile_mapping():
+    content, warnings = manager.transform_goto_commands(script_content)
+
+# Config.txt settings for compilation
+from pathlib import Path
+key_settings = parse_key_settings(Path("config.txt"))
+if 1 in key_settings:
+    preamble = make_script_preamble(key_settings[1])
+    # preamble might be ["$_ALLOW_ABORT = 1"] if ab 1 is in config
+```
+
+### `validators.py`
+
+Validation functions for profile names, key labels, and counts.
+
+### `console.py`
+
+Console output utilities with color support.
+
+### `yaml_loader.py`
+
+YAML profile loading and parsing utilities.
 
 ## Integration
 
 This library is used by:
-- `helpers/generators/profile_generator.py` - Basic profile generation
-- `helpers/generators/modifier_layer_generator.py` - Modifier layer generation
-- Other helper scripts
 
-All scripts that need key layout information should use this centralized module instead of duplicating the layout definitions.
+- `tools/compile.py` - Compilation with preamble injection and GOTO_PROFILE resolution
+- `tools/deploy.py` - SD card detection and profile_info.txt management
+- `tools/generate.py` - YAML to profile conversion
+
+All scripts that need key layout, profile management, or validation should use these centralized modules.
