@@ -13,6 +13,7 @@ Compiles duckyScript source files (`.txt`) to bytecode (`.dsb`) for duckyPad Pro
 - Auto-downloads compiler dependencies from GitHub
 - Compiles all profiles or specific profile
 - Automatic GOTO_PROFILE name-to-index resolution
+- Injects preamble directives (`$_ALLOW_ABORT`, `$_DONT_REPEAT`) based on config.txt settings
 - Verbose output for debugging
 
 **Usage:**
@@ -89,27 +90,6 @@ python tools/deploy.py profiles/my-profile -v
 python tools/deploy.py profiles/my-profile -f
 ```
 
-### generate_profile.py
-
-Creates new profile structure from template.
-
-**Features:**
-
-- Generates config.txt with default settings
-- Creates keyN.txt files with comments
-- Includes helpful rotary encoder key descriptions
-- Supports 1-26 keys
-
-**Usage:**
-
-```bash
-# Create profile with 20 keys
-python tools/generate_profile.py discord-tools 20
-
-# Create profile with all 26 keys (includes rotary encoders)
-python tools/generate_profile.py photo-editing 26
-```
-
 ### generate.py
 
 **THE ONLY script that reads YAML template files.** Converts YAML profile definitions (with templates, inheritance, and layers) into duckyScript profiles ready for compilation.
@@ -161,16 +141,6 @@ profile:
       extends: parent
 ```
 
-### convert_text.py
-
-Converts plain text to duckyScript STRING commands.
-
-**Usage:**
-
-```bash
-python tools/convert_text.py input.txt output.txt
-```
-
 ## Directory Structure
 
 ```
@@ -200,9 +170,11 @@ duckyScript 3 files (`.txt`) must be compiled to bytecode (`.dsb`) before execut
 ### How It Works
 
 1. **Auto-fetch Compiler**: Downloads latest compiler from [duckyPad-Configurator releases](https://github.com/duckyPad/duckyPad-Configurator/releases)
-2. **Compile Scripts**: Processes all `.txt` files matching `key\d+(-release)?\.txt` pattern
-3. **Name Resolution**: Automatically converts `GOTO_PROFILE ProfileName` to numeric indices
-4. **Generate Bytecode**: Creates `.dsb` files in same directory as source files
+2. **Parse Config Settings**: Reads `ab N` (allow abort) and `dr N` (don't repeat) directives from config.txt
+3. **Inject Preamble**: Prepends `$_ALLOW_ABORT = 1` and/or `$_DONT_REPEAT = 1` to scripts based on config.txt settings
+4. **Compile Scripts**: Processes all `.txt` files matching `key\d+(-release)?\.txt` pattern
+5. **Name Resolution**: Automatically converts `GOTO_PROFILE ProfileName` to numeric indices (1-based)
+6. **Generate Bytecode**: Creates `.dsb` files in same directory as source files
 
 ### Requirements
 

@@ -444,23 +444,24 @@ keys:
            # ... overrides
    ```
 
-2. **Generate duckyScript files:**
+2. **Generate, compile, and deploy:**
 
    ```bash
-   python helpers/generators/yaml_to_profile.py profiles/my-game.yaml --output output/
+   python execute.py yaml workbench/my-game.yaml
    ```
 
-3. **Deploy to SD card:**
-   - Copy `output/MyGame/` to SD card as `profile1_MyGame/`
-   - Copy `output/MyGame-Ctrl/` to SD card as `profile2_MyGame-Ctrl/`
+   Or step by step:
 
-### Using Python Generator
+   ```bash
+   # Generate only
+   python execute.py yaml workbench/my-game.yaml --generate-only
 
-For simple profiles without layers:
+   # Compile generated profiles
+   python execute.py compile workbench/profiles/my-game
 
-```bash
-python helpers/generators/profile_generator.py my-profile 20
-```
+   # Deploy to SD card
+   python execute.py deploy workbench/profiles/my-game
+   ```
 
 ### Manual Creation
 
@@ -503,28 +504,34 @@ profile10_PhotoEditing
 
 ### Deployment Steps
 
-1. **Generate profile from YAML:**
+1. **Generate, compile, and deploy from YAML:**
 
    ```bash
-   python helpers/generators/yaml_to_profile.py profiles/foxhole.yaml --output deploy/
+   python execute.py yaml workbench/foxhole.yaml
    ```
 
-2. **Rename for deployment:**
+   This automatically:
 
+   - Generates profiles in `workbench/profiles/`
+   - Compiles duckyScript to bytecode
+   - Deploys to SD card with proper naming
+   - Updates `profile_info.txt`
+
+2. **Or deploy manually:**
+
+   ```bash
+   # Generate only
+   python execute.py yaml workbench/foxhole.yaml --generate-only
+
+   # Compile
+   python execute.py compile workbench/profiles/profile_Foxhole
+
+   # Deploy
+   python execute.py deploy workbench/profiles/profile_Foxhole
    ```
-   deploy/Foxhole/       → SD:/profile1_Foxhole/
-   deploy/Foxhole-Ctrl/  → SD:/profile2_Foxhole-Ctrl/
-   ```
 
-3. **Copy to SD card:**
-
-   - Insert SD card
-   - Copy folders to root of SD card
-   - Eject safely
-
-4. **Test on duckyPad Pro:**
-   - Insert SD card into duckyPad Pro
-   - Power on device
+3. **Test on duckyPad Pro:**
+   - Device auto-reboots after deployment
    - Use +/- buttons to switch between profiles
 
 ## Examples
