@@ -250,7 +250,10 @@ class ProfileInfoManager:
             index = self.get_profile_index(profile_name)
             
             if index is not None:
-                return f"GOTO_PROFILE {index}"
+                # GOTO_PROFILE expects 1-based profile number, not 0-based index
+                # profile_mapping stores 0-based (profile1 = 0), so add 1
+                profile_number = index + 1
+                return f"GOTO_PROFILE {profile_number}"
             else:
                 # Profile not found - it's likely a new profile that will be deployed
                 # Leave the name as-is; it will be resolved at deployment time
@@ -260,3 +263,98 @@ class ProfileInfoManager:
         
         return transformed, warnings
 
+
+class KeySettings:
+    """Settings for a single key parsed from config.txt"""
+    
+    def __init__(self, allow_abort: bool = False, dont_repeat: bool = False):
+        self.allow_abort = allow_abort
+        self.dont_repeat = dont_repeat
+    
+    def __repr__(self) -> str:
+        return f"KeySettings(allow_abort={self.allow_abort}, dont_repeat={self.dont_repeat})"
+
+
+def parse_key_settings(config_path: Path) -> Dict[int, KeySettings]:
+    """Parse ab/dr settings from config.txt
+    
+    Args:
+        config_path: Path to config.txt file
+        
+    Returns:
+        Dictionary mapping key number (1-26) to KeySettings
+        
+    Config format:
+        ab N - Allow abort for key N
+        dr N - Don't repeat for key N
+    """
+    settings: Dict[int, KeySettings] = {}
+    
+    if not config_path.exists():
+        return settings
+    
+    try:
+        with open(config_path, 'r', encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                
+                # Skip empty lines
+                if not line:
+                    continue
+                
+                parts = line.split()
+                
+                if len(parts) < 2:
+                    continue
+                
+                directive = parts[0].lower()
+                
+                # Parse "ab N" - allow abort
+                if directive == 'ab':
+                    try:
+                        key_num = int(parts[1])
+                        if 1 <= key_num <= 26:
+                            if key_num not in settings:
+                                settings[key_num] = KeySettings()
+                            settings[key_num].allow_abort = True
+                    except ValueError:
+                        continue
+                
+                # Parse "dr N" - don't repeat
+                elif directive == 'dr':
+                    try:
+                        key_num = int(parts[1])
+                        if 1 <= key_num <= 26:
+                            if key_num not in settings:
+                                settings[key_num] = KeySettings()
+                            settings[key_num].dont_repeat = True
+                    except ValueError:
+                        continue
+    
+    except Exception:
+        return {}
+    
+    return settings
+
+
+def make_script_preamble(key_settings: Optional[KeySettings]) -> List[str]:
+    """Generate preamble lines for a script based on key settings
+    
+    Args:
+        key_settings: KeySettings for the key, or None
+        
+    Returns:
+        List of preamble lines to prepend to script
+    """
+    preamble = []
+    
+    if key_settings is None:
+        return preamble
+    
+    if key_settings.allow_abort:
+        preamble.append("$_ALLOW_ABORT = 1")
+    
+    if key_settings.dont_repeat:
+        preamble.append("$_DONT_REPEAT = 1")
+    
+    return preamble
