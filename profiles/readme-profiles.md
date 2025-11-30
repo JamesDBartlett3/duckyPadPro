@@ -144,12 +144,12 @@ template:
   name: media_controls
   description: Standard media playback controls
   keys:
-    21: { action: media, command: VOLUME_UP }
-    22: { action: media, command: VOLUME_DOWN }
-    23: { action: media, command: MUTE }
-    24: { action: media, command: NEXT_TRACK }
-    25: { action: media, command: PREV_TRACK }
-    26: { action: media, command: PLAY_PAUSE }
+    21: { script: MK_VOLUP }
+    22: { script: MK_VOLDOWN }
+    23: { script: MK_MUTE }
+    24: { script: MK_NEXT }
+    25: { script: MK_PREV }
+    26: { script: MK_PP }
 ```
 
 #### Using Templates in Profiles
@@ -358,18 +358,16 @@ layers:
 ```yaml
 keys:
   21:
-    action: media
-    command: VOLUME_UP
+    script: MK_VOLUP
   22:
-    action: media
-    command: VOLUME_DOWN
+    script: MK_VOLDOWN
 ```
 
-**Available media commands:**
+**Available media key commands (duckyScript):**
 
-- `VOLUME_UP`, `VOLUME_DOWN`, `MUTE`
-- `NEXT_TRACK`, `PREV_TRACK`, `PLAY_PAUSE`
-- `STOP`, `MEDIA_SELECT`
+- `MK_VOLUP`, `MK_VOLDOWN`, `MK_MUTE`
+- `MK_NEXT`, `MK_PREV`, `MK_PP` (play/pause)
+- `MK_STOP`
 
 #### Layer Switchers
 

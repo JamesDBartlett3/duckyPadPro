@@ -268,13 +268,13 @@ The duckyPad Pro includes two rotary encoders that can be programmed just like p
 
 ```
 REM key21.txt
-MEDIA_VOLUME_UP
+MK_VOLUP
 
 REM key22.txt
-MEDIA_VOLUME_DOWN
+MK_VOLDOWN
 
 REM key23.txt
-MEDIA_MUTE
+MK_MUTE
 ```
 
 **Browser Navigation (Second Encoder):**

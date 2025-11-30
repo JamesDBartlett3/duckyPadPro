@@ -153,13 +153,13 @@ The encoders are referred to as "first" and "second" rather than "top/bottom" or
 
 ```
 REM key21.txt - Volume Up
-MEDIA_VOLUME_UP
+MK_VOLUP
 
 REM key22.txt - Volume Down
-MEDIA_VOLUME_DOWN
+MK_VOLDOWN
 
 REM key23.txt - Mute
-MEDIA_MUTE
+MK_MUTE
 ```
 
 **Scrolling:**

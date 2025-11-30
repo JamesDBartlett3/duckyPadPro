@@ -454,7 +454,7 @@ REM Platform: Windows/macOS/Linux
 - `DELAY`: Wait in milliseconds
 - `REM`: Comment
 - `CONTROL`, `SHIFT`, `ALT`, `COMMAND`: Modifier keys
-- `MEDIA_VOLUME_UP`, `MEDIA_VOLUME_DOWN`, `MEDIA_MUTE`: Media controls
+- `MK_VOLUP`, `MK_VOLDOWN`, `MK_MUTE`: Media controls
 
 ## Testing Guidelines
 
