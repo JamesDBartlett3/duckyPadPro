@@ -1,0 +1,11 @@
+# duckyPad Pro Repository Dependencies
+# Install with: pip install -r requirements.txt
+
+# Required for YAML profile parsing
+PyYAML>=5.0
+
+# Required for USB device communication (device.py)
+# Note: On Linux, you may need to install libusb first:
+#   Ubuntu/Debian: sudo apt install libusb-1.0-0-dev
+#   Fedora: sudo dnf install libusb-devel
+hidapi>=0.10.0

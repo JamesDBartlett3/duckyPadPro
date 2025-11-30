@@ -4,9 +4,41 @@ This guide will help you get started with using the profiles and scripts in this
 
 ## Prerequisites
 
+- Python 3.8 or higher
 - duckyPad Pro device
-- USB cable or SD card for file transfer
+- USB cable for device connection
 - Basic understanding of your operating system (Windows, macOS, or Linux)
+
+## Initial Setup
+
+After cloning the repository, run the setup script to download required dependencies:
+
+```bash
+git clone https://github.com/JamesDBartlett3/duckyPadPro.git
+cd duckyPadPro
+python setup.py
+```
+
+This installs and downloads:
+
+- **Python packages** - PyYAML (for profile generation), hidapi (for USB device control)
+- **Compiler files** (`tools/vendor/`) - Required to compile duckyScript to bytecode
+- **Sample profiles** (`profiles/sample_profiles/`) - Official example profiles for reference
+- **Workbench template** (`workbench/`) - Starter YAML template for your profiles
+
+To re-run setup or force re-download:
+
+```bash
+python setup.py --force
+```
+
+**Alternative manual installation:**
+
+```bash
+pip install -r requirements.txt
+python tools/vendor.py
+python tests/get_sample_profiles.py
+```
 
 ## Installing a Profile
 

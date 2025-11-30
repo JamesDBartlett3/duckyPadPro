@@ -70,6 +70,8 @@ duckyPadPro/
 │   ├── get_sample_profiles.py      # Download official sample profiles
 │   ├── test_profile_manager.py     # Test profile name mapping
 │   └── validate_compilation.py     # Validate .txt → .dsb conversions
+├── setup.py                        # Repository setup script
+├── requirements.txt                # Python package dependencies
 ├── LICENSE
 └── README.md
 ```
