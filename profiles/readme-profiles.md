@@ -49,7 +49,7 @@ profile:
 
   layers:
     modifier:
-      name: MyProfile-Modifier
+      name: MyProf-Mod
       keys:
         # ... layer-specific keys
 ```
@@ -548,7 +548,7 @@ profile:
   layers:
     ctrl:
       extends: parent
-      name: Productivity-Ctrl
+      name: Prod-Ctrl
 
       config:
         background_color: [192, 192, 192]

@@ -640,7 +640,7 @@ class YAMLToProfileConverter:
         """
         Validate profile name for use as folder name.
         Profile names must:
-        1. Not exceed 16 characters (duckyPad Pro limit)
+        1. Not exceed 14 characters (duckyPad Pro limit)
         2. Not contain invalid filesystem characters
         
         Args:
@@ -653,7 +653,7 @@ class YAMLToProfileConverter:
             ValidationError: If profile name exceeds duckyPad Pro limit
             ValueError: If profile name contains invalid filesystem characters
         """
-        # First check duckyPad Pro limit (16 chars)
+        # First check duckyPad Pro limit (14 chars)
         try:
             require_valid_profile_name(name, context=f"profile '{name}'")
         except ValidationError as e:
