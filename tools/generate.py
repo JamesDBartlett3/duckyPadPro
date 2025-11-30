@@ -23,6 +23,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from shared.yaml_loader import ProfileLoader
 from shared.key_layout import TOTAL_KEYS
 from shared.console import print_color, print_verbose
+from shared.colors import parse_color, format_rgb
 from shared.validators import (
     ValidationError,
     validate_profile_name,
@@ -266,35 +267,41 @@ class YAMLToProfileConverter:
             if no_repeat:
                 lines.append(f'dr {key_num}')
         
-        # Background color
-        bg_color = config.get('background_color', config.get('bg_color'))
-        if bg_color:
-            lines.append(f'BG_COLOR {bg_color[0]} {bg_color[1]} {bg_color[2]}')
+        # Background color - supports color names (e.g., "red") or RGB arrays [255, 0, 0]
+        bg_color_raw = config.get('background_color', config.get('bg_color'))
+        if bg_color_raw:
+            bg_color = parse_color(bg_color_raw)
+            if bg_color:
+                lines.append(f'BG_COLOR {format_rgb(bg_color)}')
         
         # Orientation - MUST come after key labels
         orientation = config.get('orientation', 'portrait')
         if orientation == 'landscape':
             lines.append('IS_LANDSCAPE 1')
         
-        # Key colors (SWCOLOR_N) - after global settings
+        # Key colors (SWCOLOR_N) - supports color names or RGB arrays
         for key_num in range(1, TOTAL_KEYS + 1):
             if key_num not in keys:
                 continue
             
             key_def = keys[key_num]
-            color = key_def.get('color')
-            if color:
-                lines.append(f'SWCOLOR_{key_num} {color[0]} {color[1]} {color[2]}')
+            color_raw = key_def.get('color')
+            if color_raw:
+                color = parse_color(color_raw)
+                if color:
+                    lines.append(f'SWCOLOR_{key_num} {format_rgb(color)}')
         
         # Dim unused keys
         dim_unused = config.get('dim_unused', config.get('dim_unused_keys'))
         if dim_unused:
             lines.append('DIM_UNUSED_KEYS 1')
         
-        # Keydown color
-        keydown_color = config.get('keydown_color')
-        if keydown_color:
-            lines.append(f'KEYDOWN_COLOR {keydown_color[0]} {keydown_color[1]} {keydown_color[2]}')
+        # Keydown color - supports color names or RGB arrays
+        keydown_color_raw = config.get('keydown_color')
+        if keydown_color_raw:
+            keydown_color = parse_color(keydown_color_raw)
+            if keydown_color:
+                lines.append(f'KEYDOWN_COLOR {format_rgb(keydown_color)}')
         
         # Allow abort flags (ab)
         for key_num in range(1, TOTAL_KEYS + 1):

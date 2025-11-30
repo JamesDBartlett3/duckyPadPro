@@ -9,3 +9,6 @@ PyYAML>=5.0
 #   Ubuntu/Debian: sudo apt install libusb-1.0-0-dev
 #   Fedora: sudo dnf install libusb-devel
 hidapi>=0.10.0
+
+# Required for color name support in YAML profiles (e.g., "red", "darkblue")
+webcolors>=1.11

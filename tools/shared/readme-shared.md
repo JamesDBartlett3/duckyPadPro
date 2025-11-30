@@ -151,6 +151,40 @@ if 1 in key_settings:
 
 Validation functions for profile names, key labels, and counts.
 
+### `colors.py`
+
+Color parsing utilities for YAML profiles. Converts color names, hex values, and RGB arrays to duckyPad-compatible RGB tuples.
+
+**Functions:**
+
+- `parse_color(value)` - Parse color from any format (name, hex, RGB array) → `(r, g, b)` tuple
+- `format_rgb(color)` - Format RGB tuple as space-separated string for config.txt
+- `normalize_color_name(name)` - Normalize color names (handles underscores, aliases)
+- `get_available_colors()` - List all available CSS3 color names
+
+**Supported Formats:**
+
+- **Color names:** CSS3/HTML colors like `red`, `darkblue`, `coral`
+- **Underscore variants:** `dark_blue`, `light_green` (converted to `darkblue`, `lightgreen`)
+- **Hex colors:** `#FF5500` or `FF5500`
+- **RGB arrays:** `[255, 0, 0]`
+
+**Usage:**
+
+```python
+from shared.colors import parse_color, format_rgb
+
+# Parse different color formats
+rgb = parse_color('red')           # (255, 0, 0)
+rgb = parse_color('darkblue')      # (0, 0, 139)
+rgb = parse_color('dark_blue')     # (0, 0, 139)
+rgb = parse_color('#FF5500')       # (255, 85, 0)
+rgb = parse_color([100, 150, 200]) # (100, 150, 200)
+
+# Format for config.txt
+color_str = format_rgb(rgb)        # "255 0 0"
+```
+
 ### `console.py`
 
 Console output utilities with color support.

@@ -65,6 +65,14 @@ from .validators import (
     MAX_LABEL_CHARS_PER_LINE_LANDSCAPE,
 )
 
+from .colors import (
+    parse_color,
+    format_rgb,
+    normalize_color_name,
+    get_available_colors,
+    COMMON_COLORS,
+)
+
 __all__ = [
     'PHYSICAL_KEYS',
     'TOTAL_KEYS',
@@ -109,4 +117,9 @@ __all__ = [
     'MAX_LABEL_CHARS_PER_LINE_PORTRAIT',
     'MAX_LABEL_CHARS_LANDSCAPE',
     'MAX_LABEL_CHARS_PER_LINE_LANDSCAPE',
+    'parse_color',
+    'format_rgb',
+    'normalize_color_name',
+    'get_available_colors',
+    'COMMON_COLORS',
 ]

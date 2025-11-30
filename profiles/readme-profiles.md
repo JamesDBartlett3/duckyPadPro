@@ -12,6 +12,7 @@ Complete profile packages for duckyPad Pro, organized by use case and applicatio
   - [Layers](#layers)
   - [Key Definitions](#key-definitions)
   - [Configuration Options](#configuration-options)
+    - [Color Values](#color-values)
 - [Creating Profiles](#creating-profiles)
 - [Deployment](#deployment)
 - [Examples](#examples)
@@ -404,13 +405,47 @@ keys:
 
 ### Configuration Options
 
+#### Color Values
+
+Colors can be specified in three formats:
+
+1. **Color names** (CSS3/HTML colors):
+
+   ```yaml
+   background_color: darkblue
+   color: red
+   keydown_color: coral
+   ```
+
+2. **Hex colors**:
+
+   ```yaml
+   background_color: "#FF5500"
+   color: "#00FF00"
+   ```
+
+3. **RGB arrays** (0-255):
+   ```yaml
+   background_color: [84, 22, 180]
+   color: [255, 0, 0]
+   ```
+
+**Common Color Names:**
+
+- Basic: `red`, `green`, `blue`, `yellow`, `cyan`, `magenta`, `white`, `black`
+- Extended: `orange`, `purple`, `pink`, `coral`, `salmon`, `gold`, `silver`
+- Dark variants: `darkblue`, `darkred`, `darkgreen`, `darkcyan` (or `dark_blue`, `dark_red`, etc.)
+- Light variants: `lightblue`, `lightgreen`, `lightgray` (or `light_blue`, `light_green`, etc.)
+- See [CSS3 color names](https://www.w3.org/wiki/CSS/Properties/color/keywords) for full list
+
 #### Profile-Level Config
 
 ```yaml
 profile:
   config:
     orientation: landscape # or portrait (default)
-    background_color: [84, 22, 180]
+    background_color: darkblue # Color name
+    keydown_color: "#FFFF00" # Hex color
     dim_unused: true # Dim keys without scripts
 ```
 
@@ -421,7 +456,7 @@ layers:
   ctrl:
     config:
       orientation: landscape
-      background_color: [192, 192, 192]
+      background_color: coral # Color name works in layers too
 ```
 
 #### Key-Level Directives
@@ -432,8 +467,18 @@ keys:
     key: CTRL
     no_repeat: true # Don't auto-repeat when held (adds 'dr 1')
     allow_abort: true # Allow early exit from macro (adds 'ab 1')
-    color: [255, 0, 0]
+    color: red # Color name
     label: [Ctrl]
+
+  2:
+    key: SHIFT
+    color: "#00FF00" # Hex color
+    label: [Shft]
+
+  3:
+    key: ALT
+    color: [0, 0, 255] # RGB array
+    label: [Alt]
 ```
 
 ## Creating Profiles
