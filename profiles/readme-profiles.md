@@ -44,7 +44,7 @@ profile:
 
   keys:
     1: { key: CTRL, label: [Ctrl] }
-    2: { key: SHIFT, label: [Shift] }
+    2: { key: SHIFT, label: [Shft] }
     # ... more keys
 
   layers:
@@ -133,9 +133,9 @@ template:
     11: { key: W, label: [Fwd, "(W)"], hold: true }
     10: { key: S, label: [Back, "(S)"], hold: true }
     6: { key: A, label: [Left, "(A)"], hold: true }
-    14: { key: D, label: [Right, "(D)"], hold: true }
+    14: { key: D, label: [Rght, "(D)"], hold: true }
     17: { key: SPACE, label: [Jump], hold: true }
-    9: { key: C, label: [Crouch] }
+    9: { key: C, label: [Crnch] }
 ```
 
 ```yaml
@@ -166,9 +166,9 @@ profile:
 
   keys:
     # Templates applied first, then these override
-    5: { key: E, label: [Ability] }
+    5: { key: E, label: [Abil] }
     7: { key: Q, label: [Util] }
-    8: { key: "1", label: [Primary] }
+    8: { key: "1", label: [Prim] }
     # Keys 6, 9, 10, 11, 14, 17 from fps_wasd template
     # Keys 21-26 from media_controls template
 ```
@@ -183,7 +183,7 @@ layers:
     templates:
       - numpad_layout # Layer-specific template
     keys:
-      1: { label: [Return] }
+      1: { label: [Rtrn] }
 ```
 
 #### Template Application Order
@@ -526,7 +526,7 @@ profile:
 
   keys:
     5: { key: E, label: [Use] }
-    7: { key: Q, label: [Ability] }
+    7: { key: Q, label: [Abil] }
 ```
 
 ### Example 3: Profile with Modifier Layer
@@ -541,7 +541,7 @@ profile:
 
   keys:
     1: { modifier: CTRL, layer: ctrl, label: [Ctrl], no_repeat: true }
-    2: { key: SHIFT, hold: true, label: [Shift] }
+    2: { key: SHIFT, hold: true, label: [Shft] }
     3: { key: TAB, label: [Tab] }
     6-9: [A, S, D, F]
 
@@ -555,7 +555,7 @@ profile:
 
       keys:
         1: { label: [Ctrl], color: [128, 0, 255] }
-        6: { label: [Sel All] } # Empty action - shows Ctrl+A label
+        6: { label: [SelA] } # Empty action - shows Ctrl+A label
         7: { label: [Save] } # Empty action - shows Ctrl+S label
 ```
 
@@ -578,7 +578,7 @@ profile:
       extends: parent
       keys:
         1: { label: [Ctrl], color: [255, 0, 0] }
-        3: { label: [Sel All] }
+        3: { label: [SelA] }
 
     alt:
       extends: parent
