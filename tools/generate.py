@@ -520,6 +520,14 @@ class YAMLToProfileConverter:
             key_def: Key definition dict
             is_release: True if generating release script
         """
+        # Check for string: property - types the value as text
+        string_val = key_def.get('string')
+        if string_val is not None:
+            if not is_release:
+                lines.append(f'STRING {string_val}')
+            # No release script needed for STRING
+            return
+        
         key = key_def.get('key')
         if not key:
             # Empty action (label-only key)
@@ -528,14 +536,6 @@ class YAMLToProfileConverter:
         
         # Convert to string (YAML may parse numbers as int)
         key = str(key)
-        
-        # Check if user wants to type this as a string
-        key_type = key_def.get('type', '').lower()
-        if key_type == 'string':
-            if not is_release:
-                lines.append(f'STRING {key}')
-            # No release script needed for STRING
-            return
         
         # Handle key combinations (e.g., CTRL a for Ctrl+A)
         modifier = key_def.get('modifier')
