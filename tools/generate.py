@@ -369,7 +369,11 @@ class YAMLToProfileConverter:
             # Custom script - either explicit action: custom or just script: property
             script = key_def.get('script', '')
             if script and not is_release:
-                lines.append(script)
+                # Support array of lines or single string
+                if isinstance(script, list):
+                    lines.extend(script)
+                else:
+                    lines.append(script)
                 # If on oneshot layer, return to parent after custom script
                 if is_oneshot_layer:
                     lines.append(f'GOTO_PROFILE {self._get_parent_profile_name()}')
