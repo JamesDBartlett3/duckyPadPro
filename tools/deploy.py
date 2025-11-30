@@ -114,10 +114,11 @@ class ProfileDeployer:
         try:
             # Check if destination already exists
             if dest_path.exists():
-                print_color(f"  Warning: {dest_name} already exists", "yellow")
-                if not prompt_yes_no(f"  Overwrite {dest_name}?", default=True, force=self.force):
-                    print_color(f"  Skipped: {profile_name}", "yellow")
-                    return False
+                if not self.force:
+                    print_color(f"  Warning: {dest_name} already exists", "yellow")
+                    if not prompt_yes_no(f"  Overwrite {dest_name}?", default=True, force=False):
+                        print_color(f"  Skipped: {profile_name}", "yellow")
+                        return False
                 shutil.rmtree(dest_path)
             
             # Copy profile directory (excluding README files)
