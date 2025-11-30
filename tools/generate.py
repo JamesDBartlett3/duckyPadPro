@@ -172,8 +172,24 @@ class YAMLToProfileConverter:
                 key_count += 1
                 
                 # Check if we need a release script
+                # Release scripts needed for: layer switchers, single characters (alone), modifier keys (alone)
+                # NOT needed for: modifier+key combos, special keys (ESC, F1, etc.), type: string
                 layer_type = key_def.get('layer_type')
-                if layer_type in ['modifier_hold', 'momentary']:
+                key_val = key_def.get('key')
+                key = str(key_val) if key_val is not None else ''  # Convert to string (YAML may parse numbers as int)
+                key_type = key_def.get('type', '').lower()
+                has_modifier_combo = key_def.get('modifier')  # Key combo like CTRL+A
+                modifier_keys = {'SHIFT', 'CTRL', 'ALT', 'COMMAND', 'WINDOWS', 'OPTION',
+                                 'RSHIFT', 'RCTRL', 'RALT', 'RCOMMAND', 'RWINDOWS', 'ROPTION'}
+                is_single_char = len(key) == 1
+                is_modifier_only = key.upper() in modifier_keys
+                is_string_type = key_type == 'string'
+                
+                needs_release = (
+                    layer_type in ['modifier_hold', 'momentary'] or
+                    (not has_modifier_combo and not is_string_type and (is_single_char or is_modifier_only))
+                )
+                if needs_release:
                     release_path = output_dir / f"key{key_num}-release.txt"
                     self._write_key_script(release_path, key_num, key_def, is_release=True)
                     
@@ -217,13 +233,14 @@ class YAMLToProfileConverter:
             if isinstance(label, str):
                 label = [label]
             
+            # Convert label elements to strings (YAML may parse numbers as int)
             if len(label) >= 1 and label[0]:
-                z_line = label[0]
+                z_line = str(label[0])
             else:
                 z_line = ""
             
             if len(label) >= 2 and label[1]:
-                x_line = label[1]
+                x_line = str(label[1])
             else:
                 x_line = ""
             
@@ -350,7 +367,7 @@ class YAMLToProfileConverter:
                 lines.append(f'GOTO_PROFILE {self._get_parent_profile_name()}')
         else:
             # Regular key press
-            self._generate_key_press(lines, key_def)
+            self._generate_key_press(lines, key_def, is_release)
             # If on oneshot layer, return to parent after key press
             if is_oneshot_layer and not is_release:
                 lines.append(f'GOTO_PROFILE {self._get_parent_profile_name()}')
@@ -380,6 +397,10 @@ class YAMLToProfileConverter:
         
         # Determine if we're on the main profile or the layer profile
         on_layer = (self.current_profile_type == 'layer')
+        
+        # Check if this key switches to the CURRENT layer we're generating
+        # If so, it should return to parent. If not, it should go to its target layer.
+        is_current_layer = (on_layer and layer_id == self.current_layer_id)
         
         if layer_type == 'modifier_hold':
             # Modifier hold: press modifier, switch layer, release modifier on return
@@ -414,11 +435,11 @@ class YAMLToProfileConverter:
             lines.append('DEFAULTDELAY 0')
             
             if not is_release:
-                if on_layer:
-                    # On layer: return to main
+                if is_current_layer:
+                    # On this key's layer: return to main
                     lines.append(f'GOTO_PROFILE {parent_name}')
                 else:
-                    # On main: go to layer
+                    # On main or different layer: go to this key's layer
                     lines.append(f'GOTO_PROFILE {layer_name}')
         
         elif layer_type == 'oneshot':
@@ -427,11 +448,11 @@ class YAMLToProfileConverter:
             lines.append('DEFAULTDELAY 0')
             
             if not is_release:
-                if on_layer:
-                    # On layer: return to main after any key press
+                if is_current_layer:
+                    # On this key's layer: return to main
                     lines.append(f'GOTO_PROFILE {parent_name}')
                 else:
-                    # On main: go to layer
+                    # On main or different layer: go to this key's layer
                     lines.append(f'REM Oneshot layer')
                     lines.append(f'GOTO_PROFILE {layer_name}')
         
@@ -439,16 +460,16 @@ class YAMLToProfileConverter:
             # Momentary: hold to activate, release to return
             lines.append('DEFAULTDELAY 0')
             
-            if on_layer:
-                # On layer profile
+            if is_current_layer:
+                # On this key's layer
                 if is_release:
                     # Release: return to main
                     lines.append(f'GOTO_PROFILE {parent_name}')
                 # Press: do nothing (stay on layer)
             else:
-                # On main profile
+                # On main or different layer
                 if not is_release:
-                    # Press: switch to layer
+                    # Press: switch to this key's layer
                     lines.append(f'GOTO_PROFILE {layer_name}')
         
         else:
@@ -480,13 +501,14 @@ class YAMLToProfileConverter:
         """
         return self.loader.get_profile_name()
     
-    def _generate_key_press(self, lines: List[str], key_def: Dict[str, Any]):
+    def _generate_key_press(self, lines: List[str], key_def: Dict[str, Any], is_release: bool = False):
         """
         Generate duckyScript for regular key press.
         
         Args:
             lines: List to append script lines to
             key_def: Key definition dict
+            is_release: True if generating release script
         """
         key = key_def.get('key')
         if not key:
@@ -494,26 +516,60 @@ class YAMLToProfileConverter:
             lines.append('REM Empty action - display only')
             return
         
-        hold = key_def.get('hold', False)
+        # Convert to string (YAML may parse numbers as int)
+        key = str(key)
         
-        if hold:
-            # Hold key - use HOLD/RELEASE
-            lines.append(f'REM Hold key: {key}')
-            lines.append(f'HOLD {key.upper()}')
-        else:
-            # Regular key press
-            # Handle modifiers
-            modifier = key_def.get('modifier')
-            if modifier:
-                lines.append(f'{modifier.upper()} {key.upper()}')
+        # Check if user wants to type this as a string
+        key_type = key_def.get('type', '').lower()
+        if key_type == 'string':
+            if not is_release:
+                lines.append(f'STRING {key}')
+            # No release script needed for STRING
+            return
+        
+        # Handle key combinations (e.g., CTRL a for Ctrl+A)
+        modifier = key_def.get('modifier')
+        if modifier:
+            lines.append(f'{modifier.upper()} {key.lower()}')
+            return
+        
+        # Modifier keys that need KEYDOWN/KEYUP
+        modifier_keys = {'SHIFT', 'CTRL', 'ALT', 'COMMAND', 'WINDOWS', 'OPTION',
+                         'RSHIFT', 'RCTRL', 'RALT', 'RCOMMAND', 'RWINDOWS', 'ROPTION'}
+        
+        # Special keys that are valid duckyScript commands (single press, no release needed)
+        special_keys = {
+            'ESC', 'ESCAPE', 'ENTER', 'RETURN', 'TAB', 'SPACE', 'BACKSPACE', 'DELETE',
+            'INSERT', 'HOME', 'END', 'PAGEUP', 'PAGEDOWN', 'PAUSE', 'BREAK',
+            'UP', 'DOWN', 'LEFT', 'RIGHT', 'UPARROW', 'DOWNARROW', 'LEFTARROW', 'RIGHTARROW',
+            'CAPSLOCK', 'NUMLOCK', 'SCROLLLOCK', 'PRINTSCREEN', 'MENU', 'APP', 'POWER',
+            'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12',
+            'F13', 'F14', 'F15', 'F16', 'F17', 'F18', 'F19', 'F20', 'F21', 'F22', 'F23', 'F24',
+            # Numpad keys
+            'KP_SLASH', 'KP_ASTERISK', 'KP_MINUS', 'KP_PLUS', 'KP_ENTER', 'KP_DOT', 'KP_EQUAL',
+            'KP_0', 'KP_1', 'KP_2', 'KP_3', 'KP_4', 'KP_5', 'KP_6', 'KP_7', 'KP_8', 'KP_9',
+        }
+        
+        is_single_char = len(key) == 1
+        is_modifier = key.upper() in modifier_keys
+        is_special = key.upper() in special_keys
+        
+        if is_single_char or is_modifier:
+            # Single characters (letters, digits, symbols) and modifiers need KEYDOWN/KEYUP
+            if is_release:
+                lines.append(f'KEYUP {key.upper() if is_modifier else key}')
             else:
-                # Check if key is a single character or special key
-                if len(key) == 1 and key.isalnum():
-                    # Single character - use STRING
-                    lines.append(f'STRING {key}')
-                else:
-                    # Special key name
-                    lines.append(key.upper())
+                lines.append(f'KEYDOWN {key.upper() if is_modifier else key}')
+        elif is_special:
+            # Special keys are valid duckyScript commands - single press
+            if not is_release:
+                lines.append(key.upper())
+            # No release script needed for special keys
+        else:
+            # Multi-character strings - type as string
+            if not is_release:
+                lines.append(f'STRING {key}')
+            # No release script needed for STRING
     
     def _write_readme(self, path: Path, profile_name: str, config: Dict[str, Any], keys: Dict[int, Any]):
         """

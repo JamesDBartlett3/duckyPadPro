@@ -133,8 +133,8 @@ profile:
     orientation: landscape
     background_color: [100, 100, 100]
   keys:
-    1: { key: A, label: [A] }
-    2: { key: SHIFT, hold: true, label: [Run] }
+    1: { key: a, label: [A] }
+    2: { key: SHIFT, label: [Run] }
   layers:
     ctrl:
       name: MyProfile-Ctrl

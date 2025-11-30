@@ -68,7 +68,7 @@ profile:
 
   keys:
     1: { modifier: CTRL, layer: ctrl, label: [Ctrl] }
-    2: { key: SHIFT, hold: true, label: [Run] }
+    2: { key: SHIFT, label: [Run] }
     3: { key: TAB, label: [Inv] }
     # ... 23 more keys
 
@@ -99,7 +99,7 @@ layers:
   shift:
     extends: parent
     keys:
-      6: { key: A, hold: true }
+      6: { key: a }
 
   shift_ctrl:
     extends: shift # Inherit from shift layer instead of parent
@@ -111,7 +111,7 @@ layers:
 
 When a layer extends another source:
 
-- ✅ **Keys**: All key definitions (key, label, color, hold, no_repeat, allow_abort)
+- ✅ **Keys**: All key definitions (key, label, color, no_repeat, allow_abort)
 - ✅ **Actions**: Media controls, custom actions
 - ❌ **NOT inherited**: Layer switchers (layer_type, modifier, layer directives)
 - ❌ **NOT inherited**: Config (background_color, orientation) - must be explicitly set
@@ -130,12 +130,12 @@ template:
   name: fps_wasd
   description: Standard FPS WASD movement controls
   keys:
-    11: { key: W, label: [Fwd, "(W)"], hold: true }
-    10: { key: S, label: [Back, "(S)"], hold: true }
-    6: { key: A, label: [Left, "(A)"], hold: true }
-    14: { key: D, label: [Rght, "(D)"], hold: true }
-    17: { key: SPACE, label: [Jump], hold: true }
-    9: { key: C, label: [Crnch] }
+    11: { key: w, label: [Fwd, "(W)"] }
+    10: { key: s, label: [Back, "(S)"] }
+    6: { key: a, label: [Left, "(A)"] }
+    14: { key: d, label: [Rght, "(D)"] }
+    17: { key: SPACE, label: [Jump] }
+    9: { key: c, label: [Crnch] }
 ```
 
 ```yaml
@@ -166,8 +166,8 @@ profile:
 
   keys:
     # Templates applied first, then these override
-    5: { key: E, label: [Abil] }
-    7: { key: Q, label: [Util] }
+    5: { key: e, label: [Abil] }
+    7: { key: q, label: [Util] }
     8: { key: "1", label: [Prim] }
     # Keys 6, 9, 10, 11, 14, 17 from fps_wasd template
     # Keys 21-26 from media_controls template
@@ -245,7 +245,9 @@ keys:
 
 #### Layer Switcher Keys
 
-**Press behavior:**
+Layer switchers are keys that switch between profiles (layers). When on a layer, pressing the same layer's switcher returns to the main profile, but pressing a DIFFERENT layer's switcher goes directly to that layer.
+
+**Press behavior (from main profile):**
 
 ```
 KEYDOWN <modifier>
@@ -258,12 +260,13 @@ GOTO_PROFILE <layer-name>
 KEYUP <modifier>
 ```
 
-**Release behavior (in layer profile):**
+**Press behavior (from layer, same switcher):**
 
-```
-KEYUP <modifier>
-GOTO_PROFILE <parent-name>
-```
+Returns to main profile.
+
+**Press behavior (from layer, different switcher):**
+
+Goes directly to the other layer (no return to main first).
 
 #### Layer Configuration
 
@@ -286,13 +289,18 @@ layers:
 
 ### Key Definitions
 
+> **Note:** Single-character keys (letters, digits, symbols) and modifier keys (SHIFT, CTRL, ALT, etc.) automatically generate `KEYDOWN` on press and `KEYUP` on release as separate scripts. Key combinations with a modifier (e.g., `modifier: CTRL, key: a`) are treated as single macro presses. Special keys (ESCAPE, TAB, F1-F24, etc.) are sent as single presses. Use `type: string` to type a character instead of pressing it as a key.
+
 #### Simple Keys
 
 ```yaml
 keys:
-  6: A # Ultra-compact: just the key
-  7: SHIFT # Modifier key
-  8: ESCAPE # Special key
+  6: a # Single letter - generates KEYDOWN/KEYUP
+  7: 5 # Single digit - generates KEYDOWN/KEYUP
+  8: / # Single symbol - generates KEYDOWN/KEYUP (for Ctrl+/ shortcuts)
+  9: SHIFT # Modifier key - generates KEYDOWN/KEYUP
+  10: ESCAPE # Special key - single press
+  11: { key: "@", type: string } # Type the character instead of pressing key
 ```
 
 #### Keys with Labels
@@ -308,28 +316,42 @@ keys:
 ```yaml
 keys:
   6:
-    key: A
-    hold: true # Generate KEYDOWN/KEYUP instead of simple press
+    key: a
     label: [A, "(Key)"]
     color: [255, 0, 0]
     no_repeat: true # Add 'dr N' directive (don't repeat when held)
     allow_abort: true # Add 'ab N' directive (allow early exit)
 ```
 
-#### Hold Keys
+#### Single Letter and Modifier Keys
 
-For keys that should be held down (movement, modifiers):
+Single letter keys (a-z) and modifier keys (SHIFT, CTRL, ALT, etc.) automatically generate separate press and release scripts:
 
 ```yaml
 keys:
-  2: { key: SHIFT, hold: true, label: [Run] }
-  6: { key: a, hold: true, label: [Left] }
+  2: { key: SHIFT, label: [Run] }
+  6: { key: a, label: [Left] }
 ```
 
 **Generates:**
 
-- `key2.txt`: `DEFAULTDELAY 0\nKEYDOWN SHIFT\n`
-- `key2-release.txt`: `DEFAULTDELAY 0\nKEYUP SHIFT\n`
+- `key2.txt`: `KEYDOWN SHIFT`
+- `key2-release.txt`: `KEYUP SHIFT`
+- `key6.txt`: `KEYDOWN a`
+- `key6-release.txt`: `KEYUP a`
+
+#### Key Combinations (Macros)
+
+Keys with a modifier+key combo are treated as single macro presses (no release script):
+
+```yaml
+keys:
+  1: { modifier: CTRL, key: a, label: [SelA] } # Sends Ctrl+A once
+```
+
+**Generates:**
+
+- `key1.txt`: `CTRL a`
 
 #### Label-Only Keys (Empty Actions)
 
@@ -525,8 +547,8 @@ profile:
     - media_controls
 
   keys:
-    5: { key: E, label: [Use] }
-    7: { key: Q, label: [Abil] }
+    5: { key: e, label: [Use] }
+    7: { key: q, label: [Abil] }
 ```
 
 ### Example 3: Profile with Modifier Layer
@@ -541,9 +563,9 @@ profile:
 
   keys:
     1: { modifier: CTRL, layer: ctrl, label: [Ctrl], no_repeat: true }
-    2: { key: SHIFT, hold: true, label: [Shft] }
+    2: { key: SHIFT, label: [Shft] }
     3: { key: TAB, label: [Tab] }
-    6-9: [A, S, D, F]
+    6-9: [a, s, d, f]
 
   layers:
     ctrl:

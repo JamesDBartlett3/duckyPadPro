@@ -166,7 +166,9 @@ python tools/compile.py -p profiles/example-productivity -v
 - `profile` prefix identifies the folder as a profile to the duckyPad Pro
 - `N` is a number (1, 2, 3, etc.) that determines display order
 - `_` separates the number from the name
-- `Name` is a descriptive name (spaces allowed, use underscores or CamelCase)
+- `Name` is a descriptive name (maximum 14 characters, spaces allowed)
+
+**Profile Name Limit**: Profile names are limited to **14 characters** maximum. This is a duckyPad Pro firmware constraint.
 
 Examples:
 
@@ -217,8 +219,8 @@ ab 5
 
 **Key Labels:**
 
-- `zN <text>`: First line of label for key N (max 5 chars, ASCII only)
-- `xN <text>`: Second line of label for key N (max 5 chars, ASCII only)
+- `zN <text>`: First line of label for key N (portrait: max 5 chars, landscape: max 4 chars, ASCII only)
+- `xN <text>`: Second line of label for key N (portrait: max 5 chars, landscape: max 4 chars, ASCII only)
 - Both lines optional; keys without labels appear blank
 
 **Display Settings:**
@@ -240,8 +242,9 @@ ab 5
 ### Key Label Constraints
 
 - **Maximum 2 lines** per key label
-- **Maximum 5 characters** per line (ASCII only)
-- Total: 10 characters maximum per key label
+- **Portrait mode:** Maximum 5 characters per line (10 total)
+- **Landscape mode:** Maximum 4 characters per line (8 total)
+- ASCII characters only
 
 ## Python Scripting Guidelines
 
