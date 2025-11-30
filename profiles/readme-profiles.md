@@ -241,9 +241,7 @@ keys:
 - `modifier_hold` - Hold modifier while layer is active (default)
 - `toggle` - Press to switch, press again to return
 - `oneshot` - Switch layer for one key press, then return
-- `momentary_combo` - Hold multiple keys to activate
-- `cycle` - Cycle through multiple layers
-- `hold_toggle` - Tap to toggle, hold to momentary
+- `momentary` - Hold to activate, release to return (no modifier key sent)
 
 #### Layer Switcher Keys
 
@@ -469,36 +467,6 @@ keys:
 4. Create `README.md` with documentation
 
 ## Deployment
-
-### Naming Convention
-
-When deploying to duckyPad Pro's SD card, folders MUST use this format:
-
-```
-profileN_Name
-```
-
-Where:
-
-- `profile` - Required prefix
-- `N` - Number determining display order (1, 2, 3, etc.)
-- `_` - Separator
-- `Name` - Descriptive name (spaces OK, or use underscores/CamelCase)
-
-**Examples:**
-
-```
-profile1_Foxhole
-profile2_Foxhole-Ctrl
-profile3_Discord
-profile10_PhotoEditing
-```
-
-**Important:**
-
-- In this repository, use descriptive names (`foxhole`, `discord-tools`)
-- Users apply the `profileN_` naming when deploying to their device
-- The number controls profile order when using +/- buttons on duckyPad Pro
 
 ### Deployment Steps
 
