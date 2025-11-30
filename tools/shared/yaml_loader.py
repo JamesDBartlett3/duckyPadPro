@@ -243,10 +243,31 @@ class ProfileLoader:
         else:
             raise ValueError(f"Invalid key definition type: {type(definition)}")
     
+    def _collect_all_template_names(self):
+        """
+        Collect all template names from profile and layers that need external loading.
+        
+        Returns:
+            Set of template names to load from external files (excludes inline templates)
+        """
+        template_names = set(self.profile.get('templates', []))
+        
+        # Also collect templates from layers
+        layers = self.profile.get('layers', {})
+        for layer in layers.values():
+            layer_templates = layer.get('templates', [])
+            template_names.update(layer_templates)
+        
+        # Remove inline templates (already in self.templates)
+        template_names = template_names - set(self.templates.keys())
+        
+        return template_names
+    
     def _load_external_templates(self):
         """Load template files from profiles/templates/ directory."""
-        # Get list of template names to load
-        template_names = self.profile.get('templates', [])
+        # Collect all template names from profile and layers
+        template_names = self._collect_all_template_names()
+        
         if not template_names:
             return
         
@@ -278,6 +299,55 @@ class ProfileLoader:
             else:
                 print(f"Warning: Template file '{template_file}' missing 'template' key")
     
+    def _get_profile_orientation(self) -> str:
+        """Get the orientation from profile config, defaulting to 'landscape'."""
+        config = self.profile.get('config', {})
+        return config.get('orientation', 'landscape')
+    
+    def _resolve_template_keys(self, template: Dict[str, Any], orientation: str) -> Dict[int, Any]:
+        """
+        Resolve template keys based on orientation.
+        
+        Handles both:
+        - Oriented templates (with key_definitions and key_positions)
+        - Non-oriented templates (with direct keys mapping)
+        
+        Args:
+            template: Template data dictionary
+            orientation: Either 'landscape' or 'portrait'
+            
+        Returns:
+            Dictionary mapping key slot numbers to key definitions
+        """
+        # Check if this is an oriented template (has key_definitions and key_positions)
+        if 'key_definitions' in template and 'key_positions' in template:
+            key_definitions = template['key_definitions']
+            key_positions = template.get('key_positions', {})
+            
+            # Get positions for the specified orientation
+            orientation_positions = key_positions.get(orientation, {})
+            
+            if not orientation_positions:
+                # Check supported_orientations and warn if needed
+                supported = template.get('supported_orientations', [])
+                if supported and orientation not in supported:
+                    template_name = template.get('name', 'unknown')
+                    print(f"Warning: Template '{template_name}' does not support {orientation} orientation")
+                return {}
+            
+            # Map abstract key names to physical slot numbers
+            resolved_keys = {}
+            for key_name, slot_num in orientation_positions.items():
+                if key_name in key_definitions:
+                    resolved_keys[slot_num] = copy.deepcopy(key_definitions[key_name])
+                else:
+                    print(f"Warning: Key '{key_name}' in key_positions not found in key_definitions")
+            
+            return resolved_keys
+        
+        # Non-oriented template: direct keys mapping
+        return copy.deepcopy(template.get('keys', {}))
+    
     def _apply_templates(self):
         """Apply templates to profile keys."""
         template_names = self.profile.get('templates', [])
@@ -288,17 +358,27 @@ class ProfileLoader:
         if 'keys' not in self.profile:
             self.profile['keys'] = {}
         
-        # Apply templates in order
+        # Get profile orientation for resolving oriented templates
+        orientation = self._get_profile_orientation()
+        
+        # Save explicitly defined keys (these should override all templates)
+        explicit_keys = copy.deepcopy(self.profile.get('keys', {}))
+        
+        # Apply templates in order (later templates override earlier ones)
         for template_name in template_names:
-            if template_name not in self.template_cache:
-                continue
+            template_keys = {}
             
-            template = self.template_cache[template_name]
-            template_keys = template.get('keys', {})
+            # Check inline templates first
+            if template_name in self.templates:
+                template_keys = self._resolve_template_keys(self.templates[template_name], orientation)
+            # Then check external templates
+            elif template_name in self.template_cache:
+                template_keys = self._resolve_template_keys(self.template_cache[template_name], orientation)
             
-            # Apply template keys (don't override existing keys)
+            # Apply resolved keys
             for key_num, key_def in template_keys.items():
-                if key_num not in self.profile['keys']:
+                # Only apply if not explicitly defined
+                if key_num not in explicit_keys:
                     self.profile['keys'][key_num] = key_def
     
     def _process_layer_inheritance(self):
@@ -308,6 +388,10 @@ class ProfileLoader:
             return
         
         for layer_id, layer in layers.items():
+            # Save explicitly defined layer keys before any inheritance processing
+            # These should override both extends and templates
+            explicit_layer_keys = copy.deepcopy(layer.get('keys', {}))
+            
             extends = layer.get('extends')
             if not extends:
                 continue
@@ -346,23 +430,33 @@ class ProfileLoader:
                     print(f"Warning: Layer '{layer_id}' extends unknown source '{extend_source}'")
                     continue
                 
-                # Copy source keys (don't override existing layer keys)
+                # Copy source keys (don't override explicit layer keys)
                 for key_num, key_def in source_keys.items():
-                    if key_num not in layer['keys']:
+                    if key_num not in explicit_layer_keys:
                         # Deep copy the key definition
                         layer['keys'][key_num] = copy.deepcopy(key_def)
             
-            # Apply templates to layer if specified
+            # Apply templates to layer if specified (later templates override earlier ones and extends)
             layer_templates = layer.get('templates', [])
+            
+            # Get orientation for layer (inherit from layer config, or fall back to profile config)
+            layer_config = layer.get('config', {})
+            layer_orientation = layer_config.get('orientation', self._get_profile_orientation())
+            
             for template_name in layer_templates:
-                if template_name not in self.template_cache:
-                    continue
+                template_keys = {}
                 
-                template = self.template_cache[template_name]
-                template_keys = template.get('keys', {})
+                # Check inline templates first
+                if template_name in self.templates:
+                    template_keys = self._resolve_template_keys(self.templates[template_name], layer_orientation)
+                # Then check external templates
+                elif template_name in self.template_cache:
+                    template_keys = self._resolve_template_keys(self.template_cache[template_name], layer_orientation)
                 
+                # Apply resolved keys
                 for key_num, key_def in template_keys.items():
-                    if key_num not in layer['keys']:
+                    # Only skip if explicitly defined in layer
+                    if key_num not in explicit_layer_keys:
                         layer['keys'][key_num] = copy.deepcopy(key_def)
 
 

@@ -1,0 +1,14 @@
+template:
+  name: media_controls
+  description: Standard media playback controls for rotary encoders
+  supported_orientations: [landscape, portrait]
+  
+  # Non-oriented template: rotary encoders (keys 21-26) don't change position
+  # between orientations, so we can use direct key assignments
+  keys:
+    21: { action: media, command: VOLUME_UP }
+    22: { action: media, command: VOLUME_DOWN }
+    23: { action: media, command: MUTE }
+    24: { action: media, command: NEXT_TRACK }
+    25: { action: media, command: PREV_TRACK }
+    26: { action: media, command: PLAY_PAUSE }

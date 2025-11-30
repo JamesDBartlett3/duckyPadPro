@@ -118,31 +118,65 @@ When a layer extends another source:
 
 ### Templates
 
-Templates are reusable key sets that can be applied across multiple profiles.
+Templates are reusable key sets that can be applied across multiple profiles. Templates come in two styles:
 
-#### Template Files
+- **Oriented templates**: Define abstract keys with physical assignments per orientation
+- **Non-oriented templates**: Direct key-to-slot mappings (e.g., for rotary encoders)
 
-Create template files in `profiles/templates/`:
+#### Oriented Templates
+
+Oriented templates separate key definitions from physical assignments, allowing the same template to work in both portrait and landscape orientations:
 
 ```yaml
 # profiles/templates/fps_wasd.yaml
 template:
   name: fps_wasd
   description: Standard FPS WASD movement controls
-  keys:
-    11: { key: W, label: [Fwd, "(W)"], hold: true }
-    10: { key: S, label: [Back, "(S)"], hold: true }
-    6: { key: A, label: [Left, "(A)"], hold: true }
-    14: { key: D, label: [Right, "(D)"], hold: true }
-    17: { key: SPACE, label: [Jump], hold: true }
-    9: { key: C, label: [Crouch] }
+  supported_orientations: [landscape, portrait]
+  
+  # Abstract key definitions (label, color, action)
+  key_definitions:
+    move_forward: { key: W, label: [Fwd, W], hold: true }
+    move_backward: { key: S, label: [Back, S], hold: true }
+    strafe_left: { key: A, label: [Left, A], hold: true }
+    strafe_right: { key: D, label: [Rght, D], hold: true }
+    jump: { key: SPACE, label: [Jump], hold: true }
+    crouch: { key: C, label: [Crch] }
+  
+  # Physical key assignments per orientation
+  key_positions:
+    landscape:
+      move_forward: 11
+      move_backward: 10
+      strafe_left: 6
+      strafe_right: 14
+      jump: 17
+      crouch: 9
+    portrait:
+      move_forward: 7
+      move_backward: 12
+      strafe_left: 11
+      strafe_right: 13
+      jump: 17
+      crouch: 16
 ```
+
+The profile's orientation (from `config.orientation`) determines which `key_positions` mapping to use.
+
+#### Non-Oriented Templates
+
+Non-oriented templates use direct key-to-slot mappings. These are ideal for:
+- Rotary encoders (keys 21-26) that don't change position between orientations
+- Simple templates where orientation doesn't matter
 
 ```yaml
 # profiles/templates/media_controls.yaml
 template:
   name: media_controls
-  description: Standard media playback controls
+  description: Standard media playback controls for rotary encoders
+  supported_orientations: [landscape, portrait]
+  
+  # Direct key assignments (non-oriented)
   keys:
     21: { action: media, command: VOLUME_UP }
     22: { action: media, command: VOLUME_DOWN }
