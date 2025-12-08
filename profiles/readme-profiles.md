@@ -231,7 +231,7 @@ layers:
 5. Layer keys applied (override all templates and extends)
 ```
 
-Templates work like "coats of paint" - later templates override earlier ones for the same key, and explicit keys always win.
+Templates work like "coats of paint" - later templates override earlier ones for the same key, and explicit keys always win. For example, if both `template_a` and `template_b` define key 5, and `template_b` comes later in the list, then `template_b`'s definition wins.
 
 Example:
 
