@@ -18,7 +18,9 @@ See the complete [Key Layout Reference](key-layout.md) for detailed diagrams of 
 - `profile` - Required prefix that identifies this folder as a profile
 - `N` - Number that determines the display order (1, 2, 3, etc.)
 - `_` - Separator between number and name
-- `Name` - Descriptive profile name
+- `Name` - Descriptive profile name (maximum 14 characters)
+
+**Profile Name Limit**: Profile names are limited to **14 characters** maximum. This is a duckyPad Pro firmware constraint.
 
 **Examples**:
 
@@ -74,8 +76,8 @@ ab 5
 
 **Key Labels:**
 
-- `zN <text>`: First line of label for key N (max 5 characters, ASCII only)
-- `xN <text>`: Second line of label for key N (max 5 characters, ASCII only)
+- `zN <text>`: First line of label for key N (portrait: max 5 chars, landscape: max 4 chars, ASCII only)
+- `xN <text>`: Second line of label for key N (portrait: max 5 chars, landscape: max 4 chars, ASCII only)
 - Example: `z1 Hello` and `x1 World` displays "Hello" on line 1 and "World" on line 2 for key 1
 - Both lines are optional; keys without labels appear blank on screen
 
@@ -99,8 +101,9 @@ ab 5
 **Important:** Key labels displayed on the duckyPad Pro screen have strict size limits:
 
 - **Maximum 2 lines** of text per key
-- **Maximum 5 characters** per line (ASCII only)
-- Total: 10 characters maximum per key label
+- **Portrait mode:** Maximum 5 characters per line (10 total)
+- **Landscape mode:** Maximum 4 characters per line (8 total)
+- ASCII characters only
 
 Examples of valid key labels:
 
@@ -226,16 +229,19 @@ Organize keys by category:
 4. **Copy** to your duckyPad Pro device
 5. **Verify** all keys work as expected
 
-## Using the Profile Generator
+## Using the YAML Workflow
 
-Quick-start with the helper tool:
+Quick-start with the YAML workflow:
 
 ```bash
-cd helpers/generators
-python profile_generator.py my-profile 8
+# Generate, compile, and deploy from YAML template
+python execute.py yaml workbench/my-profile.yaml
+
+# Or generate only (no compile/deploy)
+python execute.py yaml workbench/my-profile.yaml --generate-only
 ```
 
-This creates a basic profile structure with 8 keys that you can customize.
+This creates profile folders in `workbench/profiles/` that you can customize.
 
 ## Rotary Encoder Keys
 
@@ -265,13 +271,13 @@ The duckyPad Pro includes two rotary encoders that can be programmed just like p
 
 ```
 REM key21.txt
-MEDIA_VOLUME_UP
+MK_VOLUP
 
 REM key22.txt
-MEDIA_VOLUME_DOWN
+MK_VOLDOWN
 
 REM key23.txt
-MEDIA_MUTE
+MK_MUTE
 ```
 
 **Browser Navigation (Second Encoder):**

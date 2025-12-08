@@ -10,13 +10,49 @@ This code is provided "as is" without warranty of any kind. Use at your own risk
 
 The duckyPad Pro is a powerful macro keyboard that uses [duckyScript](https://dekunukem.github.io/duckyPad-Pro/doc/duckyscript_info.html) to automate tasks, execute keyboard shortcuts, and streamline workflows.
 
-## Quick Start
+## Installation
 
-The easiest way to work with duckyPad Pro is using the unified launcher:
+### Prerequisites
+
+- Python 3.8 or higher
+- duckyPad Pro device (for deployment)
+
+### Setup
+
+After cloning the repository, run the setup script to download required dependencies:
 
 ```bash
-# YAML workflow: generate, compile, and deploy profiles
-python execute.py yaml workbench/my-profile.yaml
+git clone https://github.com/JamesDBartlett3/duckyPadPro.git
+cd duckyPadPro
+python setup.py
+```
+
+This installs and downloads:
+
+- **Python packages** - PyYAML (for profile generation), hidapi (for USB device control)
+- **Compiler files** (`tools/vendor/`) - Required to compile duckyScript to bytecode
+- **Sample profiles** (`profiles/sample_profiles/`) - Official example profiles
+- **Workbench template** (`workbench/`) - Starter YAML template for your profiles
+
+**Alternative manual installation:**
+
+```bash
+pip install -r requirements.txt
+python tools/vendor.py
+python tests/get_sample_profiles.py
+```
+
+## Quick Start
+
+After setup, use the unified launcher to work with duckyPad Pro:
+
+```bash
+# Create your first profile from the sample template
+python execute.py yaml workbench/my-first-profile.yaml
+
+# Or try with sample profiles
+python execute.py compile profiles/sample_profiles/profile1_Welcome
+python execute.py deploy profiles/sample_profiles/profile1_Welcome
 
 # Device control
 python execute.py device scan
@@ -25,10 +61,6 @@ python execute.py device mount
 # Backup and restore
 python execute.py backup
 python execute.py restore
-
-# Individual operations
-python execute.py compile profiles/my-profile
-python execute.py deploy profiles/my-profile
 ```
 
 Run `python execute.py --help` to see all available commands.

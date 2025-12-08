@@ -4,9 +4,41 @@ This guide will help you get started with using the profiles and scripts in this
 
 ## Prerequisites
 
+- Python 3.8 or higher
 - duckyPad Pro device
-- USB cable or SD card for file transfer
+- USB cable for device connection
 - Basic understanding of your operating system (Windows, macOS, or Linux)
+
+## Initial Setup
+
+After cloning the repository, run the setup script to download required dependencies:
+
+```bash
+git clone https://github.com/JamesDBartlett3/duckyPadPro.git
+cd duckyPadPro
+python setup.py
+```
+
+This installs and downloads:
+
+- **Python packages** - PyYAML (for profile generation), hidapi (for USB device control)
+- **Compiler files** (`tools/vendor/`) - Required to compile duckyScript to bytecode
+- **Sample profiles** (`profiles/sample_profiles/`) - Official example profiles for reference
+- **Workbench template** (`workbench/`) - Starter YAML template for your profiles
+
+To re-run setup or force re-download:
+
+```bash
+python setup.py --force
+```
+
+**Alternative manual installation:**
+
+```bash
+pip install -r requirements.txt
+python tools/vendor.py
+python tests/get_sample_profiles.py
+```
 
 ## Installing a Profile
 
@@ -33,13 +65,16 @@ Standalone duckyScript files can be used in several ways:
 3. Copy scripts to key files
 4. Add to your device
 
-### Option 3: Use Helper Tools
+### Option 3: Use YAML Workflow
 
-Use the profile generator helper to create a new profile structure:
+Use the YAML workflow to generate profiles from templates:
 
 ```bash
-cd helpers/generators
-python profile_generator.py my-custom-profile 8
+# Generate, compile, and deploy from YAML template
+python execute.py yaml workbench/my-profile.yaml
+
+# Or just generate without compiling/deploying
+python execute.py yaml workbench/my-profile.yaml --generate-only
 ```
 
 ## Customizing Scripts
@@ -81,24 +116,34 @@ Different operating systems use different modifier keys:
 
 ## Helper Utilities
 
-The `helpers/` directory contains useful tools:
+The `tools/` directory contains useful utilities:
 
-### Text to DuckyScript Converter
+### YAML Profile Generator
 
-Convert plain text files to duckyScript:
+Generate profiles from YAML templates with layers and templates:
 
 ```bash
-cd helpers/converters
-python text_to_duckyscript.py input.txt output.txt
+# Full workflow: generate, compile, deploy
+python execute.py yaml workbench/my-profile.yaml
+
+# Generate only (creates profiles in workbench/profiles/)
+python execute.py yaml workbench/my-profile.yaml --generate-only
 ```
 
-### Profile Generator
+### Compile Profiles
 
-Generate a new profile structure:
+Compile duckyScript to bytecode:
 
 ```bash
-cd helpers/generators
-python profile_generator.py profile-name 8
+python execute.py compile workbench/profiles/my-profile
+```
+
+### Deploy to Device
+
+Deploy profiles to duckyPad Pro:
+
+```bash
+python execute.py deploy workbench/profiles/my-profile
 ```
 
 ## Troubleshooting

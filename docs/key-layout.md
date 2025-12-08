@@ -153,13 +153,13 @@ The encoders are referred to as "first" and "second" rather than "top/bottom" or
 
 ```
 REM key21.txt - Volume Up
-MEDIA_VOLUME_UP
+MK_VOLUP
 
 REM key22.txt - Volume Down
-MEDIA_VOLUME_DOWN
+MK_VOLDOWN
 
 REM key23.txt - Mute
-MEDIA_MUTE
+MK_MUTE
 ```
 
 **Scrolling:**
@@ -197,7 +197,8 @@ FUNCTION_KEY PROFILE 1
 ### Key Label Limitations
 
 - **Maximum 2 lines** of text per key label
-- **Maximum 5 characters** per line (ASCII only)
-- Total: 10 characters maximum per key label
+- **Portrait mode:** Maximum 5 characters per line (10 total)
+- **Landscape mode:** Maximum 4 characters per line (8 total)
+- ASCII characters only
 
 All helper tools and profile designs must respect this constraint when creating key labels.

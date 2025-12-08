@@ -45,12 +45,16 @@ duckyPadPro/
 │   ├── compile.py                  # Compile duckyScript to bytecode
 │   ├── deploy.py                   # Deploy profiles to SD card
 │   ├── generate.py                 # Generate profiles from YAML (ONLY YAML reader)
-│   ├── convert_text.py             # Convert text to duckyScript
+│   ├── backup.py                   # Backup and restore SD card
+│   ├── device.py                   # Device control (mount/unmount SD card)
+│   ├── vendor.py                   # Download compiler dependencies
 │   ├── vendor/                     # Auto-downloaded compiler dependencies (gitignored)
 │   └── shared/                     # Shared library code
 │       ├── profiles.py
 │       ├── yaml_loader.py
-│       └── key_layout.py
+│       ├── key_layout.py
+│       ├── validators.py
+│       └── console.py
 ├── profiles/                       # Complete profile packages
 │   ├── sample_profiles/            # Auto-downloaded samples (gitignored)
 │   └── generate_readme_files.py    # Auto-generate readme files
@@ -66,6 +70,8 @@ duckyPadPro/
 │   ├── get_sample_profiles.py      # Download official sample profiles
 │   ├── test_profile_manager.py     # Test profile name mapping
 │   └── validate_compilation.py     # Validate .txt → .dsb conversions
+├── setup.py                        # Repository setup script
+├── requirements.txt                # Python package dependencies
 ├── LICENSE
 └── README.md
 ```
@@ -147,6 +153,9 @@ python tools/compile.py -p profiles/example-productivity -v
 - Requires Python 3 installed on system
 - Uses GitHub API to fetch latest release
 - Downloads all .py files from release zipball
+- Parses `ab N` and `dr N` directives from config.txt for preamble injection
+- Injects `$_ALLOW_ABORT = 1` and `$_DONT_REPEAT = 1` preambles as needed
+- Resolves `GOTO_PROFILE ProfileName` to `GOTO_PROFILE N` (1-based profile numbers)
 
 ## Profile Structure
 
@@ -157,7 +166,9 @@ python tools/compile.py -p profiles/example-productivity -v
 - `profile` prefix identifies the folder as a profile to the duckyPad Pro
 - `N` is a number (1, 2, 3, etc.) that determines display order
 - `_` separates the number from the name
-- `Name` is a descriptive name (spaces allowed, use underscores or CamelCase)
+- `Name` is a descriptive name (maximum 14 characters, spaces allowed)
+
+**Profile Name Limit**: Profile names are limited to **14 characters** maximum. This is a duckyPad Pro firmware constraint.
 
 Examples:
 
@@ -208,8 +219,8 @@ ab 5
 
 **Key Labels:**
 
-- `zN <text>`: First line of label for key N (max 5 chars, ASCII only)
-- `xN <text>`: Second line of label for key N (max 5 chars, ASCII only)
+- `zN <text>`: First line of label for key N (portrait: max 5 chars, landscape: max 4 chars, ASCII only)
+- `xN <text>`: Second line of label for key N (portrait: max 5 chars, landscape: max 4 chars, ASCII only)
 - Both lines optional; keys without labels appear blank
 
 **Display Settings:**
@@ -231,8 +242,9 @@ ab 5
 ### Key Label Constraints
 
 - **Maximum 2 lines** per key label
-- **Maximum 5 characters** per line (ASCII only)
-- Total: 10 characters maximum per key label
+- **Portrait mode:** Maximum 5 characters per line (10 total)
+- **Landscape mode:** Maximum 4 characters per line (8 total)
+- ASCII characters only
 
 ## Python Scripting Guidelines
 
@@ -267,22 +279,29 @@ ab 5
 
 ## Python Scripting Guidelines
 
-### Profile Generator
+### Profile Generator (YAML Workflow)
 
-- Located at: `tools/generate_profile.py`
-- Supports keys 1-26 (not just 1-20)
-- Includes helpful comments for rotary encoder keys (21-26)
-- Creates: `config.txt`, `keyN.txt` files, `README.md`
+The YAML workflow (`tools/generate.py`) is the recommended way to create profiles:
+
+- Parses YAML templates with templates, inheritance, and layers
+- Generates `config.txt`, `keyN.txt` files, and `README.md`
+- Supports keys 1-26 including rotary encoders (21-26)
+- Handles all layer types (modifier_hold, toggle, oneshot, momentary)
 
 ### Usage
 
 ```bash
-python profile_generator.py <profile-name> <number-of-keys>
-python profile_generator.py discord-tools 20
-python profile_generator.py photo-editing 15
+# Full workflow: generate, compile, deploy
+python execute.py yaml workbench/my-profile.yaml
+
+# Generate only
+python execute.py yaml workbench/my-profile.yaml --generate-only
+
+# Or use generate.py directly
+python tools/generate.py workbench/my-profile.yaml
 ```
 
-**Note**: Generated profiles use descriptive names. Users rename to `profileN_Name` format when deploying to their duckyPad Pro.
+**Note**: Generated profiles use descriptive names. The deploy step handles SD card naming conventions automatically.
 
 ### Key Descriptions
 
@@ -438,7 +457,7 @@ REM Platform: Windows/macOS/Linux
 - `DELAY`: Wait in milliseconds
 - `REM`: Comment
 - `CONTROL`, `SHIFT`, `ALT`, `COMMAND`: Modifier keys
-- `MEDIA_VOLUME_UP`, `MEDIA_VOLUME_DOWN`, `MEDIA_MUTE`: Media controls
+- `MK_VOLUP`, `MK_VOLDOWN`, `MK_MUTE`: Media controls
 
 ## Testing Guidelines
 

@@ -19,8 +19,9 @@ For complete key layout diagrams and orientation mappings, see [Key Layout Refer
 ### Key Label Limitations
 
 - **Maximum 2 lines** of text per key label
-- **Maximum 5 characters** per line (ASCII only)
-- Total: 10 characters maximum per key label
+- **Portrait mode:** Maximum 5 characters per line (10 total)
+- **Landscape mode:** Maximum 4 characters per line (8 total)
+- ASCII characters only
 
 All helper tools and generators must respect this constraint when creating key labels or suggesting naming conventions.
 

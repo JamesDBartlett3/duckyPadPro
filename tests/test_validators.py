@@ -71,7 +71,7 @@ def test_profile_name_valid():
         ("A", "Single character"),
         ("Test", "Short name"),
         ("MyProfile", "Standard name"),
-        ("1234567890123456", "Exactly 16 chars"),
+        ("12345678901234", "Exactly 14 chars"),
         ("Profile-123", "With hyphen"),
         ("My_Profile", "With underscore"),
     ]
@@ -91,7 +91,7 @@ def test_profile_name_invalid():
     test_cases = [
         ("", "Empty string"),
         ("ThisNameIsWayTooLongForDuckyPad", "Too long (30 chars)"),
-        ("ExactlySeventeenC", "17 chars (over limit)"),
+        ("FifteenCharsHer", "15 chars (over limit)"),
         ("A" * 100, "Extremely long"),
     ]
     
@@ -338,10 +338,10 @@ def test_constants():
     else:
         results.fail_test("MAX_PROFILES", f"Expected 64, got {MAX_PROFILES}")
     
-    if MAX_PROFILE_NAME_LENGTH == 16:
-        results.pass_test("MAX_PROFILE_NAME_LENGTH = 16")
+    if MAX_PROFILE_NAME_LENGTH == 14:
+        results.pass_test("MAX_PROFILE_NAME_LENGTH = 14")
     else:
-        results.fail_test("MAX_PROFILE_NAME_LENGTH", f"Expected 16, got {MAX_PROFILE_NAME_LENGTH}")
+        results.fail_test("MAX_PROFILE_NAME_LENGTH", f"Expected 14, got {MAX_PROFILE_NAME_LENGTH}")
     
     if MAX_LABEL_CHARS_PORTRAIT == 10:
         results.pass_test("MAX_LABEL_CHARS_PORTRAIT = 10")

@@ -12,6 +12,7 @@ Complete profile packages for duckyPad Pro, organized by use case and applicatio
   - [Layers](#layers)
   - [Key Definitions](#key-definitions)
   - [Configuration Options](#configuration-options)
+    - [Color Values](#color-values)
 - [Creating Profiles](#creating-profiles)
 - [Deployment](#deployment)
 - [Examples](#examples)
@@ -44,12 +45,12 @@ profile:
 
   keys:
     1: { key: CTRL, label: [Ctrl] }
-    2: { key: SHIFT, label: [Shift] }
+    2: { key: SHIFT, label: [Shft] }
     # ... more keys
 
   layers:
     modifier:
-      name: MyProfile-Modifier
+      name: MyProf-Mod
       keys:
         # ... layer-specific keys
 ```
@@ -68,7 +69,7 @@ profile:
 
   keys:
     1: { modifier: CTRL, layer: ctrl, label: [Ctrl] }
-    2: { key: SHIFT, hold: true, label: [Run] }
+    2: { key: SHIFT, label: [Run] }
     3: { key: TAB, label: [Inv] }
     # ... 23 more keys
 
@@ -99,7 +100,7 @@ layers:
   shift:
     extends: parent
     keys:
-      6: { key: A, hold: true }
+      6: { key: a }
 
   shift_ctrl:
     extends: shift # Inherit from shift layer instead of parent
@@ -111,7 +112,7 @@ layers:
 
 When a layer extends another source:
 
-- ✅ **Keys**: All key definitions (key, label, color, hold, no_repeat, allow_abort)
+- ✅ **Keys**: All key definitions (key, label, color, no_repeat, allow_abort)
 - ✅ **Actions**: Media controls, custom actions
 - ❌ **NOT inherited**: Layer switchers (layer_type, modifier, layer directives)
 - ❌ **NOT inherited**: Config (background_color, orientation) - must be explicitly set
@@ -168,6 +169,14 @@ The profile's orientation (from `config.orientation`) determines which `key_posi
 Non-oriented templates use direct key-to-slot mappings. These are ideal for:
 - Rotary encoders (keys 21-26) that don't change position between orientations
 - Simple templates where orientation doesn't matter
+  keys:
+    11: { key: w, label: [Fwd, "(W)"] }
+    10: { key: s, label: [Back, "(S)"] }
+    6: { key: a, label: [Left, "(A)"] }
+    14: { key: d, label: [Rght, "(D)"] }
+    17: { key: SPACE, label: [Jump] }
+    9: { key: c, label: [Crnch] }
+```
 
 ```yaml
 # profiles/templates/media_controls.yaml
@@ -178,12 +187,12 @@ template:
   
   # Direct key assignments (non-oriented)
   keys:
-    21: { action: media, command: VOLUME_UP }
-    22: { action: media, command: VOLUME_DOWN }
-    23: { action: media, command: MUTE }
-    24: { action: media, command: NEXT_TRACK }
-    25: { action: media, command: PREV_TRACK }
-    26: { action: media, command: PLAY_PAUSE }
+    21: { script: MK_VOLUP }
+    22: { script: MK_VOLDOWN }
+    23: { script: MK_MUTE }
+    24: { script: MK_NEXT }
+    25: { script: MK_PREV }
+    26: { script: MK_PP }
 ```
 
 #### Using Templates in Profiles
@@ -200,9 +209,9 @@ profile:
 
   keys:
     # Templates applied first, then these override
-    5: { key: E, label: [Ability] }
-    7: { key: Q, label: [Util] }
-    8: { key: "1", label: [Primary] }
+    5: { key: e, label: [Abil] }
+    7: { key: q, label: [Util] }
+    8: { key: "1", label: [Prim] }
     # Keys 6, 9, 10, 11, 14, 17 from fps_wasd template
     # Keys 21-26 from media_controls template
 ```
@@ -217,7 +226,7 @@ layers:
     templates:
       - numpad_layout # Layer-specific template
     keys:
-      1: { label: [Return] }
+      1: { label: [Rtrn] }
 ```
 
 #### Template Application Order
@@ -275,13 +284,13 @@ keys:
 - `modifier_hold` - Hold modifier while layer is active (default)
 - `toggle` - Press to switch, press again to return
 - `oneshot` - Switch layer for one key press, then return
-- `momentary_combo` - Hold multiple keys to activate
-- `cycle` - Cycle through multiple layers
-- `hold_toggle` - Tap to toggle, hold to momentary
+- `momentary` - Hold to activate, release to return (no modifier key sent)
 
 #### Layer Switcher Keys
 
-**Press behavior:**
+Layer switchers are keys that switch between profiles (layers). When on a layer, pressing the same layer's switcher returns to the main profile, but pressing a DIFFERENT layer's switcher goes directly to that layer.
+
+**Press behavior (from main profile):**
 
 ```
 KEYDOWN <modifier>
@@ -294,12 +303,13 @@ GOTO_PROFILE <layer-name>
 KEYUP <modifier>
 ```
 
-**Release behavior (in layer profile):**
+**Press behavior (from layer, same switcher):**
 
-```
-KEYUP <modifier>
-GOTO_PROFILE <parent-name>
-```
+Returns to main profile.
+
+**Press behavior (from layer, different switcher):**
+
+Goes directly to the other layer (no return to main first).
 
 #### Layer Configuration
 
@@ -322,13 +332,18 @@ layers:
 
 ### Key Definitions
 
+> **Note:** Single-character keys (letters, digits, symbols) and modifier keys (SHIFT, CTRL, ALT, etc.) automatically generate `KEYDOWN` on press and `KEYUP` on release as separate scripts. Key combinations with a modifier (e.g., `modifier: CTRL, key: a`) are treated as single macro presses. Special keys (ESCAPE, TAB, F1-F24, etc.) are sent as single presses. Use `type: string` to type a character instead of pressing it as a key.
+
 #### Simple Keys
 
 ```yaml
 keys:
-  6: A # Ultra-compact: just the key
-  7: SHIFT # Modifier key
-  8: ESCAPE # Special key
+  6: a # Single letter - generates KEYDOWN/KEYUP
+  7: 5 # Single digit - generates KEYDOWN/KEYUP
+  8: / # Single symbol - generates KEYDOWN/KEYUP (for Ctrl+/ shortcuts)
+  9: SHIFT # Modifier key - generates KEYDOWN/KEYUP
+  10: ESCAPE # Special key - single press
+  11: { key: "@", type: string } # Type the character instead of pressing key
 ```
 
 #### Keys with Labels
@@ -344,28 +359,42 @@ keys:
 ```yaml
 keys:
   6:
-    key: A
-    hold: true # Generate KEYDOWN/KEYUP instead of simple press
+    key: a
     label: [A, "(Key)"]
     color: [255, 0, 0]
     no_repeat: true # Add 'dr N' directive (don't repeat when held)
     allow_abort: true # Add 'ab N' directive (allow early exit)
 ```
 
-#### Hold Keys
+#### Single Letter and Modifier Keys
 
-For keys that should be held down (movement, modifiers):
+Single letter keys (a-z) and modifier keys (SHIFT, CTRL, ALT, etc.) automatically generate separate press and release scripts:
 
 ```yaml
 keys:
-  2: { key: SHIFT, hold: true, label: [Run] }
-  6: { key: a, hold: true, label: [Left] }
+  2: { key: SHIFT, label: [Run] }
+  6: { key: a, label: [Left] }
 ```
 
 **Generates:**
 
-- `key2.txt`: `DEFAULTDELAY 0\nKEYDOWN SHIFT\n`
-- `key2-release.txt`: `DEFAULTDELAY 0\nKEYUP SHIFT\n`
+- `key2.txt`: `KEYDOWN SHIFT`
+- `key2-release.txt`: `KEYUP SHIFT`
+- `key6.txt`: `KEYDOWN a`
+- `key6-release.txt`: `KEYUP a`
+
+#### Key Combinations (Macros)
+
+Keys with a modifier+key combo are treated as single macro presses (no release script):
+
+```yaml
+keys:
+  1: { modifier: CTRL, key: a, label: [SelA] } # Sends Ctrl+A once
+```
+
+**Generates:**
+
+- `key1.txt`: `CTRL a`
 
 #### Label-Only Keys (Empty Actions)
 
@@ -392,18 +421,16 @@ layers:
 ```yaml
 keys:
   21:
-    action: media
-    command: VOLUME_UP
+    script: MK_VOLUP
   22:
-    action: media
-    command: VOLUME_DOWN
+    script: MK_VOLDOWN
 ```
 
-**Available media commands:**
+**Available media key commands (duckyScript):**
 
-- `VOLUME_UP`, `VOLUME_DOWN`, `MUTE`
-- `NEXT_TRACK`, `PREV_TRACK`, `PLAY_PAUSE`
-- `STOP`, `MEDIA_SELECT`
+- `MK_VOLUP`, `MK_VOLDOWN`, `MK_MUTE`
+- `MK_NEXT`, `MK_PREV`, `MK_PP` (play/pause)
+- `MK_STOP`
 
 #### Layer Switchers
 
@@ -420,13 +447,47 @@ keys:
 
 ### Configuration Options
 
+#### Color Values
+
+Colors can be specified in three formats:
+
+1. **Color names** (CSS3/HTML colors):
+
+   ```yaml
+   background_color: darkblue
+   color: red
+   keydown_color: coral
+   ```
+
+2. **Hex colors**:
+
+   ```yaml
+   background_color: "#FF5500"
+   color: "#00FF00"
+   ```
+
+3. **RGB arrays** (0-255):
+   ```yaml
+   background_color: [84, 22, 180]
+   color: [255, 0, 0]
+   ```
+
+**Common Color Names:**
+
+- Basic: `red`, `green`, `blue`, `yellow`, `cyan`, `magenta`, `white`, `black`
+- Extended: `orange`, `purple`, `pink`, `coral`, `salmon`, `gold`, `silver`
+- Dark variants: `darkblue`, `darkred`, `darkgreen`, `darkcyan` (or `dark_blue`, `dark_red`, etc.)
+- Light variants: `lightblue`, `lightgreen`, `lightgray` (or `light_blue`, `light_green`, etc.)
+- See [CSS3 color names](https://www.w3.org/wiki/CSS/Properties/color/keywords) for full list
+
 #### Profile-Level Config
 
 ```yaml
 profile:
   config:
     orientation: landscape # or portrait (default)
-    background_color: [84, 22, 180]
+    background_color: darkblue # Color name
+    keydown_color: "#FFFF00" # Hex color
     dim_unused: true # Dim keys without scripts
 ```
 
@@ -437,7 +498,7 @@ layers:
   ctrl:
     config:
       orientation: landscape
-      background_color: [192, 192, 192]
+      background_color: coral # Color name works in layers too
 ```
 
 #### Key-Level Directives
@@ -448,8 +509,18 @@ keys:
     key: CTRL
     no_repeat: true # Don't auto-repeat when held (adds 'dr 1')
     allow_abort: true # Allow early exit from macro (adds 'ab 1')
-    color: [255, 0, 0]
+    color: red # Color name
     label: [Ctrl]
+
+  2:
+    key: SHIFT
+    color: "#00FF00" # Hex color
+    label: [Shft]
+
+  3:
+    key: ALT
+    color: [0, 0, 255] # RGB array
+    label: [Alt]
 ```
 
 ## Creating Profiles
@@ -478,23 +549,24 @@ keys:
            # ... overrides
    ```
 
-2. **Generate duckyScript files:**
+2. **Generate, compile, and deploy:**
 
    ```bash
-   python helpers/generators/yaml_to_profile.py profiles/my-game.yaml --output output/
+   python execute.py yaml workbench/my-game.yaml
    ```
 
-3. **Deploy to SD card:**
-   - Copy `output/MyGame/` to SD card as `profile1_MyGame/`
-   - Copy `output/MyGame-Ctrl/` to SD card as `profile2_MyGame-Ctrl/`
+   Or step by step:
 
-### Using Python Generator
+   ```bash
+   # Generate only
+   python execute.py yaml workbench/my-game.yaml --generate-only
 
-For simple profiles without layers:
+   # Compile generated profiles
+   python execute.py compile workbench/profiles/my-game
 
-```bash
-python helpers/generators/profile_generator.py my-profile 20
-```
+   # Deploy to SD card
+   python execute.py deploy workbench/profiles/my-game
+   ```
 
 ### Manual Creation
 
@@ -505,60 +577,36 @@ python helpers/generators/profile_generator.py my-profile 20
 
 ## Deployment
 
-### Naming Convention
-
-When deploying to duckyPad Pro's SD card, folders MUST use this format:
-
-```
-profileN_Name
-```
-
-Where:
-
-- `profile` - Required prefix
-- `N` - Number determining display order (1, 2, 3, etc.)
-- `_` - Separator
-- `Name` - Descriptive name (spaces OK, or use underscores/CamelCase)
-
-**Examples:**
-
-```
-profile1_Foxhole
-profile2_Foxhole-Ctrl
-profile3_Discord
-profile10_PhotoEditing
-```
-
-**Important:**
-
-- In this repository, use descriptive names (`foxhole`, `discord-tools`)
-- Users apply the `profileN_` naming when deploying to their device
-- The number controls profile order when using +/- buttons on duckyPad Pro
-
 ### Deployment Steps
 
-1. **Generate profile from YAML:**
+1. **Generate, compile, and deploy from YAML:**
 
    ```bash
-   python helpers/generators/yaml_to_profile.py profiles/foxhole.yaml --output deploy/
+   python execute.py yaml workbench/foxhole.yaml
    ```
 
-2. **Rename for deployment:**
+   This automatically:
 
+   - Generates profiles in `workbench/profiles/`
+   - Compiles duckyScript to bytecode
+   - Deploys to SD card with proper naming
+   - Updates `profile_info.txt`
+
+2. **Or deploy manually:**
+
+   ```bash
+   # Generate only
+   python execute.py yaml workbench/foxhole.yaml --generate-only
+
+   # Compile
+   python execute.py compile workbench/profiles/profile_Foxhole
+
+   # Deploy
+   python execute.py deploy workbench/profiles/profile_Foxhole
    ```
-   deploy/Foxhole/       → SD:/profile1_Foxhole/
-   deploy/Foxhole-Ctrl/  → SD:/profile2_Foxhole-Ctrl/
-   ```
 
-3. **Copy to SD card:**
-
-   - Insert SD card
-   - Copy folders to root of SD card
-   - Eject safely
-
-4. **Test on duckyPad Pro:**
-   - Insert SD card into duckyPad Pro
-   - Power on device
+3. **Test on duckyPad Pro:**
+   - Device auto-reboots after deployment
    - Use +/- buttons to switch between profiles
 
 ## Examples
@@ -586,8 +634,8 @@ profile:
     - media_controls
 
   keys:
-    5: { key: E, label: [Use] }
-    7: { key: Q, label: [Ability] }
+    5: { key: e, label: [Use] }
+    7: { key: q, label: [Abil] }
 ```
 
 ### Example 3: Profile with Modifier Layer
@@ -602,21 +650,21 @@ profile:
 
   keys:
     1: { modifier: CTRL, layer: ctrl, label: [Ctrl], no_repeat: true }
-    2: { key: SHIFT, hold: true, label: [Shift] }
+    2: { key: SHIFT, label: [Shft] }
     3: { key: TAB, label: [Tab] }
-    6-9: [A, S, D, F]
+    6-9: [a, s, d, f]
 
   layers:
     ctrl:
       extends: parent
-      name: Productivity-Ctrl
+      name: Prod-Ctrl
 
       config:
         background_color: [192, 192, 192]
 
       keys:
         1: { label: [Ctrl], color: [128, 0, 255] }
-        6: { label: [Sel All] } # Empty action - shows Ctrl+A label
+        6: { label: [SelA] } # Empty action - shows Ctrl+A label
         7: { label: [Save] } # Empty action - shows Ctrl+S label
 ```
 
@@ -639,7 +687,7 @@ profile:
       extends: parent
       keys:
         1: { label: [Ctrl], color: [255, 0, 0] }
-        3: { label: [Sel All] }
+        3: { label: [SelA] }
 
     alt:
       extends: parent

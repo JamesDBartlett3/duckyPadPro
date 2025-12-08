@@ -143,12 +143,19 @@ class ProfileLoader:
         
         # Apply layer extends
         extends = layer.get('extends', [])
+        if isinstance(extends, str):
+            extends = [extends]
+        
         for template_name in extends:
-            if template_name in self.templates:
+            if template_name == 'parent':
+                # Special case: inherit all keys from main profile
+                parent_keys = self.get_keys()
+                keys_expanded.update(parent_keys)
+            elif template_name in self.templates:
                 template_keys = self.templates[template_name]
                 keys_expanded.update(template_keys)
         
-        # Process layer-specific keys
+        # Process layer-specific keys (override inherited keys)
         keys_raw = layer.get('keys', {})
         for key_spec, definition in keys_raw.items():
             expanded = self._expand_key_spec(key_spec, definition)

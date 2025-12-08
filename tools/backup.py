@@ -29,7 +29,6 @@ class BackupStats:
     def __init__(self):
         self.backed_up = 0
         self.restored = 0
-        self.skipped = 0
         self.failed = 0
 
 
@@ -82,14 +81,15 @@ class SDCardBackupRestore:
         
         stats = BackupStats()
         
+        # Print disclaimer about what gets backed up
+        print_color("  Note: Backing up config and source files only (bytecode .dsb files excluded)", "gray")
+        
         try:
             # Copy all files and directories except .dsb (can be regenerated)
             for item in sd_card_path.rglob("*"):
                 if item.is_file():
-                    # Skip .dsb bytecode files
+                    # Skip .dsb bytecode files (they can be regenerated from source)
                     if item.suffix == ".dsb":
-                        print_verbose(f"Skipping: {item.name} (bytecode, self.verbose)")
-                        stats.skipped += 1
                         continue
                     
                     # Calculate relative path
@@ -104,7 +104,7 @@ class SDCardBackupRestore:
                     stats.backed_up += 1
                     print_verbose(f"Backed up: {rel_path}", self.verbose)
             
-            print_color(f"✓ Backup complete: {stats.backed_up} files backed up, {stats.skipped} skipped", "green")
+            print_color(f"✓ Backup complete: {stats.backed_up} files backed up", "green")
             print_color(f"  Location: {backup_path}", "gray")
             
             return backup_path

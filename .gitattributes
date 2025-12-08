@@ -1,4 +1,4 @@
 # Merge strategy for .github folder
-# Always keep the dev branch version (present) when merging from main
+# Always keep the main branch version (deleted) when merging from dev
 .github/** merge=ours
 .gitattributes merge=ours
