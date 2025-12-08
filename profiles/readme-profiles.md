@@ -169,14 +169,6 @@ The profile's orientation (from `config.orientation`) determines which `key_posi
 Non-oriented templates use direct key-to-slot mappings. These are ideal for:
 - Rotary encoders (keys 21-26) that don't change position between orientations
 - Simple templates where orientation doesn't matter
-  keys:
-    11: { key: w, label: [Fwd, "(W)"] }
-    10: { key: s, label: [Back, "(S)"] }
-    6: { key: a, label: [Left, "(A)"] }
-    14: { key: d, label: [Rght, "(D)"] }
-    17: { key: SPACE, label: [Jump] }
-    9: { key: c, label: [Crnch] }
-```
 
 ```yaml
 # profiles/templates/media_controls.yaml
@@ -187,12 +179,12 @@ template:
   
   # Direct key assignments (non-oriented)
   keys:
-    21: { script: MK_VOLUP }
-    22: { script: MK_VOLDOWN }
-    23: { script: MK_MUTE }
-    24: { script: MK_NEXT }
-    25: { script: MK_PREV }
-    26: { script: MK_PP }
+    21: { action: media, command: VOLUME_UP }
+    22: { action: media, command: VOLUME_DOWN }
+    23: { action: media, command: MUTE }
+    24: { action: media, command: NEXT_TRACK }
+    25: { action: media, command: PREV_TRACK }
+    26: { action: media, command: PLAY_PAUSE }
 ```
 
 #### Using Templates in Profiles
@@ -232,12 +224,14 @@ layers:
 #### Template Application Order
 
 ```
-1. Profile templates applied (in order listed)
-2. Profile keys applied (override templates)
+1. Profile templates applied (in order listed, later templates override earlier)
+2. Profile keys applied (override all templates)
 3. Layer extends processed (copy from parent/other layer)
-4. Layer templates applied (in order listed)
-5. Layer keys applied (override templates and extends)
+4. Layer templates applied (in order listed, later templates override earlier and extends)
+5. Layer keys applied (override all templates and extends)
 ```
+
+Templates work like "coats of paint" - later templates override earlier ones for the same key, and explicit keys always win.
 
 Example:
 
