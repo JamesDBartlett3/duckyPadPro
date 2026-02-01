@@ -290,6 +290,7 @@ class ProfileLoader:
             Dictionary mapping key numbers to key definitions
         """
         template_keys = {}
+        template_name = template.get('name', 'unknown')
         
         # Check if template has orientation-specific keys
         if 'portrait' in template or 'landscape' in template:
@@ -300,9 +301,9 @@ class ProfileLoader:
             else:
                 # Warn if requested orientation not available
                 if orientation == 'portrait' and 'landscape' in template:
-                    print(f"Warning: Template does not support 'portrait' orientation (only 'landscape' available)")
+                    print(f"Warning: Template '{template_name}' does not support 'portrait' orientation (only 'landscape' available)")
                 elif orientation == 'landscape' and 'portrait' in template:
-                    print(f"Warning: Template does not support 'landscape' orientation (only 'portrait' available)")
+                    print(f"Warning: Template '{template_name}' does not support 'landscape' orientation (only 'portrait' available)")
                 # If neither orientation has keys, template_keys remains empty
         else:
             # Non-oriented template
@@ -345,12 +346,15 @@ class ProfileLoader:
         """
         # Apply templates in order (later templates override earlier ones)
         for template_name in template_names:
-            if template_name not in self.template_cache:
-                if template_name not in self.templates:
-                    print(f"Warning: Template '{template_name}' not found")
+            # Check both inline templates and external template cache
+            if template_name in self.template_cache:
+                template = self.template_cache[template_name]
+            elif template_name in self.templates:
+                template = self.templates[template_name]
+            else:
+                print(f"Warning: Template '{template_name}' not found")
                 continue
             
-            template = self.template_cache[template_name]
             template_keys = self._resolve_template_keys(template, orientation)
             
             # Apply template keys (later templates override earlier templates)
@@ -360,17 +364,27 @@ class ProfileLoader:
                     target_keys[key_num] = copy.deepcopy(key_def)
     
     def _load_external_templates(self) -> None:
-        """Load template files from profiles/templates/ directory."""
+        """
+        Load template files from templates/ directory.
+        
+        Resolution strategy:
+        1. First, look for templates/ subdirectory within the same directory as the YAML file
+           (e.g., for /workbench/myprofile.yaml, looks in /workbench/templates/)
+        2. If not found, fall back to profiles/templates/ relative to current working directory
+        
+        This allows both:
+        - Development/testing: Place templates next to your YAML file
+        - Production: Use shared templates in profiles/templates/
+        """
         # Get list of template names to load
         template_names = self._collect_all_template_names()
         if not template_names:
             return
         
-        # Determine templates directory
-        # Look for templates/ subdirectory within the YAML file's directory
+        # Strategy 1: Look for templates/ subdirectory within the YAML file's directory
         templates_dir = self.yaml_path.parent / 'templates'
         if not templates_dir.exists():
-            # Try relative to current working directory
+            # Strategy 2: Try relative to current working directory
             templates_dir = Path('profiles/templates')
         
         if not templates_dir.exists():
