@@ -297,10 +297,13 @@ class ProfileLoader:
             oriented_keys = template.get(orientation, {})
             if 'keys' in oriented_keys:
                 template_keys = oriented_keys['keys']
-            elif not oriented_keys:
+            else:
                 # Warn if requested orientation not available
-                available = 'portrait' if 'portrait' in template else 'landscape'
-                print(f"Warning: Template does not support '{orientation}' orientation (only '{available}' available)")
+                if orientation == 'portrait' and 'landscape' in template:
+                    print(f"Warning: Template does not support 'portrait' orientation (only 'landscape' available)")
+                elif orientation == 'landscape' and 'portrait' in template:
+                    print(f"Warning: Template does not support 'landscape' orientation (only 'portrait' available)")
+                # If neither orientation has keys, template_keys remains empty
         else:
             # Non-oriented template
             template_keys = template.get('keys', {})
@@ -364,7 +367,7 @@ class ProfileLoader:
             return
         
         # Determine templates directory
-        # Look for templates/ as a sibling of the YAML file's directory
+        # Look for templates/ subdirectory within the YAML file's directory
         templates_dir = self.yaml_path.parent / 'templates'
         if not templates_dir.exists():
             # Try relative to current working directory
@@ -507,19 +510,6 @@ class ProfileLoader:
             for key_spec, definition in raw_layer_keys.items():
                 expanded = self._expand_key_spec(key_spec, definition)
                 layer['keys'].update(expanded)
-    
-    def _apply_layer_templates(self, layer: Dict[str, Any], orientation: str) -> None:
-        """
-        Apply templates to a layer with last-wins semantics.
-        
-        DEPRECATED: This method is now integrated into _process_layer_inheritance.
-        Kept for backwards compatibility but not used.
-        
-        Args:
-            layer: Layer definition to apply templates to
-            orientation: Profile orientation for template resolution
-        """
-        pass  # No longer used, logic moved to _process_layer_inheritance
 
 
 def load_profile(yaml_path: Union[str, Path]) -> ProfileLoader:
