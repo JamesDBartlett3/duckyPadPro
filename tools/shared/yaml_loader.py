@@ -329,6 +329,33 @@ class ProfileLoader:
         
         return template_names
     
+    def _apply_template_keys(self, template_names: List[str], target_keys: Dict[int, Any], 
+                             explicit_keys: Set[int], orientation: str) -> None:
+        """
+        Apply templates to a keys dictionary, respecting last-wins and explicit key precedence.
+        
+        Args:
+            template_names: List of template names to apply in order
+            target_keys: Dictionary to apply templates to (modified in place)
+            explicit_keys: Set of key numbers that should not be overridden
+            orientation: Profile orientation for template resolution
+        """
+        # Apply templates in order (later templates override earlier ones)
+        for template_name in template_names:
+            if template_name not in self.template_cache:
+                if template_name not in self.templates:
+                    print(f"Warning: Template '{template_name}' not found")
+                continue
+            
+            template = self.template_cache[template_name]
+            template_keys = self._resolve_template_keys(template, orientation)
+            
+            # Apply template keys (later templates override earlier templates)
+            # But NOT explicit keys
+            for key_num, key_def in template_keys.items():
+                if key_num not in explicit_keys:
+                    target_keys[key_num] = copy.deepcopy(key_def)
+    
     def _load_external_templates(self) -> None:
         """Load template files from profiles/templates/ directory."""
         # Get list of template names to load
@@ -383,21 +410,11 @@ class ProfileLoader:
             if key_num in self.profile['keys']:
                 explicit_key_defs[key_num] = self.profile['keys'][key_num]
         
-        # Apply templates in order (later templates override earlier ones)
-        for template_name in template_names:
-            if template_name not in self.template_cache:
-                if template_name not in self.templates:
-                    print(f"Warning: Template '{template_name}' not found")
-                continue
-            
-            template = self.template_cache[template_name]
-            template_keys = self._resolve_template_keys(template, orientation)
-            
-            # Apply template keys (later templates override earlier templates)
-            for key_num, key_def in template_keys.items():
-                # Only apply if not an explicit profile key
-                if key_num not in self._explicit_keys:
-                    self.profile['keys'][key_num] = copy.deepcopy(key_def)
+        # Apply templates using shared helper
+        if isinstance(template_names, str):
+            template_names = [template_names]
+        self._apply_template_keys(template_names, self.profile['keys'], 
+                                 self._explicit_keys, orientation)
         
         # Restore explicit keys (they always win)
         for key_num, key_def in explicit_key_defs.items():
@@ -480,20 +497,10 @@ class ProfileLoader:
             # Apply layer templates (after extends, can override extends but not explicit keys)
             layer_templates = layer.get('templates', [])
             if layer_templates:
-                for template_name in layer_templates:
-                    if template_name not in self.template_cache:
-                        if template_name not in self.templates:
-                            print(f"Warning: Template '{template_name}' not found")
-                        continue
-                    
-                    template = self.template_cache[template_name]
-                    template_keys = self._resolve_template_keys(template, orientation)
-                    
-                    # Apply template keys (later templates override earlier templates and extends)
-                    # But NOT explicit layer keys
-                    for key_num, key_def in template_keys.items():
-                        if key_num not in explicit_layer_keys:
-                            layer['keys'][key_num] = copy.deepcopy(key_def)
+                if isinstance(layer_templates, str):
+                    layer_templates = [layer_templates]
+                self._apply_template_keys(layer_templates, layer['keys'], 
+                                        explicit_layer_keys, orientation)
             
             # Finally, apply explicit layer keys (they always win)
             # Need to expand the key specs and apply them
