@@ -10,7 +10,7 @@ Date: 2025-11-16
 """
 import copy
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Union
+from typing import Dict, List, Any, Optional, Union, Set
 
 import yaml
 
@@ -36,6 +36,7 @@ class ProfileLoader:
         self.profile = None
         self.templates = {}
         self.template_cache = {}  # Cache loaded template files
+        self._explicit_keys = set()  # Track keys explicitly defined in profile
         
     def load(self) -> Dict[str, Any]:
         """
@@ -67,6 +68,9 @@ class ProfileLoader:
                 f"File: {self.yaml_path}\n"
                 f"Please shorten the profile name in your YAML file."
             )
+        
+        # Track explicit keys before applying templates
+        self._collect_explicit_keys()
         
         # Load external templates
         self._load_external_templates()
@@ -250,16 +254,91 @@ class ProfileLoader:
         else:
             raise ValueError(f"Invalid key definition type: {type(definition)}")
     
-    def _load_external_templates(self):
+    def _collect_explicit_keys(self) -> None:
+        """Collect keys explicitly defined in the profile (not from templates)."""
+        self._explicit_keys = set()
+        keys_raw = self.profile.get('keys', {})
+        
+        for key_spec in keys_raw.keys():
+            # Parse key spec to get actual key numbers
+            if isinstance(key_spec, int):
+                self._explicit_keys.add(key_spec)
+            elif isinstance(key_spec, str):
+                if '-' in key_spec:
+                    # Range: "6-10"
+                    start, end = map(int, key_spec.split('-'))
+                    self._explicit_keys.update(range(start, end + 1))
+                else:
+                    # Single key as string
+                    self._explicit_keys.add(int(key_spec))
+    
+    def _get_profile_orientation(self) -> str:
+        """Get the profile orientation from config."""
+        config = self.profile.get('config', {})
+        is_landscape = config.get('IS_LANDSCAPE', 0)
+        return 'landscape' if is_landscape else 'portrait'
+    
+    def _resolve_template_keys(self, template: Dict[str, Any], orientation: str) -> Dict[int, Any]:
+        """
+        Resolve keys from a template, handling orientation-specific keys.
+        
+        Args:
+            template: Template definition
+            orientation: Profile orientation ('portrait' or 'landscape')
+            
+        Returns:
+            Dictionary mapping key numbers to key definitions
+        """
+        template_keys = {}
+        
+        # Check if template has orientation-specific keys
+        if 'portrait' in template or 'landscape' in template:
+            # Oriented template
+            oriented_keys = template.get(orientation, {})
+            if 'keys' in oriented_keys:
+                template_keys = oriented_keys['keys']
+            elif not oriented_keys:
+                # Warn if requested orientation not available
+                available = 'portrait' if 'portrait' in template else 'landscape'
+                print(f"Warning: Template does not support '{orientation}' orientation (only '{available}' available)")
+        else:
+            # Non-oriented template
+            template_keys = template.get('keys', {})
+        
+        return template_keys
+    
+    def _collect_all_template_names(self) -> Set[str]:
+        """Collect all template names used in profile and layers."""
+        template_names = set()
+        
+        # Profile-level templates
+        profile_templates = self.profile.get('templates', [])
+        if isinstance(profile_templates, str):
+            template_names.add(profile_templates)
+        else:
+            template_names.update(profile_templates)
+        
+        # Layer templates
+        layers = self.profile.get('layers', {})
+        for layer in layers.values():
+            layer_templates = layer.get('templates', [])
+            if isinstance(layer_templates, str):
+                template_names.add(layer_templates)
+            else:
+                template_names.update(layer_templates)
+        
+        return template_names
+    
+    def _load_external_templates(self) -> None:
         """Load template files from profiles/templates/ directory."""
         # Get list of template names to load
-        template_names = self.profile.get('templates', [])
+        template_names = self._collect_all_template_names()
         if not template_names:
             return
         
         # Determine templates directory
-        # Look for profiles/templates/ relative to the YAML file
-        templates_dir = self.yaml_path.parent.parent / 'templates'
+        # Look for templates/ as a sibling of the YAML file's directory
+        templates_dir = self.yaml_path.parent / 'templates'
         if not templates_dir.exists():
             # Try relative to current working directory
             templates_dir = Path('profiles/templates')
@@ -285,8 +364,8 @@ class ProfileLoader:
             else:
                 print(f"Warning: Template file '{template_file}' missing 'template' key")
     
-    def _apply_templates(self):
-        """Apply templates to profile keys."""
+    def _apply_templates(self) -> None:
+        """Apply templates to profile keys with last-wins semantics."""
         template_names = self.profile.get('templates', [])
         if not template_names:
             return
@@ -295,82 +374,145 @@ class ProfileLoader:
         if 'keys' not in self.profile:
             self.profile['keys'] = {}
         
-        # Apply templates in order
+        # Get profile orientation for template resolution
+        orientation = self._get_profile_orientation()
+        
+        # Save explicit keys before applying templates
+        explicit_key_defs = {}
+        for key_num in self._explicit_keys:
+            if key_num in self.profile['keys']:
+                explicit_key_defs[key_num] = self.profile['keys'][key_num]
+        
+        # Apply templates in order (later templates override earlier ones)
         for template_name in template_names:
             if template_name not in self.template_cache:
+                if template_name not in self.templates:
+                    print(f"Warning: Template '{template_name}' not found")
                 continue
             
             template = self.template_cache[template_name]
-            template_keys = template.get('keys', {})
+            template_keys = self._resolve_template_keys(template, orientation)
             
-            # Apply template keys (don't override existing keys)
+            # Apply template keys (later templates override earlier templates)
             for key_num, key_def in template_keys.items():
-                if key_num not in self.profile['keys']:
-                    self.profile['keys'][key_num] = key_def
+                # Only apply if not an explicit profile key
+                if key_num not in self._explicit_keys:
+                    self.profile['keys'][key_num] = copy.deepcopy(key_def)
+        
+        # Restore explicit keys (they always win)
+        for key_num, key_def in explicit_key_defs.items():
+            self.profile['keys'][key_num] = key_def
     
-    def _process_layer_inheritance(self):
+    def _process_layer_inheritance(self) -> None:
         """Process extends directives in layers."""
         layers = self.profile.get('layers', {})
         if not layers:
             return
         
+        # Get profile orientation for template resolution
+        orientation = self._get_profile_orientation()
+        
         for layer_id, layer in layers.items():
-            extends = layer.get('extends')
-            if not extends:
-                continue
-            
             # Ensure layer has keys dict
             if 'keys' not in layer:
                 layer['keys'] = {}
             
-            # Handle extends as string or list
-            if isinstance(extends, str):
-                extends_list = [extends]
-            else:
-                extends_list = extends
+            # Save the explicit layer keys YAML definitions (before expansion)
+            raw_layer_keys = copy.deepcopy(layer.get('keys', {}))
             
-            # Process each extends source
-            for extend_source in extends_list:
-                # Determine source keys and config
-                if extend_source == 'parent':
-                    source_keys = self.profile.get('keys', {})
-                    # Inherit parent config if not explicitly set in layer
-                    if 'config' not in layer:
-                        layer['config'] = {}
-                    parent_config = self.profile.get('config', {})
-                    # Merge parent config with layer config (layer config takes precedence)
-                    merged_config = copy.deepcopy(parent_config)
-                    merged_config.update(layer.get('config', {}))
-                    layer['config'] = merged_config
-                elif extend_source in self.templates:
-                    # Extending a template
-                    source_keys = self.templates[extend_source]
-                elif extend_source in layers:
-                    # Extending another layer
-                    source_layer = layers[extend_source]
-                    source_keys = source_layer.get('keys', {})
+            # Collect which key numbers are explicitly defined
+            explicit_layer_keys = set()
+            for key_spec in raw_layer_keys.keys():
+                if isinstance(key_spec, int):
+                    explicit_layer_keys.add(key_spec)
+                elif isinstance(key_spec, str):
+                    if '-' in key_spec:
+                        start, end = map(int, key_spec.split('-'))
+                        explicit_layer_keys.update(range(start, end + 1))
+                    else:
+                        explicit_layer_keys.add(int(key_spec))
+            
+            # Clear keys to rebuild from scratch
+            layer['keys'] = {}
+            
+            # Process extends first (if present)
+            extends = layer.get('extends')
+            if extends:
+                # Handle extends as string or list
+                if isinstance(extends, str):
+                    extends_list = [extends]
                 else:
-                    print(f"Warning: Layer '{layer_id}' extends unknown source '{extend_source}'")
-                    continue
+                    extends_list = extends
                 
-                # Copy source keys (don't override existing layer keys)
-                for key_num, key_def in source_keys.items():
-                    if key_num not in layer['keys']:
-                        # Deep copy the key definition
-                        layer['keys'][key_num] = copy.deepcopy(key_def)
+                # Process each extends source (later sources override earlier ones)
+                for extend_source in extends_list:
+                    # Determine source keys and config
+                    if extend_source == 'parent':
+                        source_keys = self.profile.get('keys', {})
+                        # Inherit parent config if not explicitly set in layer
+                        if 'config' not in layer:
+                            layer['config'] = {}
+                        parent_config = self.profile.get('config', {})
+                        # Merge parent config with layer config (layer config takes precedence)
+                        merged_config = copy.deepcopy(parent_config)
+                        merged_config.update(layer.get('config', {}))
+                        layer['config'] = merged_config
+                    elif extend_source in self.template_cache:
+                        # Extending an external template
+                        template = self.template_cache[extend_source]
+                        source_keys = self._resolve_template_keys(template, orientation)
+                    elif extend_source in self.templates:
+                        # Extending an inline template
+                        source_keys = self.templates[extend_source]
+                    elif extend_source in layers:
+                        # Extending another layer
+                        source_layer = layers[extend_source]
+                        source_keys = source_layer.get('keys', {})
+                    else:
+                        print(f"Warning: Layer '{layer_id}' extends unknown source '{extend_source}'")
+                        continue
+                    
+                    # Copy source keys (later extends override earlier ones)
+                    for key_num, key_def in source_keys.items():
+                        if key_num not in explicit_layer_keys:
+                            layer['keys'][key_num] = copy.deepcopy(key_def)
             
-            # Apply templates to layer if specified
+            # Apply layer templates (after extends, can override extends but not explicit keys)
             layer_templates = layer.get('templates', [])
-            for template_name in layer_templates:
-                if template_name not in self.template_cache:
-                    continue
-                
-                template = self.template_cache[template_name]
-                template_keys = template.get('keys', {})
-                
-                for key_num, key_def in template_keys.items():
-                    if key_num not in layer['keys']:
-                        layer['keys'][key_num] = copy.deepcopy(key_def)
+            if layer_templates:
+                for template_name in layer_templates:
+                    if template_name not in self.template_cache:
+                        if template_name not in self.templates:
+                            print(f"Warning: Template '{template_name}' not found")
+                        continue
+                    
+                    template = self.template_cache[template_name]
+                    template_keys = self._resolve_template_keys(template, orientation)
+                    
+                    # Apply template keys (later templates override earlier templates and extends)
+                    # But NOT explicit layer keys
+                    for key_num, key_def in template_keys.items():
+                        if key_num not in explicit_layer_keys:
+                            layer['keys'][key_num] = copy.deepcopy(key_def)
+            
+            # Finally, apply explicit layer keys (they always win)
+            # Need to expand the key specs and apply them
+            for key_spec, definition in raw_layer_keys.items():
+                expanded = self._expand_key_spec(key_spec, definition)
+                layer['keys'].update(expanded)
+    
+    def _apply_layer_templates(self, layer: Dict[str, Any], orientation: str) -> None:
+        """
+        Apply templates to a layer with last-wins semantics.
+        
+        DEPRECATED: This method is now integrated into _process_layer_inheritance.
+        Kept for backwards compatibility but not used.
+        
+        Args:
+            layer: Layer definition to apply templates to
+            orientation: Profile orientation for template resolution
+        """
+        pass  # No longer used, logic moved to _process_layer_inheritance
 
 
 def load_profile(yaml_path: Union[str, Path]) -> ProfileLoader:

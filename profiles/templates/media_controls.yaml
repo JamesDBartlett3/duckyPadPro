@@ -1,0 +1,13 @@
+# Media Controls Template
+# Provides media playback controls for rotary encoders
+
+template:
+  name: media_controls
+  description: Media playback controls for rotary encoders
+  keys:
+    21: { action: media, command: VOLUME_UP }
+    22: { action: media, command: VOLUME_DOWN }
+    23: { action: media, command: PLAY_PAUSE }
+    24: { action: media, command: NEXT_TRACK }
+    25: { action: media, command: PREV_TRACK }
+    26: { action: media, command: MUTE }

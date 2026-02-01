@@ -1,0 +1,13 @@
+# FPS WASD Movement Template
+# Standard WASD movement keys for FPS games
+
+template:
+  name: fps_wasd
+  description: WASD movement keys for FPS games
+  keys:
+    1: { key: W, label: ["FWD"] }
+    2: { key: A, label: ["LEFT"] }
+    3: { key: S, label: ["BACK"] }
+    4: { key: D, label: ["RIGHT"] }
+    5: { key: SPACE, label: ["JUMP"] }
+    6: { key: LCTRL, label: ["CROUCH"] }
