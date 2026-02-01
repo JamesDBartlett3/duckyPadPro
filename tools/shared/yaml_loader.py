@@ -10,7 +10,7 @@ Date: 2025-11-16
 """
 import copy
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Union
+from typing import Dict, List, Any, Optional, Union, Set
 
 import yaml
 
@@ -285,7 +285,31 @@ class ProfileLoader:
             else:
                 print(f"Warning: Template file '{template_file}' missing 'template' key")
     
-    def _apply_templates(self):
+    def _resolve_template_keys(self, template_name: str, source_context: str = "profile") -> Dict[int, Any]:
+        """
+        Resolve template keys from cache or inline templates.
+        
+        Args:
+            template_name: Name of template to resolve
+            source_context: Context for warning messages (e.g., "profile", "layer X")
+            
+        Returns:
+            Dictionary mapping key number to key definition
+        """
+        # Check template cache first (external templates)
+        if template_name in self.template_cache:
+            template = self.template_cache[template_name]
+            return template.get('keys', {})
+        
+        # Check inline templates
+        if template_name in self.templates:
+            return self.templates[template_name]
+        
+        # Template not found
+        print(f"Warning: Template '{template_name}' not found in {source_context}")
+        return {}
+    
+    def _apply_templates(self) -> None:
         """Apply templates to profile keys."""
         template_names = self.profile.get('templates', [])
         if not template_names:
@@ -295,20 +319,24 @@ class ProfileLoader:
         if 'keys' not in self.profile:
             self.profile['keys'] = {}
         
-        # Apply templates in order
+        # Track which keys are explicitly defined in the profile
+        # (before template application)
+        explicit_keys: Set[int] = set(self.profile['keys'].keys())
+        
+        # Apply templates in order - later templates override earlier ones
+        # but explicit profile keys always win
         for template_name in template_names:
-            if template_name not in self.template_cache:
+            template_keys = self._resolve_template_keys(template_name, "profile")
+            if not template_keys:
                 continue
             
-            template = self.template_cache[template_name]
-            template_keys = template.get('keys', {})
-            
-            # Apply template keys (don't override existing keys)
+            # Apply template keys
             for key_num, key_def in template_keys.items():
-                if key_num not in self.profile['keys']:
+                # Only override if not an explicit profile key
+                if key_num not in explicit_keys:
                     self.profile['keys'][key_num] = key_def
     
-    def _process_layer_inheritance(self):
+    def _process_layer_inheritance(self) -> None:
         """Process extends directives in layers."""
         layers = self.profile.get('layers', {})
         if not layers:
@@ -322,6 +350,10 @@ class ProfileLoader:
             # Ensure layer has keys dict
             if 'keys' not in layer:
                 layer['keys'] = {}
+            
+            # Track which keys are explicitly defined in the layer
+            # (before inheritance)
+            explicit_layer_keys: Set[int] = set(layer['keys'].keys())
             
             # Handle extends as string or list
             if isinstance(extends, str):
@@ -349,27 +381,30 @@ class ProfileLoader:
                     # Extending another layer
                     source_layer = layers[extend_source]
                     source_keys = source_layer.get('keys', {})
+                elif extend_source in self.template_cache:
+                    # Extending an external template
+                    template = self.template_cache[extend_source]
+                    source_keys = template.get('keys', {})
                 else:
                     print(f"Warning: Layer '{layer_id}' extends unknown source '{extend_source}'")
                     continue
                 
-                # Copy source keys (don't override existing layer keys)
+                # Copy source keys (later extends override earlier ones)
+                # but explicit layer keys always win
                 for key_num, key_def in source_keys.items():
-                    if key_num not in layer['keys']:
+                    if key_num not in explicit_layer_keys:
                         # Deep copy the key definition
                         layer['keys'][key_num] = copy.deepcopy(key_def)
             
             # Apply templates to layer if specified
             layer_templates = layer.get('templates', [])
             for template_name in layer_templates:
-                if template_name not in self.template_cache:
+                template_keys = self._resolve_template_keys(template_name, f"layer '{layer_id}'")
+                if not template_keys:
                     continue
                 
-                template = self.template_cache[template_name]
-                template_keys = template.get('keys', {})
-                
                 for key_num, key_def in template_keys.items():
-                    if key_num not in layer['keys']:
+                    if key_num not in explicit_layer_keys:
                         layer['keys'][key_num] = copy.deepcopy(key_def)
 
 
