@@ -190,10 +190,7 @@ def get_available_colors() -> List[str]:
     if not HAS_WEBCOLORS:
         return []
     
-    # Get CSS3 color names
-    colors = list(webcolors.CSS3_NAMES_TO_HEX.keys())
-    colors.sort()
-    return colors
+    return sorted(webcolors.names(spec=webcolors.CSS3))
 
 
 # Common colors for quick reference

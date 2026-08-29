@@ -161,20 +161,22 @@ def cmd_yaml(args):
 def cmd_backup(args):
     """Create backup of SD card"""
     print_header("Backing up SD card")
-    return backup_sd_card(
+    backup_path = backup_sd_card(
         backup_path=args.backup_path,
         verbose=args.verbose
     )
+    return 0 if backup_path is not None else 1
 
 
 def cmd_restore(args):
     """Restore SD card from backup"""
     print_header("Restoring SD card")
-    return restore_sd_card(
+    success = restore_sd_card(
         backup_path=args.backup_path,
         verbose=args.verbose,
         force=args.force
     )
+    return 0 if success else 1
 
 
 def cmd_device(args):

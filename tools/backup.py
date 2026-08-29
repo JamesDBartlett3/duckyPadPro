@@ -254,12 +254,12 @@ def backup_sd_card(sd_card_path: Optional[Path] = None, backup_path: Optional[Pa
     return manager.backup(sd_card_path=sd_card_path, backup_path=backup_path)
 
 
-def restore_sd_card(backup_path: Path, sd_card_path: Optional[Path] = None, force: bool = False, verbose: bool = False) -> bool:
+def restore_sd_card(backup_path: Optional[Path] = None, sd_card_path: Optional[Path] = None, force: bool = False, verbose: bool = False) -> bool:
     """
     Restore SD card from backup (programmatic interface).
     
     Args:
-        backup_path: Path to backup directory
+        backup_path: Path to backup directory (default: latest backup)
         sd_card_path: Path to SD card (auto-detected if not provided)
         force: Skip confirmation prompts
         verbose: Enable verbose output
@@ -268,6 +268,15 @@ def restore_sd_card(backup_path: Path, sd_card_path: Optional[Path] = None, forc
         True if successful, False otherwise
     """
     manager = SDCardBackupRestore(verbose=verbose)
+
+    if backup_path is None:
+        backups = manager.list_backups()
+        if not backups:
+            print_color("No backups found", "red")
+            return False
+        backup_path = backups[0]
+        print_color(f"Using latest backup: {backup_path.name}", "cyan")
+
     return manager.restore(backup_path=backup_path, sd_card_path=sd_card_path, force=force)
 
 

@@ -12,6 +12,7 @@ repo_root = Path(__file__).parent.parent
 sys.path.insert(0, str(repo_root))
 
 import execute
+import backup
 
 
 class ExecuteCliTests(unittest.TestCase):
@@ -61,6 +62,37 @@ class ExecuteCliTests(unittest.TestCase):
         args = self.run_yaml_command(["yaml", "profile.yaml", "--generate-only"])
 
         self.assertTrue(args.generate_only)
+
+    def test_backup_returns_standard_exit_codes(self):
+        with patch.object(execute, "backup_sd_card", return_value=Path("backup_ok")):
+            with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+                self.assertEqual(execute.main(["backup"]), 0)
+
+        with patch.object(execute, "backup_sd_card", return_value=None):
+            with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+                self.assertEqual(execute.main(["backup"]), 1)
+
+    def test_restore_returns_standard_exit_codes(self):
+        with patch.object(execute, "restore_sd_card", return_value=True):
+            with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+                self.assertEqual(execute.main(["restore", "backup_ok"]), 0)
+
+        with patch.object(execute, "restore_sd_card", return_value=False):
+            with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+                self.assertEqual(execute.main(["restore", "backup_missing"]), 1)
+
+    def test_restore_without_path_uses_latest_backup(self):
+        latest_backup = Path("backup_latest")
+
+        with patch.object(backup.SDCardBackupRestore, "list_backups", return_value=[latest_backup]):
+            with patch.object(backup.SDCardBackupRestore, "restore", return_value=True) as restore:
+                self.assertTrue(backup.restore_sd_card())
+
+        restore.assert_called_once_with(
+            backup_path=latest_backup,
+            sd_card_path=None,
+            force=False,
+        )
 
 
 if __name__ == "__main__":
