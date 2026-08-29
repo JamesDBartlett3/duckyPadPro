@@ -233,12 +233,14 @@ Organize keys by category:
 
 Quick-start with the YAML workflow:
 
-```bash
+Use `.\dpp` in PowerShell, `dpp` in Command Prompt, or `./dpp.sh` in Bash on macOS/Linux. The examples below use PowerShell.
+
+```powershell
 # Generate, compile, and deploy from YAML template
-python execute.py yaml workbench/my-profile.yaml
+.\dpp workbench/my-profile.yaml
 
 # Or generate only (no compile/deploy)
-python execute.py yaml workbench/my-profile.yaml --generate-only
+.\dpp generate workbench/my-profile.yaml
 ```
 
 This creates profile folders in `workbench/profiles/` that you can customize.

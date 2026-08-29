@@ -4,6 +4,16 @@ Test and validation scripts for duckyPad Pro.
 
 ## Test Files
 
+### test_execute_cli.py
+
+Tests concise command routing for inferred YAML workflows, explicit `generate` and `compile` operations, and legacy syntax compatibility.
+
+**Usage:**
+
+```bash
+uv run --locked python tests/test_execute_cli.py
+```
+
 ### test_profile_manager.py
 
 Tests the ProfileInfoManager module for SD card detection and profile_info.txt parsing.
@@ -17,7 +27,7 @@ Tests the ProfileInfoManager module for SD card detection and profile_info.txt p
 **Usage:**
 
 ```bash
-python tests/test_profile_manager.py
+uv run --locked python tests/test_profile_manager.py
 ```
 
 **Requirements:**
@@ -40,13 +50,13 @@ Validates duckyScript compilation results by checking .txt to .dsb conversions.
 
 ```bash
 # Validate all profiles
-python tests/validate_compilation.py
+uv run --locked python tests/validate_compilation.py
 
 # Validate specific profile
-python tests/validate_compilation.py -p profiles/example-productivity
+uv run --locked python tests/validate_compilation.py -p profiles/example-productivity
 
 # Verbose mode
-python tests/validate_compilation.py -v
+uv run --locked python tests/validate_compilation.py -v
 ```
 
 **Exit Codes:**
@@ -69,13 +79,13 @@ Downloads official sample profiles from the duckyPad-Pro GitHub repository.
 
 ```bash
 # Download sample profiles
-python tests/get_sample_profiles.py
+uv run --locked python tests/get_sample_profiles.py
 
 # Force re-download
-python tests/get_sample_profiles.py -f
+uv run --locked python tests/get_sample_profiles.py -f
 
 # Verbose mode
-python tests/get_sample_profiles.py -v
+uv run --locked python tests/get_sample_profiles.py -v
 ```
 
 **Destination:**
@@ -87,16 +97,14 @@ python tests/get_sample_profiles.py -v
 Run individual tests:
 
 ```bash
-python tests/test_profile_manager.py
-python tests/validate_compilation.py
-python tests/get_sample_profiles.py
+uv run --locked python tests/test_execute_cli.py
+uv run --locked python tests/test_validators.py
+uv run --locked python tests/test_deployment_validation.py
+uv run --locked python tests/test_profile_manager.py
+uv run --locked python tests/validate_compilation.py
 ```
 
-Run all tests (when pytest is configured):
-
-```bash
-python -m pytest tests/
-```
+These files are standalone scripts, not a unified pytest suite. Run each relevant script directly until test-runner integration is completed.
 
 ## Test Organization
 

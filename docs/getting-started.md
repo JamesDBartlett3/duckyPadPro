@@ -4,24 +4,24 @@ This guide will help you get started with using the profiles and scripts in this
 
 ## Prerequisites
 
-- Python 3.8 or higher
+- [uv](https://docs.astral.sh/uv/getting-started/installation/)
 - duckyPad Pro device
 - USB cable for device connection
 - Basic understanding of your operating system (Windows, macOS, or Linux)
 
 ## Initial Setup
 
-After cloning the repository, run the setup script to download required dependencies:
+After cloning the repository, sync the locked Python environment and download the external resources:
 
 ```bash
 git clone https://github.com/JamesDBartlett3/duckyPadPro.git
 cd duckyPadPro
-python setup.py
+uv sync --locked
+uv run --locked python setup.py
 ```
 
-This installs and downloads:
+`uv` uses the repository's `.python-version` to select managed CPython 3.12, creates an isolated `.venv`, and installs exact versions from `uv.lock`. The setup script then downloads:
 
-- **Python packages** - PyYAML (for profile generation), hidapi (for USB device control)
 - **Compiler files** (`tools/vendor/`) - Required to compile duckyScript to bytecode
 - **Sample profiles** (`profiles/sample_profiles/`) - Official example profiles for reference
 - **Workbench template** (`workbench/`) - Starter YAML template for your profiles
@@ -29,16 +29,10 @@ This installs and downloads:
 To re-run setup or force re-download:
 
 ```bash
-python setup.py --force
+uv run --locked python setup.py --force
 ```
 
-**Alternative manual installation:**
-
-```bash
-pip install -r requirements.txt
-python tools/vendor.py
-python tests/get_sample_profiles.py
-```
+Do not install packages directly into `.venv`. Use `uv add <package>` for dependency changes, then commit both `pyproject.toml` and `uv.lock`.
 
 ## Installing a Profile
 
@@ -69,12 +63,14 @@ Standalone duckyScript files can be used in several ways:
 
 Use the YAML workflow to generate profiles from templates:
 
-```bash
+Use `.\dpp` in PowerShell, `dpp` in Command Prompt, or `./dpp.sh` in Bash on macOS/Linux. The examples below use PowerShell.
+
+```powershell
 # Generate, compile, and deploy from YAML template
-python execute.py yaml workbench/my-profile.yaml
+.\dpp workbench/my-profile.yaml
 
 # Or just generate without compiling/deploying
-python execute.py yaml workbench/my-profile.yaml --generate-only
+.\dpp generate workbench/my-profile.yaml
 ```
 
 ## Customizing Scripts
@@ -122,28 +118,28 @@ The `tools/` directory contains useful utilities:
 
 Generate profiles from YAML templates with layers and templates:
 
-```bash
+```powershell
 # Full workflow: generate, compile, deploy
-python execute.py yaml workbench/my-profile.yaml
+.\dpp workbench/my-profile.yaml
 
 # Generate only (creates profiles in workbench/profiles/)
-python execute.py yaml workbench/my-profile.yaml --generate-only
+.\dpp generate workbench/my-profile.yaml
 ```
 
 ### Compile Profiles
 
 Compile duckyScript to bytecode:
 
-```bash
-python execute.py compile workbench/profiles/my-profile
+```powershell
+.\dpp compile workbench/profiles/my-profile
 ```
 
 ### Deploy to Device
 
 Deploy profiles to duckyPad Pro:
 
-```bash
-python execute.py deploy workbench/profiles/my-profile
+```powershell
+.\dpp deploy workbench/profiles/my-profile
 ```
 
 ## Troubleshooting

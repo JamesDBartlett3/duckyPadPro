@@ -14,62 +14,60 @@ The duckyPad Pro is a powerful macro keyboard that uses [duckyScript](https://de
 
 ### Prerequisites
 
-- Python 3.8 or higher
+- [uv](https://docs.astral.sh/uv/getting-started/installation/)
 - duckyPad Pro device (for deployment)
 
 ### Setup
 
-After cloning the repository, run the setup script to download required dependencies:
+After cloning the repository, sync the locked environment and download the external resources:
 
 ```bash
 git clone https://github.com/JamesDBartlett3/duckyPadPro.git
 cd duckyPadPro
-python setup.py
+uv sync --locked
+uv run --locked python setup.py
 ```
 
-This installs and downloads:
+`uv sync` downloads a managed CPython 3.12 interpreter when needed, creates an isolated `.venv`, and installs the exact dependency versions from `uv.lock`. The setup script then downloads:
 
-- **Python packages** - PyYAML (for profile generation), hidapi (for USB device control)
 - **Compiler files** (`tools/vendor/`) - Required to compile duckyScript to bytecode
 - **Sample profiles** (`profiles/sample_profiles/`) - Official example profiles
 - **Workbench template** (`workbench/`) - Starter YAML template for your profiles
 
-**Alternative manual installation:**
-
-```bash
-pip install -r requirements.txt
-python tools/vendor.py
-python tests/get_sample_profiles.py
-```
+Use `uv add <package>` to change dependencies and commit the resulting `pyproject.toml` and `uv.lock` updates. Do not install packages directly into `.venv`.
 
 ## Quick Start
 
 After setup, use the unified launcher to work with duckyPad Pro:
 
-```bash
+Use `.\dpp` in PowerShell, `dpp` in Command Prompt, or `./dpp.sh` in Bash on macOS/Linux. The examples below use PowerShell.
+
+```powershell
 # Create your first profile from the sample template
-python execute.py yaml workbench/my-first-profile.yaml
+.\dpp workbench/my-first-profile.yaml
 
 # Or try with sample profiles
-python execute.py compile profiles/sample_profiles/profile1_Welcome
-python execute.py deploy profiles/sample_profiles/profile1_Welcome
+.\dpp compile profiles/sample_profiles/profile1_Welcome
+.\dpp deploy profiles/sample_profiles/profile1_Welcome
 
 # Device control
-python execute.py device scan
-python execute.py device mount
+.\dpp device scan
+.\dpp device mount
 
 # Backup and restore
-python execute.py backup
-python execute.py restore
+.\dpp backup
+.\dpp restore
 ```
 
-Run `python execute.py --help` to see all available commands.
+Run `.\dpp --help` (PowerShell), `dpp --help` (Command Prompt), or `./dpp.sh --help` (Bash on macOS/Linux) to see all available commands.
 
 ## Repository Structure
 
 ```
 duckyPadPro/
-├── execute.py         # Main launcher (unified interface to all tools)
+├── dpp.ps1 / dpp.bat  # PowerShell and Command Prompt launchers
+├── dpp.sh             # Bash launcher for macOS/Linux
+├── execute.py         # Unified command implementation
 ├── profiles/          # Complete duckyPad Pro profiles
 ├── tools/             # Helper utilities and development tools
 └── docs/              # Documentation and guides

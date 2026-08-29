@@ -2,6 +2,8 @@
 
 Development tools for duckyPad Pro profile creation, compilation, and deployment.
 
+Use `.\dpp` in PowerShell, `dpp` in Command Prompt, or `./dpp.sh` in Bash on macOS/Linux. The examples below use PowerShell.
+
 ## Core Tools
 
 ### compile.py
@@ -18,18 +20,18 @@ Compiles duckyScript source files (`.txt`) to bytecode (`.dsb`) for duckyPad Pro
 
 **Usage:**
 
-```bash
+```powershell
 # Compile all profiles
-python tools/compile.py
+.\dpp compile
 
 # Compile specific profile
-python tools/compile.py -p profiles/example-productivity
+.\dpp compile profiles/example-productivity
 
 # Verbose output
-python tools/compile.py -v
+.\dpp compile -v
 
 # Disable profile name resolution
-python tools/compile.py --no-resolve-profiles
+.\dpp compile --no-resolve-profiles
 ```
 
 ### backup.py
@@ -46,21 +48,21 @@ Manages SD card backups and restoration. Backups are automatically created by de
 
 **Usage:**
 
-```bash
+```powershell
 # Create backup
-python tools/backup.py --backup
+.\dpp backup
 
-# List available backups
-python tools/backup.py --list
+# List available backups (advanced direct command)
+uv run --locked python tools/backup.py --list
 
 # Restore from latest backup
-python tools/backup.py --restore --latest
+.\dpp restore
 
 # Restore from specific backup
-python tools/backup.py --restore backup_20251122_153000
+.\dpp restore backup_20251122_153000
 
 # Skip confirmation
-python tools/backup.py --restore --latest -f
+.\dpp restore -f
 ```
 
 ### deploy.py
@@ -76,18 +78,18 @@ Deploys profiles to duckyPad Pro SD card with automatic backup and profile_info.
 
 **Usage:**
 
-```bash
+```powershell
 # Deploy single profile
-python tools/deploy.py profiles/my-profile
+.\dpp deploy profiles/my-profile
 
 # Deploy multiple profiles
-python tools/deploy.py profiles/profile1 profiles/profile2
+.\dpp deploy profiles/profile1 profiles/profile2
 
 # Verbose output
-python tools/deploy.py profiles/my-profile -v
+.\dpp deploy profiles/my-profile -v
 
 # Skip confirmation
-python tools/deploy.py profiles/my-profile -f
+.\dpp deploy profiles/my-profile -f
 ```
 
 ### generate.py
@@ -105,15 +107,15 @@ python tools/deploy.py profiles/my-profile -f
 
 **Usage:**
 
-```bash
+```powershell
 # Generate profile from YAML
-python tools/generate.py workbench/foxhole.yaml
+.\dpp generate workbench/foxhole.yaml
 
-# Specify output directory
-python tools/generate.py workbench/test.yaml -o workbench/profiles/my-test
+# Specify output directory (advanced direct command)
+uv run --locked python tools/generate.py workbench/test.yaml -o workbench/profiles/my-test
 
 # Verbose output
-python tools/generate.py workbench/foxhole.yaml -v
+.\dpp generate workbench/foxhole.yaml -v
 ```
 
 **YAML Template Features:**

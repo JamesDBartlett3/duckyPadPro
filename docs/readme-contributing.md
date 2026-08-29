@@ -66,8 +66,8 @@ When submitting helper tools:
    - Installation instructions
    - Usage examples
    - Dependencies
-3. **List dependencies** in appropriate file:
-   - Python: `requirements.txt`
+3. **Manage dependencies** in the appropriate project file:
+   - Python: use `uv add <package>` and commit `pyproject.toml` plus `uv.lock`
    - Node.js: `package.json`
    - Others: Document in README
 4. **Make scripts executable** (if applicable):

@@ -70,8 +70,9 @@ duckyPadPro/
 │   ├── get_sample_profiles.py      # Download official sample profiles
 │   ├── test_profile_manager.py     # Test profile name mapping
 │   └── validate_compilation.py     # Validate .txt → .dsb conversions
-├── setup.py                        # Repository setup script
-├── requirements.txt                # Python package dependencies
+├── setup.py                        # External resource bootstrap script
+├── pyproject.toml                  # Project dependencies and uv configuration
+├── uv.lock                         # Exact cross-platform dependency lock
 ├── LICENSE
 └── README.md
 ```
@@ -93,7 +94,8 @@ duckyPadPro/
 ### General Guidelines
 
 - **Always** use proper terminal syntax for the active shell
-- When running Python scripts, use `python` command
+- Run Python scripts with `uv run --locked python`; do not use an ambient interpreter
+- Manage dependencies with `uv add` and commit both `pyproject.toml` and `uv.lock`
 - Use forward slashes or backslashes appropriately for the OS
 
 ## File Naming Conventions
@@ -135,22 +137,22 @@ duckyPadPro/
 
 ### Compilation Process
 
-```bash
+```powershell
 # Compile all profiles
-python tools/compile.py
+.\dpp compile
 
 # Compile specific profile
-python tools/compile.py -p profiles/example-productivity
+.\dpp compile profiles/example-productivity
 
 # Verbose mode for detailed output
-python tools/compile.py -p profiles/example-productivity -v
+.\dpp compile profiles/example-productivity -v
 ```
 
 ### Compiler Behavior
 
 - Auto-downloads Python compiler files from GitHub Releases API: `duckyPad/duckyPad-Configurator`
 - Stores dependencies in `tools/vendor/` (gitignored)
-- Requires Python 3 installed on system
+- Uses uv-managed CPython 3.12 from the project environment
 - Uses GitHub API to fetch latest release
 - Downloads all .py files from release zipball
 - Parses `ab N` and `dr N` directives from config.txt for preamble injection
@@ -290,15 +292,12 @@ The YAML workflow (`tools/generate.py`) is the recommended way to create profile
 
 ### Usage
 
-```bash
+```powershell
 # Full workflow: generate, compile, deploy
-python execute.py yaml workbench/my-profile.yaml
+.\dpp workbench/my-profile.yaml
 
 # Generate only
-python execute.py yaml workbench/my-profile.yaml --generate-only
-
-# Or use generate.py directly
-python tools/generate.py workbench/my-profile.yaml
+.\dpp generate workbench/my-profile.yaml
 ```
 
 **Note**: Generated profiles use descriptive names. The deploy step handles SD card naming conventions automatically.
@@ -356,21 +355,21 @@ python tools/generate.py workbench/my-profile.yaml
 
 The recommended workflow uses YAML templates for profile creation. YAML files support advanced features like template inheritance, layers, and reusable components.
 
-```bash
+```powershell
 # Create YAML profile template in workbench/
 # Example: workbench/my-game.yaml
 
-# Generate duckyScript profile from YAML
-python tools/generate.py workbench/my-game.yaml
+# Full workflow: generate, compile, and deploy
+.\dpp workbench/my-game.yaml
 
 # This creates profiles in workbench/profiles/ directory automatically
 # For profiles with layers, multiple profile folders are created
 
-# Compile generated profiles
-python tools/compile.py -p workbench/profiles/my-game
+# Generate only
+.\dpp generate workbench/my-game.yaml
 
-# Deploy to SD card
-python tools/deploy.py
+# Generate and compile without deploying
+.\dpp compile workbench/my-game.yaml
 ```
 
 **YAML Template Features:**
@@ -398,7 +397,7 @@ See "YAML Workflow" section above for creating profiles from YAML templates.
 # 3. Create keyN.txt files as needed
 
 # Compile the profile
-python tools/compile.py -p profiles/my-profile
+.\dpp compile profiles/my-profile
 
 # When deploying to device, user renames to profileN_Name:
 # my-profile -> profile2_MyProfile (or whatever number/name they prefer)
@@ -408,23 +407,23 @@ python tools/compile.py -p profiles/my-profile
 
 ```bash
 # Get official sample profiles
-python tests/get_sample_profiles.py
+uv run --locked python tests/get_sample_profiles.py
 
 # Re-download (overwrite existing)
-python tests/get_sample_profiles.py -f
+uv run --locked python tests/get_sample_profiles.py -f
 ```
 
 ### Auto-generating READMEs
 
 ```bash
 # Generate in all directories
-python profiles/generate_readme_files.py
+uv run --locked python profiles/generate_readme_files.py
 
 # Overwrite existing files
-python profiles/generate_readme_files.py -o
+uv run --locked python profiles/generate_readme_files.py -o
 
 # Force without confirmation
-python profiles/generate_readme_files.py -o -f
+uv run --locked python profiles/generate_readme_files.py -o -f
 ```
 
 ## duckyScript Best Practices
@@ -464,22 +463,22 @@ REM Platform: Windows/macOS/Linux
 ### Before Committing
 
 1. **Compile**: Ensure all .txt files compile without errors
-2. **Validate**: Run `python tests/validate_compilation.py`
+2. **Validate**: Run `uv run --locked python tests/validate_compilation.py`
 3. **Verify**: Check git status doesn't include .dsb files or vendor/
 4. **Document**: Ensure README files are up to date
 5. **Test**: Try scripts on actual hardware if possible
 
 ### Compilation Validation
 
-```bash
+```powershell
 # Compile all profiles
-python tools/compile.py
+.\dpp compile
 
 # Validate all compilations
-python tests/validate_compilation.py
+uv run --locked python tests/validate_compilation.py
 
 # Validate specific profile
-python tests/validate_compilation.py -p profiles/my-profile -v
+uv run --locked python tests/validate_compilation.py -p profiles/my-profile -v
 ```
 
 ## Helper Script Downloads

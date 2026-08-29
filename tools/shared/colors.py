@@ -146,7 +146,7 @@ def parse_color(color_value: Union[str, List[int], Tuple[int, ...]]) -> Optional
         if not HAS_WEBCOLORS:
             raise ValueError(
                 f"Color name '{color_value}' requires the webcolors library. "
-                "Install it with: pip install webcolors"
+                "Restore project dependencies with: uv sync --locked"
             )
         
         normalized = normalize_color_name(color_str)

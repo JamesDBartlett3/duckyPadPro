@@ -4,9 +4,10 @@ duckyPad Pro Main Menu / Launcher
 Unified interface for all duckyPad Pro tools and workflows
 
 Available commands:
-    yaml        - Generate, compile, and deploy profiles from YAML templates
-    generate    - Generate profiles from YAML (alias for 'yaml --generate-only')
-    compile     - Compile duckyScript files to bytecode
+    <file>.yaml - Generate, compile, and deploy profiles (inferred workflow)
+    generate    - Generate profiles from YAML
+    compile     - Generate and compile YAML, or compile existing profiles
+    yaml        - Legacy explicit YAML workflow
     deploy      - Deploy profiles to SD card with backup
     backup      - Create backup of SD card
     restore     - Restore SD card from backup
@@ -14,20 +15,23 @@ Available commands:
 
 Usage examples:
     # YAML workflow: generate, compile, and deploy
-    python execute.py yaml workbench/my-profile.yaml -f
+    dpp workbench/my-profile.yaml -f
+
+    # Generate only
+    dpp generate workbench/my-profile.yaml
     
     # Device control
-    python execute.py device scan
-    python execute.py device mount
-    python execute.py device unmount
+    dpp device scan
+    dpp device mount
+    dpp device unmount
     
     # Backup and restore
-    python execute.py backup
-    python execute.py restore
+    dpp backup
+    dpp restore
     
     # Individual operations
-    python execute.py compile workbench/profiles/my-profile
-    python execute.py deploy workbench/profiles/my-profile
+    dpp compile workbench/profiles/my-profile
+    dpp deploy workbench/profiles/my-profile
 """
 
 import argparse
@@ -46,6 +50,22 @@ from deploy import deploy as deploy_profiles
 from backup import backup_sd_card, restore_sd_card
 from device import DuckyPadDevice
 from shared.console import print_color as _print_color
+
+
+YAML_SUFFIXES = {".yaml", ".yml"}
+
+
+def is_yaml_path(path: Optional[Path]) -> bool:
+    """Return whether a path points to a YAML template."""
+    return path is not None and path.suffix.lower() in YAML_SUFFIXES
+
+
+def normalize_argv(argv: Optional[List[str]] = None) -> List[str]:
+    """Infer the full YAML workflow when the first argument is a template."""
+    normalized = list(sys.argv[1:] if argv is None else argv)
+    if normalized and is_yaml_path(Path(normalized[0])):
+        return ["yaml", *normalized]
+    return normalized
 
 
 class Colors:
@@ -190,6 +210,15 @@ def cmd_device(args):
 
 def cmd_compile(args):
     """Compile existing profiles"""
+    if is_yaml_path(args.profile_path):
+        args.yaml_file = args.profile_path
+        args.generate_only = False
+        args.compile_only = True
+        args.skip_deploy = True
+        args.backup_path = None
+        args.force = False
+        return cmd_yaml(args)
+
     print_header("Compiling profiles")
     return compile_profiles(
         profile_path=args.profile_path,
@@ -209,29 +238,33 @@ def cmd_deploy(args):
     )
 
 
-def main():
+def main(argv: Optional[List[str]] = None):
     """Main menu / launcher entry point"""
     parser = argparse.ArgumentParser(
+        prog="dpp",
         description="duckyPad Pro - Main Menu / Launcher for all tools",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # YAML Workflow
-  python duckypad.py yaml workbench/layer_type_test.yaml -f
-  python duckypad.py yaml workbench/my-profile.yaml --generate-only
+    # Generate, compile, and deploy a YAML template
+        dpp workbench/my-profile.yaml
+
+    # Generate only, or generate and compile
+        dpp generate workbench/my-profile.yaml
+        dpp compile workbench/my-profile.yaml
   
   # Device Control
-  python duckypad.py device scan
-  python duckypad.py device mount -v
-  python duckypad.py device unmount -v
+        dpp device scan
+        dpp device mount -v
+        dpp device unmount -v
   
   # Backup & Restore
-  python duckypad.py backup -v
-  python duckypad.py restore -v
+        dpp backup -v
+        dpp restore -v
   
   # Individual Operations
-  python duckypad.py compile workbench/profiles/my-profile -v
-  python duckypad.py deploy workbench/profiles/profile1 profile2 -f
+        dpp compile workbench/profiles/my-profile -v
+        dpp deploy workbench/profiles/profile1 profile2 -f
         """
     )
     
@@ -248,9 +281,23 @@ Examples:
     yaml_parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
     yaml_parser.add_argument("-f", "--force", action="store_true", help="Skip confirmation prompts")
     yaml_parser.set_defaults(func=cmd_yaml)
+
+    # 'generate' command - generate profiles without compiling or deploying
+    generate_parser = subparsers.add_parser("generate", help="Generate profiles from a YAML template")
+    generate_parser.add_argument("yaml_file", type=Path, help="YAML template file")
+    generate_parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
+    generate_parser.set_defaults(
+        func=cmd_yaml,
+        generate_only=True,
+        compile_only=False,
+        skip_deploy=True,
+        no_resolve_profiles=False,
+        backup_path=None,
+        force=False,
+    )
     
     # 'compile' command - compile existing profiles
-    compile_parser = subparsers.add_parser("compile", help="Compile existing profiles")
+    compile_parser = subparsers.add_parser("compile", help="Generate and compile YAML, or compile existing profiles")
     compile_parser.add_argument("profile_path", type=Path, nargs="?", help="Profile path (default: profiles/)")
     compile_parser.add_argument("--no-resolve-profiles", action="store_true", help="Disable GOTO_PROFILE name resolution")
     compile_parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
@@ -292,7 +339,7 @@ Examples:
     
     device_parser.set_defaults(func=cmd_device)
     
-    args = parser.parse_args()
+    args = parser.parse_args(normalize_argv(argv))
     
     if not args.command:
         parser.print_help()

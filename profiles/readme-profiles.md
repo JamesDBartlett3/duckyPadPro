@@ -510,20 +510,20 @@ keys:
 2. **Generate, compile, and deploy:**
 
    ```bash
-   python execute.py yaml workbench/my-game.yaml
+   ./dpp.sh workbench/my-game.yaml
    ```
 
    Or step by step:
 
    ```bash
    # Generate only
-   python execute.py yaml workbench/my-game.yaml --generate-only
+   ./dpp.sh generate workbench/my-game.yaml
 
    # Compile generated profiles
-   python execute.py compile workbench/profiles/my-game
+   ./dpp.sh compile workbench/profiles/my-game
 
    # Deploy to SD card
-   python execute.py deploy workbench/profiles/my-game
+   ./dpp.sh deploy workbench/profiles/my-game
    ```
 
 ### Manual Creation
@@ -540,11 +540,10 @@ keys:
 1. **Generate, compile, and deploy from YAML:**
 
    ```bash
-   python execute.py yaml workbench/foxhole.yaml
+   ./dpp.sh workbench/foxhole.yaml
    ```
 
    This automatically:
-
    - Generates profiles in `workbench/profiles/`
    - Compiles duckyScript to bytecode
    - Deploys to SD card with proper naming
@@ -554,13 +553,13 @@ keys:
 
    ```bash
    # Generate only
-   python execute.py yaml workbench/foxhole.yaml --generate-only
+   ./dpp.sh generate workbench/foxhole.yaml
 
    # Compile
-   python execute.py compile workbench/profiles/profile_Foxhole
+   ./dpp.sh compile workbench/profiles/profile_Foxhole
 
    # Deploy
-   python execute.py deploy workbench/profiles/profile_Foxhole
+   ./dpp.sh deploy workbench/profiles/profile_Foxhole
    ```
 
 3. **Test on duckyPad Pro:**

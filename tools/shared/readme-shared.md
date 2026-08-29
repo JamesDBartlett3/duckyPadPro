@@ -104,7 +104,7 @@ from shared.key_layout import TOTAL_KEYS, parse_key_list, get_key_description
 Run the module directly to see a demo:
 
 ```bash
-python tools/shared/key_layout.py
+uv run --locked python tools/shared/key_layout.py
 ```
 
 ### `profiles.py`

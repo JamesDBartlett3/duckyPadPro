@@ -206,13 +206,13 @@ def main():
         epilog="""
 Examples:
   # Check and download if missing
-  python vendor.py
+    uv run --locked python tools/vendor.py
   
   # Force re-download
-  python vendor.py -f
+    uv run --locked python tools/vendor.py -f
   
   # Verbose output
-  python vendor.py -v
+    uv run --locked python tools/vendor.py -v
         """
     )
     

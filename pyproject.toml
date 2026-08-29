@@ -1,0 +1,17 @@
+[project]
+name = "duckypad-pro-tools"
+version = "0.1.0"
+description = "Profile generation, compilation, and deployment tools for duckyPad Pro"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "hidapi>=0.10.0",
+    "platformdirs>=4.11.5",
+    "pyyaml>=5.0",
+    "webcolors>=1.11",
+]
+
+[tool.uv]
+package = false
+python-preference = "only-managed"
+required-version = ">=0.12.7"

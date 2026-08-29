@@ -643,8 +643,8 @@ class YAMLToProfileConverter:
             '',
             '## Usage',
             '',
-            '1. Compile the profile: `python tools/compile.py -p workbench/profiles/<profile-folder>`',
-            '2. Deploy to SD card: `python tools/deploy.py`',
+            '1. Compile the profile: `uv run --locked python tools/compile.py -p workbench/profiles/<profile-folder>`',
+            '2. Deploy to SD card: `uv run --locked python tools/deploy.py`',
             '',
             '## Notes',
             '',
@@ -754,13 +754,13 @@ def main():
         epilog="""
 Examples:
   # Generate profile from YAML
-  python generate.py workbench/foxhole.yaml
+    uv run --locked python tools/generate.py workbench/foxhole.yaml
   
   # Specify output directory
-  python generate.py workbench/test_profile.yaml -o workbench/profiles/my-test
+    uv run --locked python tools/generate.py workbench/test_profile.yaml -o workbench/profiles/my-test
   
   # Verbose output
-  python generate.py workbench/foxhole.yaml -v
+    uv run --locked python tools/generate.py workbench/foxhole.yaml -v
         """
     )
     

@@ -279,22 +279,22 @@ def main():
         epilog="""
 Examples:
   # Create backup
-  python backup.py --backup
+    uv run --locked python tools/backup.py --backup
   
   # List available backups
-  python backup.py --list
+    uv run --locked python tools/backup.py --list
   
   # Restore from latest backup
-  python backup.py --restore --latest
+    uv run --locked python tools/backup.py --restore --latest
   
   # Restore from specific backup
-  python backup.py --restore backup_20251122_153000
+    uv run --locked python tools/backup.py --restore backup_20251122_153000
   
   # Restore with custom backup directory
-  python backup.py --restore backup_20251122_153000 --backup-dir /path/to/backups
+    uv run --locked python tools/backup.py --restore backup_20251122_153000 --backup-dir /path/to/backups
   
   # Skip confirmation
-  python backup.py --restore --latest -f
+    uv run --locked python tools/backup.py --restore --latest -f
         """
     )
     
